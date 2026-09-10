@@ -1,0 +1,20 @@
+{
+  "id": "evt-20260911-system-write-test-project",
+  "at": "2026-09-11T02:24:00+09:30",
+  "type": "project_created",
+  "project_id": "system-write-test",
+  "summary": "Created temporary system write test project",
+  "source": {
+    "kind": "assistant",
+    "conversation_hint": "NextPlan Chrome bridge safe write test"
+  },
+  "project": {
+    "id": "system-write-test",
+    "name": "_SYSTEM_WRITE_TEST_",
+    "category": "System",
+    "status": "active",
+    "priority": 1,
+    "next_action": "Use only for validating the Chrome-to-Railway-to-LifeOS write path; delete after validation.",
+    "milestones": []
+  }
+}
