@@ -136,6 +136,13 @@ def apply_event(state, event):
         if "next_action" in event:
             p["next_action"] = event["next_action"]
 
+    elif et == "project_deleted":
+        project_id = require(event, "project_id", str)
+        if not any(p.get("id") == project_id for p in state.setdefault("projects", [])):
+            raise ValueError(f"unknown project_id: {project_id}")
+        state["projects"] = [p for p in state["projects"] if p.get("id") != project_id]
+        state["deadlines"] = [d for d in state.setdefault("deadlines", []) if d.get("project_id") != project_id]
+
     elif et in {"milestone_added", "task_created"}:
         p = find_project(state, require(event, "project_id", str))
         m = deepcopy(event.get("milestone") or event.get("task") or {})
@@ -144,7 +151,6 @@ def apply_event(state, event):
         m.setdefault("status", "active")
         existing = next((x for x in p.setdefault("milestones", []) if x.get("id") == m["id"]), None)
         if existing is None:
-            # Semantic duplicate protection by normalized name.
             norm = m["name"].strip().casefold()
             existing = next((x for x in p["milestones"] if str(x.get("name", "")).strip().casefold() == norm), None)
         if existing:
@@ -172,6 +178,13 @@ def apply_event(state, event):
             p["next_action"] = event["next_action"]
         if "project_status" in event:
             set_status(p, event["project_status"])
+
+    elif et == "task_deleted":
+        p = find_project(state, require(event, "project_id", str))
+        task_id = require(event, "task_id", str)
+        if not any(m.get("id") == task_id for m in p.setdefault("milestones", [])):
+            raise ValueError(f"unknown task_id {task_id} in {p.get('id')}")
+        p["milestones"] = [m for m in p["milestones"] if m.get("id") != task_id]
 
     elif et == "deadline_set":
         d = deepcopy(require(event, "deadline", dict))
