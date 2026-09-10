@@ -1,0 +1,8 @@
+{
+  "id": "evt-20260910T172200Z-delete-backend-test-delete",
+  "at": "2026-09-10T17:22:00Z",
+  "type": "project_deleted",
+  "project_id": "system-delete-backend-test",
+  "summary": "Delete disposable backend deletion test project",
+  "source": {"kind": "system-test"}
+}
