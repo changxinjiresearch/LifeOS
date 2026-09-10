@@ -70,14 +70,19 @@ jobs:
           SERVER_PID=$!
           trap 'kill $SERVER_PID || true' EXIT
           for i in {1..30}; do
-            if curl -fsS http://127.0.0.1:8765/healthz >/tmp/health.json; then break; fi
+            if curl --max-time 2 -fsS http://127.0.0.1:8765/healthz >/tmp/health.json; then break; fi
             sleep 0.5
           done
           grep -q '"status":"ok"' /tmp/health.json
-          UNAUTH=$(curl -sS -o /tmp/unauth.txt -w '%{http_code}' http://127.0.0.1:8765/mcp)
+          UNAUTH=$(curl --max-time 2 -sS -o /tmp/unauth.txt -w '%{http_code}' http://127.0.0.1:8765/mcp)
           test "$UNAUTH" = "401"
-          SECRET=$(curl -sS -o /tmp/secret.txt -w '%{http_code}' http://127.0.0.1:8765/test-secret-for-ci/mcp)
+          set +e
+          SECRET=$(curl --max-time 2 -sS -o /tmp/secret.txt -w '%{http_code}' http://127.0.0.1:8765/test-secret-for-ci/mcp)
+          CURL_RC=$?
+          set -e
+          # A Streamable HTTP GET may stay open for SSE; timeout is acceptable as long as auth passed.
           test "$SECRET" != "401"
           test "$SECRET" != "503"
+          test "$CURL_RC" = "0" -o "$CURL_RC" = "28"
       - name: Build production Docker image
         run: docker build -t nextplan-mcp:ci .
