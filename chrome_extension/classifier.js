@@ -61,27 +61,71 @@ function deletionTarget(text, title, state) {
   const taskHint = /(任务|task)/i.test(text);
   const projectHint = /(项目|project)/i.test(text);
 
-  if (taskHint && bestTaskHit?.score >= 0.55) {
-    return {kind: "task", ...bestTaskHit};
-  }
-  if (projectHint && bestProjectHit?.score >= 0.55) {
-    return {kind: "project", ...bestProjectHit};
-  }
-  if (bestProjectHit?.score >= 0.9 && (!bestTaskHit || bestTaskHit.score < 0.9)) {
-    return {kind: "project", ...bestProjectHit};
-  }
-  if (bestTaskHit?.score >= 0.9) {
-    return {kind: "task", ...bestTaskHit};
-  }
+  if (taskHint && bestTaskHit?.score >= 0.55) return {kind: "task", ...bestTaskHit};
+  if (projectHint && bestProjectHit?.score >= 0.55) return {kind: "project", ...bestProjectHit};
+  if (bestProjectHit?.score >= 0.9 && (!bestTaskHit || bestTaskHit.score < 0.9)) return {kind: "project", ...bestProjectHit};
+  if (bestTaskHit?.score >= 0.9) return {kind: "task", ...bestTaskHit};
   return null;
+}
+
+function extractNewProjectName(text) {
+  const patterns = [
+    /(?:给|向|在)?\s*NextPlan\s*(?:写入|加入|添加|新增|新建|创建)?\s*(?:一个)?\s*(?:新)?项目\s*[：:]\s*([^，。\n]+)/i,
+    /(?:给|向|在)?\s*NextPlan\s*(?:写入|加入|添加|新增|新建|创建)\s*(?:一个)?\s*(?:新)?项目\s+([^，。\n]+)/i,
+    /(?:新增|新建|创建|添加)\s*(?:一个)?\s*(?:新)?项目\s*[：:]?\s*([^，。\n]+?)\s*(?:到|进|加入|写入)\s*NextPlan/i,
+    /(?:把|将)\s*([^，。\n]+?)\s*(?:作为|设为)?\s*(?:一个)?\s*(?:新)?项目\s*(?:加到|加入|写入|放到)\s*NextPlan/i
+  ];
+  for (const re of patterns) {
+    const m = text.match(re);
+    if (m?.[1]) return m[1].trim().replace(/["'“”‘’]/g, "").slice(0, 90);
+  }
+  return "";
+}
+
+function inferCategory(name) {
+  const n = normalize(name);
+  if (/(phd|博士|套磁|导师)/i.test(n)) return "PhD";
+  if (/(论文|研究|实验|pcc|research)/i.test(n)) return "科研";
+  if (/(课程|作业|presentation|proposal|学习)/i.test(n)) return "课程";
+  if (/(签证|coe|usyd|学校|入学)/i.test(n)) return "学校";
+  if (/(实习|工作|求职|简历|career|job)/i.test(n)) return "职业";
+  return "其他";
 }
 
 export function classifyTurn(turn, state) {
   const text = String(turn.userText || "").trim();
   if (!text || /[?？]\s*$/.test(text)) return null;
 
-  // Destructive operations are intentionally conservative: the user must
-  // explicitly mention NextPlan and must manually confirm in the popup.
+  const newProjectName = /next\s*plan/i.test(text) ? extractNewProjectName(text) : "";
+  if (newProjectName) {
+    const exists = (state.projects || []).find(p => normalize(p.name) === normalize(newProjectName));
+    if (exists) {
+      return {
+        id: crypto.randomUUID(),
+        kind: "project_exists",
+        confidence: 0.99,
+        label: `项目已存在：${exists.name}`,
+        reason: "NextPlan 中已有同名项目",
+        action: null,
+        informational: true
+      };
+    }
+    return {
+      id: crypto.randomUUID(),
+      kind: "create_project",
+      confidence: 0.98,
+      label: `新增项目：${newProjectName}`,
+      reason: "检测到明确的 NextPlan 新项目指令",
+      action: {
+        action: "create_project",
+        name: newProjectName,
+        category: inferCategory(newProjectName),
+        priority: 2,
+        next_action: ""
+      }
+    };
+  }
+
   const deleteIntent = /(删除|删掉|移除|去掉|清除|delete|remove)/i.test(text) && /next\s*plan/i.test(text);
   if (deleteIntent) {
     const hit = deletionTarget(text, turn.title || "", state);
