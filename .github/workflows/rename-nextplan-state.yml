@@ -1,0 +1,38 @@
+name: Rename system to NextPlan
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  rename:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Correct canonical state name
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path('state.json')
+          data = json.loads(p.read_text(encoding='utf-8'))
+          data.setdefault('system', {})['name'] = 'NextPlan'
+          for e in data.get('events', []):
+              if isinstance(e.get('summary'), str):
+                  e['summary'] = e['summary'].replace('NextPlane', 'NextPlan')
+          p.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          PY
+      - name: Commit correction
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add state.json
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "Correct system name to NextPlan"
+          git push
