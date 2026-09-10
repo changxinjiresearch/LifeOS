@@ -28,16 +28,24 @@ async function refresh() {
     return;
   }
 
-  list.innerHTML = items.map(x => `
-    <div class="card" data-id="${esc(x.id)}">
-      <div class="item-title">${esc(x.label)}</div>
-      <div class="reason">${esc(x.reason)} · 置信度 ${Math.round((x.confidence||0)*100)}%</div>
-      <div class="actions">
-        <button class="primary" data-act="apply">同步</button>
-        <button class="secondary" data-act="ignore">忽略</button>
-      </div>
-      <div class="inline-status" aria-live="polite"></div>
-    </div>`).join("");
+  list.innerHTML = items.map(x => {
+    const destructive = Boolean(x.destructive || x.requiresConfirmation);
+    const cardClass = destructive ? "card destructive" : "card";
+    const applyClass = destructive ? "danger" : "primary";
+    const applyLabel = destructive ? "确认删除" : "同步";
+    const warning = destructive ? `<div class="warning">此操作会从 NextPlan 当前状态中删除该条目，必须手动确认。</div>` : "";
+    return `
+      <div class="${cardClass}" data-id="${esc(x.id)}">
+        <div class="item-title">${esc(x.label)}</div>
+        <div class="reason">${esc(x.reason)} · 置信度 ${Math.round((x.confidence||0)*100)}%</div>
+        ${warning}
+        <div class="actions">
+          <button class="${applyClass}" data-act="apply" data-destructive="${destructive ? "1" : "0"}">${applyLabel}</button>
+          <button class="secondary" data-act="ignore">取消</button>
+        </div>
+        <div class="inline-status" aria-live="polite"></div>
+      </div>`;
+  }).join("");
 }
 
 function setBusy(card, busy) {
@@ -55,42 +63,45 @@ list.addEventListener("click", async e => {
   setBusy(card, true);
 
   if (btn.dataset.act === "apply") {
+    const destructive = btn.dataset.destructive === "1";
     const original = btn.textContent;
-    btn.innerHTML = `<span class="spinner"></span>同步中…`;
-    feedback.textContent = "正在写入 NextPlan，并等待中央状态确认…";
+    btn.innerHTML = `<span class="spinner"></span>${destructive ? "删除中…" : "同步中…"}`;
+    feedback.textContent = destructive
+      ? "正在提交删除，并等待中央状态确认…"
+      : "正在写入 NextPlan，并等待中央状态确认…";
     feedback.className = "inline-status";
 
     try {
       const res = await chrome.runtime.sendMessage({type:"NEXTPLAN_APPLY", id});
       if (res?.status === "error") throw new Error(res.error || "同步失败");
 
-      btn.textContent = "✓ 已同步";
+      btn.textContent = destructive ? "✓ 已删除" : "✓ 已同步";
       feedback.textContent = res?.status === "accepted_pending_builder"
-        ? "已提交，中央状态正在更新。"
-        : "已同步到 NextPlan。";
+        ? (destructive ? "删除已提交，中央状态正在更新。" : "已提交，中央状态正在更新。")
+        : (destructive ? "已从 NextPlan 当前状态删除。" : "已同步到 NextPlan。");
       feedback.className = "inline-status ok";
       card.classList.add("done");
       setTimeout(() => refresh().catch(() => {}), 1100);
     } catch (err) {
       btn.textContent = original;
-      feedback.textContent = `同步失败：${err?.message || "未知错误"}`;
+      feedback.textContent = `${destructive ? "删除" : "同步"}失败：${err?.message || "未知错误"}`;
       feedback.className = "inline-status bad";
       setBusy(card, false);
     }
     return;
   }
 
-  btn.textContent = "忽略中…";
+  btn.textContent = "取消中…";
   feedback.textContent = "";
   try {
     const res = await chrome.runtime.sendMessage({type:"NEXTPLAN_IGNORE", id});
-    if (res?.status === "error") throw new Error(res.error || "忽略失败");
+    if (res?.status === "error") throw new Error(res.error || "取消失败");
     card.classList.add("done");
-    feedback.textContent = "已忽略。";
+    feedback.textContent = "已取消。";
     feedback.className = "inline-status ok";
     setTimeout(() => refresh().catch(() => {}), 450);
   } catch (err) {
-    btn.textContent = "忽略";
+    btn.textContent = "取消";
     feedback.textContent = `操作失败：${err?.message || "未知错误"}`;
     feedback.className = "inline-status bad";
     setBusy(card, false);
