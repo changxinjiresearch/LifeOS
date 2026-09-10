@@ -1,0 +1,16 @@
+{
+  "type": "task_created",
+  "project_id": "system-write-test",
+  "summary": "Created task: 浏览器写入测试",
+  "task": {
+    "id": "task-item-8cb64e",
+    "name": "浏览器写入测试",
+    "status": "active"
+  },
+  "id": "evt-20260910T170426Z-task-created-ad83839a",
+  "at": "2026-09-10T17:04:26Z",
+  "source": {
+    "kind": "chatgpt",
+    "via": "nextplan-chrome-bridge"
+  }
+}
