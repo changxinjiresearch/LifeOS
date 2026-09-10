@@ -1,0 +1,11 @@
+{
+  "id": "evt-20260911-event-layer-v1",
+  "at": "2026-09-11T00:16:00+09:30",
+  "type": "event_only",
+  "project_id": "system",
+  "summary": "NextPlan event layer v1 activated: append-only conversation events are serialized into the canonical central state.",
+  "source": {
+    "kind": "chatgpt",
+    "conversation_hint": "NextPlan architecture implementation"
+  }
+}
