@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "system": "NextPlan",
+  "canonical_repository": "changxinjiresearch/LifeOS",
+  "state_path": "state.json",
+  "event_inbox": "events/inbox",
+  "protocol_path": "NEXTPLAN_AGENT_PROTOCOL.md",
+  "event_schema_path": "event.schema.json",
+  "write_mode": "append-only-event-file",
+  "direct_state_writes_for_conversation_updates": false,
+  "recording_policy": {
+    "record": [
+      "explicitly_decided_new_task_or_project",
+      "confirmed_task_or_milestone_completion",
+      "confirmed_project_status_change",
+      "confirmed_deadline",
+      "explicit_note_request",
+      "explicit_safe_resource_pointer_request"
+    ],
+    "do_not_record": [
+      "discussion",
+      "brainstorming",
+      "hypothetical",
+      "question",
+      "tentative_plan",
+      "unconfirmed_completion",
+      "sensitive_or_secret_data"
+    ],
+    "ambiguous": "ask_before_state_change"
+  },
+  "same_turn_behavior": "When a qualifying state change is confirmed, emit the event before finishing the assistant response.",
+  "deduplication": "Fetch state.json before creating a new project/task; update an existing matching item when possible. Event ids are idempotent.",
+  "concurrency": "Each chat writes a unique event file. The serialized GitHub Actions builder merges all unprocessed events into state.json.",
+  "privacy": "Store high-level task/status metadata only. Never store tokens, passwords, bank details, identity numbers, medical records, or sensitive document contents."
+}
