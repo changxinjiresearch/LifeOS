@@ -27,7 +27,7 @@ jobs:
           python - <<'PY'
           import asyncio
           from mcp import Client
-          from mcp_server.server import mcp, app
+          from mcp_server.server import mcp, app, _validate_status, _validate_date
 
           EXPECTED = {
               'get_state', 'search_state', 'create_project', 'create_task',
@@ -45,6 +45,39 @@ jobs:
                   assert app is not None
 
           asyncio.run(main())
+          assert _validate_status('waiting') == 'waiting'
+          try:
+              _validate_status('nonsense')
+          except ValueError:
+              pass
+          else:
+              raise AssertionError('invalid status was accepted')
+          assert _validate_date('2026-12-18') == '2026-12-18'
+          try:
+              _validate_date('2026-02-31')
+          except ValueError:
+              pass
+          else:
+              raise AssertionError('invalid calendar date was accepted')
           PY
       - name: Compile Python
         run: python -m compileall -q mcp_server
+      - name: Test remote HTTP shell and auth guard
+        env:
+          NEXTPLAN_MCP_PATH_SECRET: test-secret-for-ci
+        run: |
+          uvicorn mcp_server.server:app --host 127.0.0.1 --port 8765 --no-access-log >/tmp/nextplan-uvicorn.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true' EXIT
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:8765/healthz >/tmp/health.json; then break; fi
+            sleep 0.5
+          done
+          grep -q '"status":"ok"' /tmp/health.json
+          UNAUTH=$(curl -sS -o /tmp/unauth.txt -w '%{http_code}' http://127.0.0.1:8765/mcp)
+          test "$UNAUTH" = "401"
+          SECRET=$(curl -sS -o /tmp/secret.txt -w '%{http_code}' http://127.0.0.1:8765/test-secret-for-ci/mcp)
+          test "$SECRET" != "401"
+          test "$SECRET" != "503"
+      - name: Build production Docker image
+        run: docker build -t nextplan-mcp:ci .
