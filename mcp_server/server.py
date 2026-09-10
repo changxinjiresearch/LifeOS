@@ -22,6 +22,7 @@ EVENT_DIR = os.getenv("NEXTPLAN_EVENT_DIR", "events/inbox").strip("/")
 GITHUB_TOKEN = os.getenv("NEXTPLAN_GITHUB_TOKEN", "")
 MCP_BEARER_TOKEN = os.getenv("NEXTPLAN_MCP_BEARER_TOKEN", "")
 MCP_PATH_SECRET = os.getenv("NEXTPLAN_MCP_PATH_SECRET", "")
+EXTENSION_TOKEN = os.getenv("NEXTPLAN_EXTENSION_TOKEN", "")
 ALLOW_INSECURE = os.getenv("NEXTPLAN_ALLOW_INSECURE", "").strip().lower() in {"1", "true", "yes"}
 GITHUB_API = "https://api.github.com"
 ALLOWED_STATUS = {"active", "waiting", "planned", "completed", "done", "blocked"}
@@ -137,10 +138,10 @@ async def _wait_applied(event_id: str, timeout_seconds: float = 25.0) -> dict[st
     return {"status": "accepted_pending_builder", "event_id": event_id, "state": last}
 
 
-async def _emit(event: dict[str, Any]) -> dict[str, Any]:
+async def _emit(event: dict[str, Any], *, via: str = "nextplan-mcp") -> dict[str, Any]:
     eid = event.setdefault("id", _event_id(_slug(event.get("type", "event"), 18)))
     event.setdefault("at", _now_iso())
-    event.setdefault("source", {"kind": "chatgpt", "via": "nextplan-mcp"})
+    event.setdefault("source", {"kind": "chatgpt", "via": via})
     path = f"{EVENT_DIR}/{eid}.json"
     text = json.dumps(event, ensure_ascii=False, indent=2) + "\n"
     result = await _github_create_text(path, text, f"NextPlan: {event.get('summary') or event['type']}")
@@ -299,8 +300,161 @@ async def add_resource(title: str, location: str, description: str = "", resourc
     return await _emit({"type": "resource_added", "summary": f"Added resource: {title}", "resource": resource})
 
 
+async def _extension_action(payload: dict[str, Any]) -> dict[str, Any]:
+    """Apply a small, pre-structured action from the local Chrome bridge.
+
+    The bridge never sends the whole conversation. It sends only the action the
+    deterministic local classifier has selected, plus the minimal matching IDs.
+    """
+    action = str(payload.get("action", "")).strip()
+    s = await _state()
+
+    if action == "complete_task":
+        project_id = str(payload.get("project_id", "")).strip()
+        task_id = str(payload.get("task_id", "")).strip()
+        p = _find_project(s, project_id)
+        if not p:
+            raise ValueError(f"Unknown project_id: {project_id}")
+        m = _find_milestone(p, task_id)
+        if not m:
+            raise ValueError(f"Unknown task_id {task_id} in {project_id}")
+        if m.get("status") == "completed":
+            return {"status": "already_completed", "project_id": project_id, "task_id": task_id}
+        event: dict[str, Any] = {
+            "type": "task_completed",
+            "project_id": project_id,
+            "task_id": task_id,
+            "summary": f"Completed task: {m.get('name', task_id)}",
+        }
+        next_action = str(payload.get("next_action", "")).strip()
+        if next_action:
+            event["next_action"] = next_action
+        project_status = str(payload.get("project_status", "")).strip()
+        if project_status:
+            event["project_status"] = _validate_status(project_status, "project_status")
+        return await _emit(event, via="nextplan-chrome-bridge")
+
+    if action == "update_milestone":
+        project_id = str(payload.get("project_id", "")).strip()
+        milestone_id = str(payload.get("milestone_id", "")).strip()
+        p = _find_project(s, project_id)
+        if not p or not _find_milestone(p, milestone_id):
+            raise ValueError("Unknown project_id or milestone_id")
+        status = _validate_status(str(payload.get("status", "")))
+        if not status:
+            raise ValueError("status is required")
+        event = {
+            "type": "milestone_status_changed",
+            "project_id": project_id,
+            "milestone_id": milestone_id,
+            "status": status,
+            "summary": f"Milestone {milestone_id} -> {status}",
+        }
+        next_action = str(payload.get("next_action", "")).strip()
+        if next_action:
+            event["next_action"] = next_action
+        return await _emit(event, via="nextplan-chrome-bridge")
+
+    if action == "update_project":
+        project_id = str(payload.get("project_id", "")).strip()
+        if not _find_project(s, project_id):
+            raise ValueError(f"Unknown project_id: {project_id}")
+        changes: dict[str, Any] = {}
+        status = str(payload.get("status", "")).strip()
+        if status:
+            changes["status"] = _validate_status(status)
+        next_action = str(payload.get("next_action", "")).strip()
+        if next_action:
+            changes["next_action"] = next_action
+        if not changes:
+            raise ValueError("No project changes supplied")
+        return await _emit({
+            "type": "project_updated",
+            "project_id": project_id,
+            "changes": changes,
+            "summary": f"Updated project: {project_id}",
+        }, via="nextplan-chrome-bridge")
+
+    if action == "create_task":
+        project_id = str(payload.get("project_id", "")).strip()
+        p = _find_project(s, project_id)
+        if not p:
+            raise ValueError(f"Unknown project_id: {project_id}")
+        name = str(payload.get("name", "")).strip()
+        if not name:
+            raise ValueError("name is required")
+        normalized = name.casefold()
+        for m in p.get("milestones", []):
+            if str(m.get("name", "")).strip().casefold() == normalized:
+                return {"status": "already_exists", "project_id": project_id, "task_id": m.get("id")}
+        tid = str(payload.get("task_id", "")).strip() or f"task-{_slug(name)}-{uuid.uuid4().hex[:6]}"
+        event = {
+            "type": "task_created",
+            "project_id": project_id,
+            "summary": f"Created task: {name}",
+            "task": {"id": tid, "name": name, "status": "active"},
+        }
+        next_action = str(payload.get("next_action", "")).strip()
+        if next_action:
+            event["next_action"] = next_action
+        return await _emit(event, via="nextplan-chrome-bridge")
+
+    if action == "set_deadline":
+        project_id = str(payload.get("project_id", "")).strip()
+        if not _find_project(s, project_id):
+            raise ValueError(f"Unknown project_id: {project_id}")
+        title = str(payload.get("title", "")).strip()
+        date = _validate_date(str(payload.get("date", "")))
+        if not title:
+            raise ValueError("title is required")
+        did = str(payload.get("deadline_id", "")).strip() or f"deadline-{_slug(title)}-{date}"
+        deadline = {"id": did, "project_id": project_id, "title": title, "date": date}
+        return await _emit({
+            "type": "deadline_set",
+            "project_id": project_id,
+            "deadline": deadline,
+            "summary": f"Set deadline: {title} on {date}",
+        }, via="nextplan-chrome-bridge")
+
+    raise ValueError(f"Unsupported extension action: {action}")
+
+
+async def _send_json(send, status: int, payload: dict[str, Any]) -> None:
+    body = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+    await send({
+        "type": "http.response.start",
+        "status": status,
+        "headers": [
+            (b"content-type", b"application/json; charset=utf-8"),
+            (b"cache-control", b"no-store"),
+            (b"content-length", str(len(body)).encode()),
+        ],
+    })
+    await send({"type": "http.response.body", "body": body})
+
+
+async def _read_json_body(receive, max_bytes: int = 64_000) -> dict[str, Any]:
+    data = bytearray()
+    more = True
+    while more:
+        message = await receive()
+        if message.get("type") != "http.request":
+            continue
+        chunk = message.get("body", b"")
+        data.extend(chunk)
+        if len(data) > max_bytes:
+            raise ValueError("request too large")
+        more = bool(message.get("more_body", False))
+    if not data:
+        return {}
+    parsed = json.loads(bytes(data).decode("utf-8"))
+    if not isinstance(parsed, dict):
+        raise ValueError("JSON body must be an object")
+    return parsed
+
+
 class NextPlanAuthMiddleware:
-    """Small ASGI guard. Supports Bearer auth and an optional high-entropy path capability."""
+    """ASGI guard for MCP plus a minimal authenticated Chrome bridge API."""
 
     def __init__(self, app):
         self.app = app
@@ -308,19 +462,37 @@ class NextPlanAuthMiddleware:
     async def __call__(self, scope, receive, send):
         if scope.get("type") != "http":
             return await self.app(scope, receive, send)
+
         path = scope.get("path", "")
-        if path == "/healthz":
-            body = b'{"status":"ok","service":"NextPlan MCP"}'
-            await send({"type": "http.response.start", "status": 200, "headers": [(b"content-type", b"application/json"), (b"content-length", str(len(body)).encode())]})
-            await send({"type": "http.response.body", "body": body})
-            return
-        if not (MCP_BEARER_TOKEN or MCP_PATH_SECRET or ALLOW_INSECURE):
-            body = b'{"error":"server_auth_not_configured"}'
-            await send({"type": "http.response.start", "status": 503, "headers": [(b"content-type", b"application/json"), (b"content-length", str(len(body)).encode())]})
-            await send({"type": "http.response.body", "body": body})
-            return
+        method = scope.get("method", "GET").upper()
         headers = {k.decode().lower(): v.decode() for k, v in scope.get("headers", [])}
         auth = headers.get("authorization", "")
+
+        if path == "/healthz":
+            return await _send_json(send, 200, {"status": "ok", "service": "NextPlan MCP"})
+
+        if path.startswith("/extension/"):
+            if not EXTENSION_TOKEN:
+                return await _send_json(send, 503, {"error": "extension_auth_not_configured"})
+            if not secrets.compare_digest(auth, f"Bearer {EXTENSION_TOKEN}"):
+                return await _send_json(send, 401, {"error": "unauthorized"})
+            try:
+                if path == "/extension/state" and method == "GET":
+                    return await _send_json(send, 200, await _state())
+                if path == "/extension/action" and method == "POST":
+                    payload = await _read_json_body(receive)
+                    return await _send_json(send, 200, await _extension_action(payload))
+                return await _send_json(send, 404, {"error": "not_found"})
+            except ValueError as exc:
+                return await _send_json(send, 400, {"error": "invalid_request", "detail": str(exc)})
+            except httpx.HTTPStatusError as exc:
+                return await _send_json(send, 502, {"error": "github_error", "detail": str(exc.response.status_code)})
+            except Exception:
+                return await _send_json(send, 500, {"error": "internal_error"})
+
+        if not (MCP_BEARER_TOKEN or MCP_PATH_SECRET or ALLOW_INSECURE):
+            return await _send_json(send, 503, {"error": "server_auth_not_configured"})
+
         bearer_ok = bool(MCP_BEARER_TOKEN) and secrets.compare_digest(auth, f"Bearer {MCP_BEARER_TOKEN}")
         path_ok = False
         if MCP_PATH_SECRET:
@@ -330,12 +502,9 @@ class NextPlanAuthMiddleware:
                 scope = dict(scope)
                 scope["path"] = path[len(prefix):] or "/mcp"
                 scope["raw_path"] = scope["path"].encode()
-        # If either security mode is configured, one of them must succeed.
+
         if not ALLOW_INSECURE and (MCP_BEARER_TOKEN or MCP_PATH_SECRET) and not (bearer_ok or path_ok):
-            body = b'{"error":"unauthorized"}'
-            await send({"type": "http.response.start", "status": 401, "headers": [(b"content-type", b"application/json"), (b"content-length", str(len(body)).encode())]})
-            await send({"type": "http.response.body", "body": body})
-            return
+            return await _send_json(send, 401, {"error": "unauthorized"})
         return await self.app(scope, receive, send)
 
 
