@@ -22,6 +22,7 @@ EVENT_DIR = os.getenv("NEXTPLAN_EVENT_DIR", "events/inbox").strip("/")
 GITHUB_TOKEN = os.getenv("NEXTPLAN_GITHUB_TOKEN", "")
 MCP_BEARER_TOKEN = os.getenv("NEXTPLAN_MCP_BEARER_TOKEN", "")
 MCP_PATH_SECRET = os.getenv("NEXTPLAN_MCP_PATH_SECRET", "")
+ALLOW_INSECURE = os.getenv("NEXTPLAN_ALLOW_INSECURE", "").strip().lower() in {"1", "true", "yes"}
 GITHUB_API = "https://api.github.com"
 
 WRITE_ANN = ToolAnnotations(
@@ -36,6 +37,7 @@ mcp = MCPServer(
     APP_NAME,
     instructions=(
         "NextPlan is the user's canonical cross-domain task and project state. "
+        "When a conversation confirms a meaningful new task, completion, status change, deadline, note, or safe resource pointer, proactively use the appropriate NextPlan tool before finishing the reply. "
         "Use write tools only for confirmed state changes. Discussion, hypotheticals, "
         "tentative plans and unconfirmed completions must not be written. When uncertain, ask first. "
         "Never store secrets, credentials, bank details, identity numbers, medical records or sensitive document contents."
@@ -289,6 +291,16 @@ class NextPlanAuthMiddleware:
         if scope.get("type") != "http":
             return await self.app(scope, receive, send)
         path = scope.get("path", "")
+        if path == "/healthz":
+            body = b'{"status":"ok","service":"NextPlan MCP"}'
+            await send({"type": "http.response.start", "status": 200, "headers": [(b"content-type", b"application/json"), (b"content-length", str(len(body)).encode())]})
+            await send({"type": "http.response.body", "body": body})
+            return
+        if not (MCP_BEARER_TOKEN or MCP_PATH_SECRET or ALLOW_INSECURE):
+            body = b'{"error":"server_auth_not_configured"}'
+            await send({"type": "http.response.start", "status": 503, "headers": [(b"content-type", b"application/json"), (b"content-length", str(len(body)).encode())]})
+            await send({"type": "http.response.body", "body": body})
+            return
         headers = {k.decode().lower(): v.decode() for k, v in scope.get("headers", [])}
         auth = headers.get("authorization", "")
         bearer_ok = bool(MCP_BEARER_TOKEN) and secrets.compare_digest(auth, f"Bearer {MCP_BEARER_TOKEN}")
@@ -301,7 +313,7 @@ class NextPlanAuthMiddleware:
                 scope["path"] = path[len(prefix):] or "/mcp"
                 scope["raw_path"] = scope["path"].encode()
         # If either security mode is configured, one of them must succeed.
-        if (MCP_BEARER_TOKEN or MCP_PATH_SECRET) and not (bearer_ok or path_ok):
+        if not ALLOW_INSECURE and (MCP_BEARER_TOKEN or MCP_PATH_SECRET) and not (bearer_ok or path_ok):
             body = b'{"error":"unauthorized"}'
             await send({"type": "http.response.start", "status": 401, "headers": [(b"content-type", b"application/json"), (b"content-length", str(len(body)).encode())]})
             await send({"type": "http.response.body", "body": body})
@@ -309,5 +321,5 @@ class NextPlanAuthMiddleware:
         return await self.app(scope, receive, send)
 
 
-mcp_app = mcp.streamable_http_app(stateless_http=True, json_response=True)
+mcp_app = mcp.streamable_http_app(stateless_http=True, json_response=True, host="0.0.0.0")
 app = NextPlanAuthMiddleware(mcp_app)
