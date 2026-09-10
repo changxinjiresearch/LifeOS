@@ -1,0 +1,38 @@
+name: NextPlan skill validation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'skills/nextplan/**'
+      - '.github/workflows/skill-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Agent Skill structure
+        run: |
+          python - <<'PY'
+          import re
+          from pathlib import Path
+
+          p=Path('skills/nextplan/SKILL.md')
+          text=p.read_text(encoding='utf-8')
+          assert text.startswith('---\n'), 'SKILL.md must start with YAML frontmatter'
+          parts=text.split('---\n',2)
+          assert len(parts)==3, 'SKILL.md needs closing frontmatter delimiter'
+          fm=parts[1]
+          name=re.search(r'^name:\s*([^\n]+)$',fm,re.M)
+          desc=re.search(r'^description:\s*(.+)$',fm,re.M)
+          assert name and name.group(1).strip()=='nextplan', 'name must be nextplan'
+          assert re.fullmatch(r'[a-z0-9-]{1,64}',name.group(1).strip()), 'invalid skill name'
+          assert desc and 0 < len(desc.group(1).strip()) <= 1024, 'invalid description'
+          assert len(parts[2].splitlines()) < 500, 'skill body should stay under 500 lines'
+          print('NextPlan skill structure OK')
+          PY
