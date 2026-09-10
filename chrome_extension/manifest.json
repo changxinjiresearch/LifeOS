@@ -1,10 +1,11 @@
 {
   "manifest_version": 3,
   "name": "NextPlan Sync",
-  "version": "0.2.0",
-  "description": "Keeps confirmed ChatGPT task changes in sync with NextPlan.",
+  "version": "0.3.0",
+  "description": "Keeps confirmed ChatGPT task and project changes in sync with NextPlan.",
   "permissions": [
-    "storage"
+    "storage",
+    "scripting"
   ],
   "host_permissions": [
     "https://chatgpt.com/*",
