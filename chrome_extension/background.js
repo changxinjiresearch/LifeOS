@@ -46,6 +46,7 @@ async function enqueue(candidate, turn) {
 }
 
 async function applyCandidate(candidate) {
+  if (!candidate?.action) throw new Error("Candidate has no writable action");
   const result = await api("/extension/action", {method: "POST", body: JSON.stringify(candidate.action)});
   await setPending((await getPending()).filter(x => x.id !== candidate.id));
   await chrome.storage.local.set({lastSync: {at: new Date().toISOString(), label: candidate.label, result: result.status || "ok"}});
@@ -60,29 +61,57 @@ async function handleTurn(turn) {
     await chrome.action.setBadgeBackgroundColor({color: "#FF9F0A"});
     return {status: "needs_setup"};
   }
+
   const state = await api("/extension/state");
   const candidate = classifyTurn(turn, state);
   if (!candidate) return {status: "no_change"};
 
-  // Destructive actions (delete project/task) are never auto-synced,
-  // regardless of confidence or threshold. They must be confirmed in popup.
+  if (candidate.informational || !candidate.action) {
+    return {status: "informational", label: candidate.label, reason: candidate.reason};
+  }
+
   const canAutoSync = !candidate.requiresConfirmation && !candidate.destructive;
   if (cfg.autoSync && canAutoSync && candidate.confidence >= Number(cfg.autoThreshold || 0.88)) {
     try {
-      return {status: "auto_synced", result: await applyCandidate(candidate)};
+      const result = await applyCandidate(candidate);
+      return {status: "auto_synced", label: candidate.label, result};
     } catch (err) {
       await enqueue({...candidate, reason: `${candidate.reason}；自动同步失败：${err.message}`}, turn);
-      return {status: "queued_after_error"};
+      return {status: "queued_after_error", label: candidate.label, error: err.message};
     }
   }
+
   await enqueue(candidate, turn);
-  return {status: "queued", confidence: candidate.confidence, requiresConfirmation: Boolean(candidate.requiresConfirmation)};
+  return {
+    status: "queued",
+    label: candidate.label,
+    confidence: candidate.confidence,
+    destructive: Boolean(candidate.destructive),
+    requiresConfirmation: Boolean(candidate.requiresConfirmation)
+  };
+}
+
+async function injectIntoOpenChatGPTTabs() {
+  try {
+    const tabs = await chrome.tabs.query({url: ["https://chatgpt.com/*"]});
+    for (const tab of tabs) {
+      if (!tab.id) continue;
+      try {
+        await chrome.scripting.executeScript({target: {tabId: tab.id}, files: ["content.js"]});
+      } catch {}
+    }
+  } catch {}
 }
 
 chrome.runtime.onInstalled.addListener(async () => {
   const current = await chrome.storage.local.get(Object.keys(DEFAULTS));
   await chrome.storage.local.set({...DEFAULTS, ...current});
   await setPending(await getPending());
+  await injectIntoOpenChatGPTTabs();
+});
+
+chrome.runtime.onStartup.addListener(() => {
+  injectIntoOpenChatGPTTabs();
 });
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
