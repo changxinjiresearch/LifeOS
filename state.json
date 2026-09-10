@@ -4,10 +4,17 @@
     "name": "Changxin Life OS",
     "architecture": "conversation-controlled-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-10T21:58:37+09:30",
+    "last_updated": "2026-09-10T22:11:00+09:30",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
+    },
+    "web_app": {
+      "status": "live",
+      "repository": "changxinjiresearch/LifeOS-App",
+      "hosting": "GitHub Pages",
+      "url": "https://changxinjiresearch.github.io/LifeOS-App/",
+      "confirmed_at": "2026-09-10T22:11:00+09:30"
     },
     "rules": {
       "assistant_writes_confirmed_state_changes": true,
@@ -135,33 +142,10 @@
     }
   ],
   "events": [
-    {
-      "id": "evt-20260910-client-sync",
-      "at": "2026-09-10T21:58:37+09:30",
-      "project_id": "system",
-      "type": "client_sync_confirmed",
-      "summary": "Chromebook Life OS v3.1 successfully synchronized with the private central LifeOS repository using read-only access."
-    },
-    {
-      "id": "evt-20260910-central-repo",
-      "at": "2026-09-10T21:50:00+09:30",
-      "project_id": "system",
-      "type": "canonical_store_initialized",
-      "summary": "Independent private LifeOS repository initialized as the canonical cross-domain state store."
-    },
-    {
-      "id": "evt-20260910-architecture",
-      "at": "2026-09-10T21:45:00+09:30",
-      "project_id": "system",
-      "type": "architecture_locked",
-      "summary": "Life OS architecture locked: ChatGPT conversation is the control plane; external repositories are evidence only."
-    },
-    {
-      "id": "evt-20260910-cv",
-      "at": "2026-09-10T21:35:00+09:30",
-      "project_id": "phd",
-      "type": "milestone_completed",
-      "summary": "Academic CV updated for PhD outreach with current Neuroscience Informatics, PCC and PCC v2 status."
-    }
+    {"id":"evt-20260910-pages-live","at":"2026-09-10T22:11:00+09:30","project_id":"system","type":"web_app_deployed","summary":"LifeOS-App is live on GitHub Pages and available as the fixed web/PWA entry point."},
+    {"id":"evt-20260910-client-sync","at":"2026-09-10T21:58:37+09:30","project_id":"system","type":"client_sync_confirmed","summary":"Chromebook Life OS v3.1 successfully synchronized with the private central LifeOS repository using read-only access."},
+    {"id":"evt-20260910-central-repo","at":"2026-09-10T21:50:00+09:30","project_id":"system","type":"canonical_store_initialized","summary":"Independent private LifeOS repository initialized as the canonical cross-domain state store."},
+    {"id":"evt-20260910-architecture","at":"2026-09-10T21:45:00+09:30","project_id":"system","type":"architecture_locked","summary":"Life OS architecture locked: ChatGPT conversation is the control plane; external repositories are evidence only."},
+    {"id":"evt-20260910-cv","at":"2026-09-10T21:35:00+09:30","project_id":"phd","type":"milestone_completed","summary":"Academic CV updated for PhD outreach with current Neuroscience Informatics, PCC and PCC v2 status."}
   ]
 }
