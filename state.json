@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-10T17:04:26Z",
+    "last_updated": "2026-09-10T17:21:00Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -34,12 +34,15 @@
       "builder": "engine/build_state.py",
       "processed_event_ids": [
         "evt-20260910T170426Z-task-created-ad83839a",
+        "evt-20260910T172100Z-delete-backend-test-create",
         "evt-20260911-event-layer-v1",
         "evt-20260911-system-write-test-project"
       ],
-      "processed_count": 3,
-      "last_build_at": "2026-09-10T17:17:57Z",
-      "last_applied": [],
+      "processed_count": 4,
+      "last_build_at": "2026-09-10T17:21:41Z",
+      "last_applied": [
+        "evt-20260910T172100Z-delete-backend-test-create"
+      ],
       "status": "ready"
     }
   },
@@ -358,9 +361,28 @@
           "status": "active"
         }
       ]
+    },
+    {
+      "id": "system-delete-backend-test",
+      "name": "_DELETE_BACKEND_TEST_",
+      "category": "System",
+      "status": "active",
+      "priority": 1,
+      "next_action": "Disposable backend deletion test",
+      "milestones": []
     }
   ],
   "events": [
+    {
+      "id": "evt-20260910T172100Z-delete-backend-test-create",
+      "at": "2026-09-10T17:21:00Z",
+      "project_id": "system-delete-backend-test",
+      "type": "project_created",
+      "summary": "Create disposable backend deletion test project",
+      "source": {
+        "kind": "system-test"
+      }
+    },
     {
       "id": "evt-20260910T170426Z-task-created-ad83839a",
       "at": "2026-09-10T17:04:26Z",
