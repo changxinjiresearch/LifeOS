@@ -24,6 +24,7 @@ MCP_BEARER_TOKEN = os.getenv("NEXTPLAN_MCP_BEARER_TOKEN", "")
 MCP_PATH_SECRET = os.getenv("NEXTPLAN_MCP_PATH_SECRET", "")
 ALLOW_INSECURE = os.getenv("NEXTPLAN_ALLOW_INSECURE", "").strip().lower() in {"1", "true", "yes"}
 GITHUB_API = "https://api.github.com"
+ALLOWED_STATUS = {"active", "waiting", "planned", "completed", "done", "blocked"}
 
 WRITE_ANN = ToolAnnotations(
     read_only_hint=False,
@@ -71,6 +72,24 @@ def _slug(text: str, max_len: int = 32) -> str:
 
 def _event_id(prefix: str) -> str:
     return f"evt-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}-{prefix}-{uuid.uuid4().hex[:8]}"
+
+
+def _validate_status(status: str, field: str = "status") -> str:
+    value = status.strip()
+    if value and value not in ALLOWED_STATUS:
+        raise ValueError(f"{field} must be one of: {', '.join(sorted(ALLOWED_STATUS))}")
+    return value
+
+
+def _validate_date(value: str) -> str:
+    value = value.strip()
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+        raise ValueError("date must be YYYY-MM-DD")
+    try:
+        datetime.strptime(value, "%Y-%m-%d")
+    except ValueError as exc:
+        raise ValueError("date must be a real calendar date in YYYY-MM-DD format") from exc
+    return value
 
 
 async def _github_get_json(path: str) -> dict[str, Any]:
@@ -233,12 +252,12 @@ async def update_milestone(project_id: str, milestone_id: str, status: str, next
         "type": "milestone_status_changed",
         "project_id": project_id,
         "milestone_id": milestone_id,
-        "status": status.strip(),
+        "status": _validate_status(status),
         "summary": f"Milestone {milestone_id} -> {status}",
     }
     if next_action.strip(): event["next_action"] = next_action.strip()
     if name.strip(): event["name"] = name.strip()
-    if project_status.strip(): event["project_status"] = project_status.strip()
+    if project_status.strip(): event["project_status"] = _validate_status(project_status, "project_status")
     return await _emit(event)
 
 
@@ -246,7 +265,7 @@ async def update_milestone(project_id: str, milestone_id: str, status: str, next
 async def update_project(project_id: str, status: str = "", next_action: str = "", priority: int = 0) -> dict[str, Any]:
     """Update a project's confirmed status, next action, or priority. Do not infer completion from discussion."""
     changes: dict[str, Any] = {}
-    if status.strip(): changes["status"] = status.strip()
+    if status.strip(): changes["status"] = _validate_status(status)
     if next_action.strip(): changes["next_action"] = next_action.strip()
     if priority: changes["priority"] = max(1, min(3, int(priority)))
     if not changes:
@@ -257,10 +276,9 @@ async def update_project(project_id: str, status: str = "", next_action: str = "
 @mcp.tool(title="Set NextPlan deadline", annotations=WRITE_ANN)
 async def set_deadline(project_id: str, title: str, date: str, category: str = "", deadline_id: str = "") -> dict[str, Any]:
     """Record a deadline only when its date is confirmed. Date must be YYYY-MM-DD."""
-    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", date.strip()):
-        raise ValueError("date must be YYYY-MM-DD")
-    did = deadline_id.strip() or f"deadline-{_slug(title)}-{date.strip()}"
-    deadline = {"id": did, "project_id": project_id, "title": title.strip(), "date": date.strip()}
+    date = _validate_date(date)
+    did = deadline_id.strip() or f"deadline-{_slug(title)}-{date}"
+    deadline = {"id": did, "project_id": project_id, "title": title.strip(), "date": date}
     if category.strip(): deadline["category"] = category.strip()
     return await _emit({"type": "deadline_set", "project_id": project_id, "deadline": deadline, "summary": f"Set deadline: {title} on {date}"})
 
