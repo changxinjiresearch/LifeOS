@@ -27,7 +27,7 @@ jobs:
           python-version: '3.12'
       - name: Install dependencies
         run: pip install -r mcp_server/requirements.txt
-      - name: Import and list MCP tools
+      - name: Import and list MCP tools in-process
         run: |
           python - <<'PY'
           import asyncio
@@ -67,7 +67,7 @@ jobs:
           PY
       - name: Compile Python
         run: python -m compileall -q mcp_server
-      - name: Test remote HTTP shell and auth guard
+      - name: Test real Streamable HTTP transport and auth guard
         env:
           NEXTPLAN_MCP_PATH_SECRET: test-secret-for-ci
         run: |
@@ -81,13 +81,24 @@ jobs:
           grep -q '"status":"ok"' /tmp/health.json
           UNAUTH=$(curl --max-time 2 -sS -o /tmp/unauth.txt -w '%{http_code}' http://127.0.0.1:8765/mcp)
           test "$UNAUTH" = "401"
-          set +e
-          SECRET=$(curl --max-time 2 -sS -o /tmp/secret.txt -w '%{http_code}' http://127.0.0.1:8765/test-secret-for-ci/mcp)
-          CURL_RC=$?
-          set -e
-          # A Streamable HTTP GET may stay open for SSE; timeout is acceptable as long as auth passed.
-          test "$SECRET" != "401"
-          test "$SECRET" != "503"
-          test "$CURL_RC" = "0" -o "$CURL_RC" = "28"
+          python - <<'PY'
+          import asyncio
+          from mcp import Client
+
+          EXPECTED = {
+              'get_state', 'search_state', 'create_project', 'create_task',
+              'complete_task', 'update_milestone', 'update_project',
+              'set_deadline', 'add_note', 'add_resource'
+          }
+
+          async def main():
+              async with Client('http://127.0.0.1:8765/test-secret-for-ci/mcp') as client:
+                  page = await client.list_tools()
+                  names = {t.name for t in page.tools}
+                  print('REMOTE TOOLS:', sorted(names))
+                  assert EXPECTED <= names
+
+          asyncio.run(main())
+          PY
       - name: Build production Docker image
         run: docker build -t nextplan-mcp:ci .
