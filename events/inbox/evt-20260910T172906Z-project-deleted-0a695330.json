@@ -1,0 +1,11 @@
+{
+  "type": "project_deleted",
+  "project_id": "system-write-test",
+  "summary": "Deleted project: _SYSTEM_WRITE_TEST_",
+  "id": "evt-20260910T172906Z-project-deleted-0a695330",
+  "at": "2026-09-10T17:29:06Z",
+  "source": {
+    "kind": "chatgpt",
+    "via": "nextplan-chrome-bridge"
+  }
+}
