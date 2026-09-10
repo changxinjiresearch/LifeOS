@@ -1,15 +1,46 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>NextPlan Sync</title>
 <style>
-:root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#111827}body{margin:0;width:360px;background:#f6f7fb}header{padding:18px 18px 12px;background:white;border-bottom:1px solid #e6e8ee}.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px}.logo{width:30px;height:30px;border-radius:9px;background:linear-gradient(145deg,#8b7cff,#3478f6);position:relative}.logo:after{content:"";position:absolute;width:13px;height:13px;border-radius:50%;background:#fff;left:8px;top:8px}.sub{margin-top:4px;color:#7a8292;font-size:12px}main{padding:12px}.card{background:white;border:1px solid #e5e7eb;border-radius:14px;padding:12px;margin-bottom:10px}.item-title{font-weight:650;font-size:14px;line-height:1.35}.reason{font-size:12px;color:#7a8292;margin-top:5px;line-height:1.4}.actions{display:flex;gap:8px;margin-top:10px}button{border:0;border-radius:9px;padding:7px 11px;font-weight:600;cursor:pointer}.primary{background:#3478f6;color:white}.secondary{background:#eef1f6;color:#394150}.empty{text-align:center;padding:28px 10px;color:#8a93a3;font-size:13px}footer{display:flex;justify-content:space-between;padding:0 12px 12px}a{color:#3478f6;text-decoration:none;font-size:12px}
+:root{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif;color:#111827}
+*{box-sizing:border-box}
+body{margin:0;width:360px;background:#f6f7fb}
+header{padding:18px 18px 12px;background:white;border-bottom:1px solid #e6e8ee}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px}
+.logo{width:30px;height:30px;border-radius:9px;background:linear-gradient(145deg,#8b7cff,#3478f6);position:relative;box-shadow:0 5px 16px rgba(52,120,246,.22)}
+.logo:after{content:"";position:absolute;width:13px;height:13px;border-radius:50%;background:#fff;left:8px;top:8px}
+.sub{margin-top:4px;color:#7a8292;font-size:12px}
+main{padding:12px}
+.card{background:white;border:1px solid #e5e7eb;border-radius:14px;padding:12px;margin-bottom:10px;transition:opacity .2s ease,transform .2s ease}
+.card.done{opacity:.72}
+.status{font-size:13px;color:#667085}
+.item-title{font-weight:650;font-size:14px;line-height:1.35}
+.reason{font-size:12px;color:#7a8292;margin-top:5px;line-height:1.4}
+.actions{display:flex;gap:8px;align-items:center;margin-top:10px}
+button{border:0;border-radius:9px;padding:7px 11px;font-weight:600;cursor:pointer;font:inherit;transition:filter .15s ease,opacity .15s ease}
+button:disabled{cursor:default;opacity:.72}
+.primary{background:#3478f6;color:white}.secondary{background:#eef1f6;color:#394150}
+.primary:not(:disabled):hover,.secondary:not(:disabled):hover{filter:brightness(.98)}
+.inline-status{min-height:16px;font-size:12px;color:#7a8292;line-height:1.35}
+.inline-status.ok{color:#0f9f6e}.inline-status.bad{color:#d14343}
+.spinner{display:inline-block;width:12px;height:12px;border:2px solid rgba(255,255,255,.45);border-top-color:#fff;border-radius:50%;vertical-align:-2px;margin-right:6px;animation:spin .75s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:24px 10px 18px;color:#8a93a3;font-size:13px}
+.last-sync{margin-top:8px;font-size:11px;color:#98a2b3}
+footer{display:flex;justify-content:space-between;padding:0 12px 12px}
+a{color:#3478f6;text-decoration:none;font-size:12px}
 </style>
 </head>
 <body>
-<header><div class="brand"><span class="logo"></span>NextPlan Sync</div><div class="sub" id="status">正在读取状态…</div></header>
+<header>
+  <div class="brand"><span class="logo"></span>NextPlan Sync</div>
+  <div class="sub" id="status">正在读取状态…</div>
+</header>
 <main id="list"></main>
 <footer><a href="#" id="options">设置</a><a href="#" id="refresh">刷新</a></footer>
 <script src="popup.js"></script>
-</body></html>
+</body>
+</html>
