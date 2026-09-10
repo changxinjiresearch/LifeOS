@@ -1,9 +1,11 @@
 {
   "manifest_version": 3,
   "name": "NextPlan Sync",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Keeps confirmed ChatGPT task changes in sync with NextPlan.",
-  "permissions": ["storage"],
+  "permissions": [
+    "storage"
+  ],
   "host_permissions": [
     "https://chatgpt.com/*",
     "https://lifeos-production-89ce.up.railway.app/*"
@@ -14,8 +16,12 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://chatgpt.com/*"],
-      "js": ["content.js"],
+      "matches": [
+        "https://chatgpt.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
       "run_at": "document_idle"
     }
   ],
