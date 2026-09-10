@@ -15,16 +15,18 @@ header{padding:18px 18px 12px;background:white;border-bottom:1px solid #e6e8ee}
 .sub{margin-top:4px;color:#7a8292;font-size:12px}
 main{padding:12px}
 .card{background:white;border:1px solid #e5e7eb;border-radius:14px;padding:12px;margin-bottom:10px;transition:opacity .2s ease,transform .2s ease}
+.card.destructive{border-color:#ffd2d2;background:#fffafa}
 .card.done{opacity:.72}
 .status{font-size:13px;color:#667085}
 .item-title{font-weight:650;font-size:14px;line-height:1.35}
 .reason{font-size:12px;color:#7a8292;margin-top:5px;line-height:1.4}
+.warning{font-size:11px;color:#c33b3b;margin-top:7px;font-weight:600}
 .actions{display:flex;gap:8px;align-items:center;margin-top:10px}
 button{border:0;border-radius:9px;padding:7px 11px;font-weight:600;cursor:pointer;font:inherit;transition:filter .15s ease,opacity .15s ease}
 button:disabled{cursor:default;opacity:.72}
-.primary{background:#3478f6;color:white}.secondary{background:#eef1f6;color:#394150}
-.primary:not(:disabled):hover,.secondary:not(:disabled):hover{filter:brightness(.98)}
-.inline-status{min-height:16px;font-size:12px;color:#7a8292;line-height:1.35}
+.primary{background:#3478f6;color:white}.secondary{background:#eef1f6;color:#394150}.danger{background:#ff3b30;color:white}
+.primary:not(:disabled):hover,.secondary:not(:disabled):hover,.danger:not(:disabled):hover{filter:brightness(.98)}
+.inline-status{min-height:16px;font-size:12px;color:#7a8292;line-height:1.35;margin-top:7px}
 .inline-status.ok{color:#0f9f6e}.inline-status.bad{color:#d14343}
 .spinner{display:inline-block;width:12px;height:12px;border:2px solid rgba(255,255,255,.45);border-top-color:#fff;border-radius:50%;vertical-align:-2px;margin-right:6px;animation:spin .75s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
