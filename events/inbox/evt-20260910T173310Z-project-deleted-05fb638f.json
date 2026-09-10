@@ -1,0 +1,11 @@
+{
+  "type": "project_deleted",
+  "project_id": "career-baby-job",
+  "summary": "Deleted project: 帮助宝宝找工作",
+  "id": "evt-20260910T173310Z-project-deleted-05fb638f",
+  "at": "2026-09-10T17:33:10Z",
+  "source": {
+    "kind": "chatgpt",
+    "via": "nextplan-chrome-bridge"
+  }
+}
