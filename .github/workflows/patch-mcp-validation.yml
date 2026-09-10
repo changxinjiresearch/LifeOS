@@ -1,0 +1,57 @@
+name: Patch NextPlan MCP validation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/patch-mcp-validation.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add defensive input validation
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('mcp_server/server.py')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace(
+            'GITHUB_API = "https://api.github.com"\n\nWRITE_ANN',
+            'GITHUB_API = "https://api.github.com"\nALLOWED_STATUS = {"active", "waiting", "planned", "completed", "done", "blocked"}\n\nWRITE_ANN'
+          )
+          anchor='''def _event_id(prefix: str) -> str:\n    return f"evt-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}-{prefix}-{uuid.uuid4().hex[:8]}"\n\n\n'''
+          insert='''def _event_id(prefix: str) -> str:\n    return f"evt-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}-{prefix}-{uuid.uuid4().hex[:8]}"\n\n\ndef _validate_status(status: str, field: str = "status") -> str:\n    value = status.strip()\n    if value and value not in ALLOWED_STATUS:\n        raise ValueError(f"{field} must be one of: {', '.join(sorted(ALLOWED_STATUS))}")\n    return value\n\n\ndef _validate_date(value: str) -> str:\n    value = value.strip()\n    if not re.fullmatch(r"\\d{4}-\\d{2}-\\d{2}", value):\n        raise ValueError("date must be YYYY-MM-DD")\n    try:\n        datetime.strptime(value, "%Y-%m-%d")\n    except ValueError as exc:\n        raise ValueError("date must be a real calendar date in YYYY-MM-DD format") from exc\n    return value\n\n\n'''
+          if anchor not in s: raise SystemExit('helper anchor not found')
+          s=s.replace(anchor,insert)
+
+          s=s.replace(
+            '"status": status.strip(),\n        "summary": f"Milestone {milestone_id} -> {status}",',
+            '"status": _validate_status(status),\n        "summary": f"Milestone {milestone_id} -> {status}",'
+          )
+          s=s.replace(
+            'if project_status.strip(): event["project_status"] = project_status.strip()',
+            'if project_status.strip(): event["project_status"] = _validate_status(project_status, "project_status")'
+          )
+          s=s.replace(
+            'if status.strip(): changes["status"] = status.strip()',
+            'if status.strip(): changes["status"] = _validate_status(status)'
+          )
+          s=s.replace(
+            'if not re.fullmatch(r"\\d{4}-\\d{2}-\\d{2}", date.strip()):\n        raise ValueError("date must be YYYY-MM-DD")\n    did = deadline_id.strip() or f"deadline-{_slug(title)}-{date.strip()}"\n    deadline = {"id": did, "project_id": project_id, "title": title.strip(), "date": date.strip()}',
+            'date = _validate_date(date)\n    did = deadline_id.strip() or f"deadline-{_slug(title)}-{date}"\n    deadline = {"id": did, "project_id": project_id, "title": title.strip(), "date": date}'
+          )
+          p.write_text(s, encoding='utf-8')
+          PY
+      - name: Commit patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add mcp_server/server.py
+          git diff --cached --quiet && exit 0
+          git commit -m "Validate NextPlan MCP status and deadline inputs"
+          git push
