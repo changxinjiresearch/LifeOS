@@ -6,8 +6,8 @@
     return (el?.innerText || el?.textContent || "").trim();
   }
 
-  function stableKey(user, assistant) {
-    const raw = `${location.pathname}|${user}|${assistant.slice(-1200)}`;
+  function stableKey(user, ordinal) {
+    const raw = `${location.pathname}|${ordinal}|${user}`;
     let h = 2166136261;
     for (let i = 0; i < raw.length; i++) {
       h ^= raw.charCodeAt(i);
@@ -19,14 +19,16 @@
   function collectLatestTurn() {
     const users = [...document.querySelectorAll('[data-message-author-role="user"]')];
     const assistants = [...document.querySelectorAll('[data-message-author-role="assistant"]')];
-    if (!users.length) return;
+    if (!users.length || !assistants.length) return;
 
     const userText = textOf(users[users.length - 1]);
     if (!userText) return;
-    const assistantText = assistants.length ? textOf(assistants[assistants.length - 1]) : "";
+    const assistantText = textOf(assistants[assistants.length - 1]);
     if (!assistantText) return;
 
-    const fingerprint = stableKey(userText, assistantText);
+    // The user-message ordinal keeps one logical turn id stable while the
+    // assistant is still streaming, so the same turn cannot be queued twice.
+    const fingerprint = stableKey(userText, users.length);
     if (seen.has(fingerprint)) return;
     seen.add(fingerprint);
     if (seen.size > 100) seen.delete(seen.values().next().value);
