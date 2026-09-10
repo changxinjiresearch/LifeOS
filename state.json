@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-10T17:31:20Z",
+    "last_updated": "2026-09-10T17:33:10Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -38,13 +38,14 @@
         "evt-20260910T172200Z-delete-backend-test-delete",
         "evt-20260910T172906Z-project-deleted-0a695330",
         "evt-20260910T173120Z-task-deleted-c255fdb9",
+        "evt-20260910T173310Z-project-deleted-05fb638f",
         "evt-20260911-event-layer-v1",
         "evt-20260911-system-write-test-project"
       ],
-      "processed_count": 7,
-      "last_build_at": "2026-09-10T17:31:29Z",
+      "processed_count": 8,
+      "last_build_at": "2026-09-10T17:33:18Z",
       "last_applied": [
-        "evt-20260910T173120Z-task-deleted-c255fdb9"
+        "evt-20260910T173310Z-project-deleted-05fb638f"
       ],
       "status": "ready"
     }
@@ -329,24 +330,20 @@
           "status": "planned"
         }
       ]
-    },
-    {
-      "id": "career-baby-job",
-      "name": "帮助宝宝找工作",
-      "category": "职业",
-      "status": "active",
-      "priority": 2,
-      "next_action": "帮助宝宝修改简历。",
-      "milestones": [
-        {
-          "id": "resume",
-          "name": "帮助宝宝修改简历",
-          "status": "active"
-        }
-      ]
     }
   ],
   "events": [
+    {
+      "id": "evt-20260910T173310Z-project-deleted-05fb638f",
+      "at": "2026-09-10T17:33:10Z",
+      "project_id": "career-baby-job",
+      "type": "project_deleted",
+      "summary": "Deleted project: 帮助宝宝找工作",
+      "source": {
+        "kind": "chatgpt",
+        "via": "nextplan-chrome-bridge"
+      }
+    },
     {
       "id": "evt-20260910T173120Z-task-deleted-c255fdb9",
       "at": "2026-09-10T17:31:20Z",
