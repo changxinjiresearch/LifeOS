@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "system": {
-    "name": "NextPlane",
+    "name": "NextPlan",
     "architecture": "conversation-controlled-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
     "last_updated": "2026-09-10T22:33:05+09:30",
@@ -319,7 +319,7 @@
       "at": "2026-09-10T22:33:05+09:30",
       "project_id": "system",
       "type": "system_renamed",
-      "summary": "Official application name changed to NextPlane."
+      "summary": "Official application name changed to NextPlan."
     },
     {
       "id": "evt-20260910-pages-live",
