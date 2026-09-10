@@ -1,0 +1,12 @@
+{
+  "type": "task_deleted",
+  "project_id": "visa-admin",
+  "task_id": "plan",
+  "summary": "Deleted task: 签证路径与时间线确定",
+  "id": "evt-20260910T173120Z-task-deleted-c255fdb9",
+  "at": "2026-09-10T17:31:20Z",
+  "source": {
+    "kind": "chatgpt",
+    "via": "nextplan-chrome-bridge"
+  }
+}
