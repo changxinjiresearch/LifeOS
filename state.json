@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-10T17:29:06Z",
+    "last_updated": "2026-09-10T17:31:20Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -37,13 +37,14 @@
         "evt-20260910T172100Z-delete-backend-test-create",
         "evt-20260910T172200Z-delete-backend-test-delete",
         "evt-20260910T172906Z-project-deleted-0a695330",
+        "evt-20260910T173120Z-task-deleted-c255fdb9",
         "evt-20260911-event-layer-v1",
         "evt-20260911-system-write-test-project"
       ],
-      "processed_count": 6,
-      "last_build_at": "2026-09-10T17:29:15Z",
+      "processed_count": 7,
+      "last_build_at": "2026-09-10T17:31:29Z",
       "last_applied": [
-        "evt-20260910T172906Z-project-deleted-0a695330"
+        "evt-20260910T173120Z-task-deleted-c255fdb9"
       ],
       "status": "ready"
     }
@@ -313,11 +314,6 @@
       "next_action": "只记录高层级办理进度和下一步；不在 Life OS 中存放银行、护照、身份或其他敏感材料。",
       "milestones": [
         {
-          "id": "plan",
-          "name": "签证路径与时间线确定",
-          "status": "active"
-        },
-        {
           "id": "docs",
           "name": "材料准备完成",
           "status": "planned"
@@ -351,6 +347,17 @@
     }
   ],
   "events": [
+    {
+      "id": "evt-20260910T173120Z-task-deleted-c255fdb9",
+      "at": "2026-09-10T17:31:20Z",
+      "project_id": "visa-admin",
+      "type": "task_deleted",
+      "summary": "Deleted task: 签证路径与时间线确定",
+      "source": {
+        "kind": "chatgpt",
+        "via": "nextplan-chrome-bridge"
+      }
+    },
     {
       "id": "evt-20260910T172906Z-project-deleted-0a695330",
       "at": "2026-09-10T17:29:06Z",
