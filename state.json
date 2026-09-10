@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-11T00:16:00+09:30",
+    "last_updated": "2026-09-11T02:24:00+09:30",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -33,12 +33,13 @@
       "inbox": "events/inbox",
       "builder": "engine/build_state.py",
       "processed_event_ids": [
-        "evt-20260911-event-layer-v1"
+        "evt-20260911-event-layer-v1",
+        "evt-20260911-system-write-test-project"
       ],
-      "processed_count": 1,
-      "last_build_at": "2026-09-10T14:50:51Z",
+      "processed_count": 2,
+      "last_build_at": "2026-09-10T16:56:49Z",
       "last_applied": [
-        "evt-20260911-event-layer-v1"
+        "evt-20260911-system-write-test-project"
       ],
       "status": "ready"
     }
@@ -343,9 +344,29 @@
           "status": "active"
         }
       ]
+    },
+    {
+      "id": "system-write-test",
+      "name": "_SYSTEM_WRITE_TEST_",
+      "category": "System",
+      "status": "active",
+      "priority": 1,
+      "next_action": "Use only for validating the Chrome-to-Railway-to-LifeOS write path; delete after validation.",
+      "milestones": []
     }
   ],
   "events": [
+    {
+      "id": "evt-20260911-system-write-test-project",
+      "at": "2026-09-11T02:24:00+09:30",
+      "project_id": "system-write-test",
+      "type": "project_created",
+      "summary": "Created temporary system write test project",
+      "source": {
+        "kind": "assistant",
+        "conversation_hint": "NextPlan Chrome bridge safe write test"
+      }
+    },
     {
       "id": "evt-20260911-event-layer-v1",
       "at": "2026-09-11T00:16:00+09:30",
