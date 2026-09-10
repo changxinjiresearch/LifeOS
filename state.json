@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-10T17:22:00Z",
+    "last_updated": "2026-09-10T17:29:06Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -36,13 +36,14 @@
         "evt-20260910T170426Z-task-created-ad83839a",
         "evt-20260910T172100Z-delete-backend-test-create",
         "evt-20260910T172200Z-delete-backend-test-delete",
+        "evt-20260910T172906Z-project-deleted-0a695330",
         "evt-20260911-event-layer-v1",
         "evt-20260911-system-write-test-project"
       ],
-      "processed_count": 5,
-      "last_build_at": "2026-09-10T17:22:08Z",
+      "processed_count": 6,
+      "last_build_at": "2026-09-10T17:29:15Z",
       "last_applied": [
-        "evt-20260910T172200Z-delete-backend-test-delete"
+        "evt-20260910T172906Z-project-deleted-0a695330"
       ],
       "status": "ready"
     }
@@ -347,24 +348,20 @@
           "status": "active"
         }
       ]
-    },
-    {
-      "id": "system-write-test",
-      "name": "_SYSTEM_WRITE_TEST_",
-      "category": "System",
-      "status": "active",
-      "priority": 1,
-      "next_action": "Use only for validating the Chrome-to-Railway-to-LifeOS write path; delete after validation.",
-      "milestones": [
-        {
-          "id": "task-item-8cb64e",
-          "name": "浏览器写入测试",
-          "status": "active"
-        }
-      ]
     }
   ],
   "events": [
+    {
+      "id": "evt-20260910T172906Z-project-deleted-0a695330",
+      "at": "2026-09-10T17:29:06Z",
+      "project_id": "system-write-test",
+      "type": "project_deleted",
+      "summary": "Deleted project: _SYSTEM_WRITE_TEST_",
+      "source": {
+        "kind": "chatgpt",
+        "via": "nextplan-chrome-bridge"
+      }
+    },
     {
       "id": "evt-20260910T172200Z-delete-backend-test-delete",
       "at": "2026-09-10T17:22:00Z",
