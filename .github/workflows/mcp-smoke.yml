@@ -1,0 +1,50 @@
+name: NextPlan MCP smoke test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'mcp_server/**'
+      - 'Dockerfile'
+      - '.github/workflows/mcp-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: pip install -r mcp_server/requirements.txt
+      - name: Import and list MCP tools
+        run: |
+          python - <<'PY'
+          import asyncio
+          from mcp import Client
+          from mcp_server.server import mcp, app
+
+          EXPECTED = {
+              'get_state', 'search_state', 'create_project', 'create_task',
+              'complete_task', 'update_milestone', 'update_project',
+              'set_deadline', 'add_note', 'add_resource'
+          }
+
+          async def main():
+              async with Client(mcp, raise_exceptions=True) as client:
+                  page = await client.list_tools()
+                  names = {t.name for t in page.tools}
+                  print('TOOLS:', sorted(names))
+                  missing = EXPECTED - names
+                  assert not missing, f'Missing tools: {sorted(missing)}'
+                  assert app is not None
+
+          asyncio.run(main())
+          PY
+      - name: Compile Python
+        run: python -m compileall -q mcp_server
