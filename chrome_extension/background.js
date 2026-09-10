@@ -63,7 +63,11 @@ async function handleTurn(turn) {
   const state = await api("/extension/state");
   const candidate = classifyTurn(turn, state);
   if (!candidate) return {status: "no_change"};
-  if (cfg.autoSync && candidate.confidence >= Number(cfg.autoThreshold || 0.88)) {
+
+  // Destructive actions (delete project/task) are never auto-synced,
+  // regardless of confidence or threshold. They must be confirmed in popup.
+  const canAutoSync = !candidate.requiresConfirmation && !candidate.destructive;
+  if (cfg.autoSync && canAutoSync && candidate.confidence >= Number(cfg.autoThreshold || 0.88)) {
     try {
       return {status: "auto_synced", result: await applyCandidate(candidate)};
     } catch (err) {
@@ -72,7 +76,7 @@ async function handleTurn(turn) {
     }
   }
   await enqueue(candidate, turn);
-  return {status: "queued", confidence: candidate.confidence};
+  return {status: "queued", confidence: candidate.confidence, requiresConfirmation: Boolean(candidate.requiresConfirmation)};
 }
 
 chrome.runtime.onInstalled.addListener(async () => {
