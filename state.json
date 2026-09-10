@@ -38,10 +38,8 @@
         "evt-20260911-system-write-test-project"
       ],
       "processed_count": 3,
-      "last_build_at": "2026-09-10T17:04:36Z",
-      "last_applied": [
-        "evt-20260910T170426Z-task-created-ad83839a"
-      ],
+      "last_build_at": "2026-09-10T17:17:37Z",
+      "last_applied": [],
       "status": "ready"
     }
   },
