@@ -1,0 +1,156 @@
+{
+  "schema_version": 2,
+  "system": {
+    "name": "Changxin Life OS",
+    "architecture": "conversation-controlled-central-state",
+    "canonical_store": "changxinjiresearch/LifeOS",
+    "last_updated": "2026-09-10T21:50:00+09:30",
+    "rules": {
+      "assistant_writes_confirmed_state_changes": true,
+      "discussion_does_not_change_status": true,
+      "planning_does_not_equal_completion": true,
+      "completion_requires_confirmed_evidence": true,
+      "waiting_items_are_not_actionable": true,
+      "external_repositories_are_evidence_only": true,
+      "do_not_store_secrets_or_sensitive_documents": true
+    }
+  },
+  "projects": [
+    {
+      "id": "research-neuri",
+      "name": "Neuroscience Informatics 论文",
+      "category": "科研",
+      "status": "waiting",
+      "priority": 3,
+      "next_action": "等待编辑最终决定；收到决定后再处理接收、校样或下一轮意见。",
+      "milestones": [
+        {"id":"draft","name":"论文初稿完成","status":"completed"},
+        {"id":"major","name":"Major Revision 完成","status":"completed"},
+        {"id":"minor","name":"EiC Minor Revision 完成","status":"completed"},
+        {"id":"minor-submit","name":"小修提交","status":"completed"},
+        {"id":"decision","name":"最终编辑决定","status":"waiting"},
+        {"id":"production","name":"出版流程","status":"planned"}
+      ]
+    },
+    {
+      "id": "research-pcc-v1",
+      "name": "PCC 第一篇论文",
+      "category": "科研",
+      "status": "waiting",
+      "priority": 3,
+      "next_action": "等待 Scientific Reports 编辑流程；收到技术检查、送审或决定后处理。",
+      "milestones": [
+        {"id":"exp","name":"核心实验完成","status":"completed"},
+        {"id":"external","name":"外部验证完成","status":"completed"},
+        {"id":"manuscript","name":"稿件完成","status":"completed"},
+        {"id":"submission","name":"Scientific Reports 投稿","status":"completed"},
+        {"id":"editorial","name":"编辑/外审流程","status":"waiting"},
+        {"id":"final","name":"最终投稿结果","status":"planned"}
+      ]
+    },
+    {
+      "id": "research-pcc-v2",
+      "name": "PCC v2-R2",
+      "category": "科研",
+      "status": "active",
+      "priority": 3,
+      "next_action": "继续完成当前 R1 数据资格与锁定闭环；只有资格门通过后再进入 R2。",
+      "milestones": [
+        {"id":"p1","name":"P1.0 科学协议冻结","status":"completed"},
+        {"id":"r0","name":"R0 Authority / inheritance","status":"completed"},
+        {"id":"r1","name":"R1 数据资格与锁定","status":"active"},
+        {"id":"r2","name":"R2 核心训练执行","status":"planned"},
+        {"id":"external","name":"独立外部验证","status":"planned"},
+        {"id":"path","name":"组织病理验证","status":"planned"},
+        {"id":"function","name":"功能使用实验","status":"planned"},
+        {"id":"paper","name":"论文写作与投稿","status":"planned"}
+      ]
+    },
+    {
+      "id": "phd",
+      "name": "PhD 申请",
+      "category": "PhD",
+      "status": "active",
+      "priority": 3,
+      "next_action": "继续推进高匹配导师套磁；Eric 线按其建议在 2027 年初重新联系。",
+      "milestones": [
+        {"id":"direction","name":"研究方向形成","status":"completed"},
+        {"id":"rp","name":"Full RP 完成","status":"completed"},
+        {"id":"cv","name":"Academic CV 更新","status":"completed"},
+        {"id":"pool","name":"导师池建立","status":"active"},
+        {"id":"outreach","name":"第一轮套磁","status":"active"},
+        {"id":"followups","name":"重点导师 follow-up","status":"planned"},
+        {"id":"applications","name":"正式申请","status":"planned"},
+        {"id":"offer","name":"获得 PhD offer","status":"planned"}
+      ]
+    },
+    {
+      "id": "usyd",
+      "name": "USYD 转学与入学",
+      "category": "学校",
+      "status": "active",
+      "priority": 2,
+      "next_action": "推进尚未完成的学分替代、offer/学费、CoE 与签证衔接事项。",
+      "milestones": [
+        {"id":"offer","name":"获得 Offer","status":"completed"},
+        {"id":"deferral","name":"延期至 2027 S1","status":"completed"},
+        {"id":"scholarship","name":"奖学金确认","status":"completed"},
+        {"id":"accept","name":"Offer / 学费流程","status":"active"},
+        {"id":"credit","name":"学分替代申请","status":"active"},
+        {"id":"coe","name":"CoE / 入学衔接","status":"planned"}
+      ]
+    },
+    {
+      "id": "flinders-presentation",
+      "name": "Research Proposal / Presentation",
+      "category": "课程",
+      "status": "active",
+      "priority": 2,
+      "next_action": "保持 RP 不改；重点理解并讲清研究问题、RCES、RWSM、AGIL 和三阶段设计。",
+      "milestones": [
+        {"id":"rp","name":"RP 完成","status":"completed"},
+        {"id":"slides","name":"Slides 完成","status":"completed"},
+        {"id":"script","name":"讲稿完成","status":"completed"},
+        {"id":"understand","name":"核心概念掌握","status":"active"},
+        {"id":"present","name":"Presentation 完成","status":"planned"}
+      ]
+    },
+    {
+      "id": "visa-admin",
+      "name": "学生签证与行政事项",
+      "category": "行政",
+      "status": "active",
+      "priority": 2,
+      "next_action": "只记录高层级办理进度和下一步；不在 Life OS 中存放银行、护照、身份或其他敏感材料。",
+      "milestones": [
+        {"id":"plan","name":"签证路径与时间线确定","status":"active"},
+        {"id":"docs","name":"材料准备完成","status":"planned"},
+        {"id":"submit","name":"签证申请提交","status":"planned"},
+        {"id":"decision","name":"签证结果","status":"planned"}
+      ]
+    }
+  ],
+  "events": [
+    {
+      "id": "evt-20260910-central-repo",
+      "at": "2026-09-10T21:50:00+09:30",
+      "project_id": "system",
+      "type": "canonical_store_initialized",
+      "summary": "Independent private LifeOS repository initialized as the canonical cross-domain state store."
+    },
+    {
+      "id": "evt-20260910-architecture",
+      "at": "2026-09-10T21:45:00+09:30",
+      "project_id": "system",
+      "type": "architecture_locked",
+      "summary": "Life OS architecture locked: ChatGPT conversation is the control plane; external repositories are evidence only."
+    },
+    {
+      "id": "evt-20260910-cv",
+      "at": "2026-09-10T21:35:00+09:30",
+      "project_id": "phd",
+      "type": "milestone_completed",
+      "summary": "Academic CV updated for PhD outreach with current Neuroscience Informatics, PCC and PCC v2 status."
+    }
+  ]
+}
