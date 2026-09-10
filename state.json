@@ -4,7 +4,11 @@
     "name": "Changxin Life OS",
     "architecture": "conversation-controlled-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-10T21:50:00+09:30",
+    "last_updated": "2026-09-10T21:58:37+09:30",
+    "client_sync": {
+      "status": "confirmed",
+      "confirmed_at": "2026-09-10T21:58:37+09:30"
+    },
     "rules": {
       "assistant_writes_confirmed_state_changes": true,
       "discussion_does_not_change_status": true,
@@ -131,6 +135,13 @@
     }
   ],
   "events": [
+    {
+      "id": "evt-20260910-client-sync",
+      "at": "2026-09-10T21:58:37+09:30",
+      "project_id": "system",
+      "type": "client_sync_confirmed",
+      "summary": "Chromebook Life OS v3.1 successfully synchronized with the private central LifeOS repository using read-only access."
+    },
     {
       "id": "evt-20260910-central-repo",
       "at": "2026-09-10T21:50:00+09:30",
