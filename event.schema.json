@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nextplan.local/event.schema.json",
+  "title": "NextPlan Conversation Event",
+  "type": "object",
+  "required": ["id", "at", "type"],
+  "properties": {
+    "id": {"type": "string", "minLength": 8},
+    "at": {"type": "string", "format": "date-time"},
+    "type": {
+      "type": "string",
+      "enum": [
+        "event_only",
+        "project_created",
+        "project_updated",
+        "project_status_changed",
+        "milestone_added",
+        "milestone_status_changed",
+        "task_created",
+        "task_updated",
+        "task_completed",
+        "deadline_set",
+        "deadline_removed",
+        "note_added",
+        "resource_added"
+      ]
+    },
+    "project_id": {"type": "string"},
+    "milestone_id": {"type": "string"},
+    "task_id": {"type": "string"},
+    "status": {"enum": ["active", "waiting", "planned", "completed", "done", "blocked"]},
+    "project_status": {"enum": ["active", "waiting", "planned", "completed", "done", "blocked"]},
+    "next_action": {"type": "string"},
+    "summary": {"type": "string"},
+    "source": {
+      "type": "object",
+      "properties": {
+        "kind": {"type": "string"},
+        "conversation_hint": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "project": {"type": "object"},
+    "changes": {"type": "object"},
+    "milestone": {"type": "object"},
+    "task": {"type": "object"},
+    "deadline": {"type": "object"},
+    "deadline_id": {"type": "string"},
+    "note": {"type": "object"},
+    "resource": {"type": "object"}
+  },
+  "additionalProperties": true
+}
