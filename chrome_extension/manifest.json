@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "NextPlan Sync",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Keeps confirmed ChatGPT task and project changes in sync with NextPlan.",
   "permissions": [
     "storage",
@@ -12,7 +12,7 @@
     "https://lifeos-production-89ce.up.railway.app/*"
   ],
   "background": {
-    "service_worker": "background.js",
+    "service_worker": "background_v041.js",
     "type": "module"
   },
   "content_scripts": [
