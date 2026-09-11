@@ -2,7 +2,7 @@ import { classifyTurn } from "./classifier_v041.js";
 
 const DEFAULT_ENDPOINT = "https://lifeos-production-89ce.up.railway.app";
 const DEFAULTS = { endpoint: DEFAULT_ENDPOINT, token: "", autoSync: true, autoThreshold: 0.88 };
-const PROCESSING_GENERATION = "v0.4.1-direct-project-edit";
+const PROCESSING_GENERATION = "v0.4.2-rename-parser";
 
 async function getConfig() {
   return {...DEFAULTS, ...(await chrome.storage.local.get(DEFAULTS))};
