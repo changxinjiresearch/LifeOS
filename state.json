@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-11T14:43:15Z",
+    "last_updated": "2026-09-11T14:43:45Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -42,12 +42,13 @@
         "evt-20260911-event-layer-v1",
         "evt-20260911-system-write-test-project",
         "evt-20260911T142504Z-project-created-37d0e38a",
-        "evt-20260911T144315Z-project-updated-b0b7262e"
+        "evt-20260911T144315Z-project-updated-b0b7262e",
+        "evt-20260911T144345Z-p1-amended-completed"
       ],
-      "processed_count": 10,
-      "last_build_at": "2026-09-11T14:43:25Z",
+      "processed_count": 11,
+      "last_build_at": "2026-09-11T14:45:29Z",
       "last_applied": [
-        "evt-20260911T144315Z-project-updated-b0b7262e"
+        "evt-20260911T144345Z-p1-amended-completed"
       ],
       "status": "ready"
     }
@@ -143,7 +144,7 @@
       "milestones": [
         {
           "id": "p1",
-          "name": "P1.0 科学协议冻结",
+          "name": "P1.1 科学协议冻结",
           "status": "completed"
         },
         {
@@ -344,6 +345,17 @@
     }
   ],
   "events": [
+    {
+      "id": "evt-20260911T144345Z-p1-amended-completed",
+      "at": "2026-09-11T14:43:45Z",
+      "project_id": "research-pcc-v2",
+      "type": "task_updated",
+      "summary": "PCC v2-R2 protocol authority updated to P1.1 and remains completed.",
+      "source": {
+        "kind": "chatgpt",
+        "conversation_hint": "User requested NextPlan update for PCC v2-R2"
+      }
+    },
     {
       "id": "evt-20260911T144315Z-project-updated-b0b7262e",
       "at": "2026-09-11T14:43:15Z",
