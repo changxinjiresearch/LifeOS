@@ -1,0 +1,20 @@
+{
+  "type": "project_created",
+  "project_id": "project-item-daed6c",
+  "project": {
+    "id": "project-item-daed6c",
+    "name": "这个",
+    "category": "其他",
+    "status": "active",
+    "priority": 2,
+    "next_action": "",
+    "milestones": []
+  },
+  "summary": "Created project: 这个",
+  "id": "evt-20260911T174608Z-project-created-7fbfe24f",
+  "at": "2026-09-11T17:46:08Z",
+  "source": {
+    "kind": "chatgpt",
+    "via": "nextplan-chrome-bridge"
+  }
+}
