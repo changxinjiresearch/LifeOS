@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-10T17:33:10Z",
+    "last_updated": "2026-09-11T14:25:04Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -40,12 +40,13 @@
         "evt-20260910T173120Z-task-deleted-c255fdb9",
         "evt-20260910T173310Z-project-deleted-05fb638f",
         "evt-20260911-event-layer-v1",
-        "evt-20260911-system-write-test-project"
+        "evt-20260911-system-write-test-project",
+        "evt-20260911T142504Z-project-created-37d0e38a"
       ],
-      "processed_count": 8,
-      "last_build_at": "2026-09-10T17:33:18Z",
+      "processed_count": 9,
+      "last_build_at": "2026-09-11T14:25:13Z",
       "last_applied": [
-        "evt-20260910T173310Z-project-deleted-05fb638f"
+        "evt-20260911T142504Z-project-created-37d0e38a"
       ],
       "status": "ready"
     }
@@ -330,9 +331,29 @@
           "status": "planned"
         }
       ]
+    },
+    {
+      "id": "project-item-9ef9ef",
+      "name": "找实习",
+      "category": "职业",
+      "status": "active",
+      "priority": 2,
+      "next_action": "",
+      "milestones": []
     }
   ],
   "events": [
+    {
+      "id": "evt-20260911T142504Z-project-created-37d0e38a",
+      "at": "2026-09-11T14:25:04Z",
+      "project_id": "project-item-9ef9ef",
+      "type": "project_created",
+      "summary": "Created project: 找实习",
+      "source": {
+        "kind": "chatgpt",
+        "via": "nextplan-chrome-bridge"
+      }
+    },
     {
       "id": "evt-20260910T173310Z-project-deleted-05fb638f",
       "at": "2026-09-10T17:33:10Z",
