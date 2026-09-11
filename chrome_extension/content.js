@@ -1,6 +1,6 @@
 (() => {
-  if (window.__NEXTPLAN_SYNC_V031__) return;
-  window.__NEXTPLAN_SYNC_V031__ = true;
+  if (window.__NEXTPLAN_SYNC_V040__) return;
+  window.__NEXTPLAN_SYNC_V040__ = true;
 
   const seen = new Set();
   let timer = null;
@@ -80,6 +80,8 @@
       showToast(`NextPlan · 自动同步失败，已放入待确认队列${result.error ? `：${result.error}` : ""}`, "bad", 6500);
     } else if (result.status === "informational") {
       showToast(`NextPlan · ${result.label || "无需变更"}`, "info");
+    } else if (result.status === "no_change" && result.explicitNextPlan) {
+      showToast("NextPlan · 这条指令提到了 NextPlan，但没有识别出可写入的状态变化。", "warn", 5600);
     } else if (result.status === "duplicate") {
       showToast("NextPlan · 这一轮已经处理过", "info", 2500);
     } else if (result.status === "needs_setup") {
@@ -109,7 +111,7 @@
       turn: {
         fingerprint,
         userText: userText.slice(0, 4000),
-        assistantText: assistantText.slice(-2500),
+        assistantText: assistantText.slice(-4000),
         title: document.title || "",
         url: location.href
       }
