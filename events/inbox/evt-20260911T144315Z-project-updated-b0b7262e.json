@@ -1,0 +1,14 @@
+{
+  "type": "project_updated",
+  "project_id": "project-item-9ef9ef",
+  "changes": {
+    "category": "行政"
+  },
+  "summary": "Updated project snapshot: 找实习",
+  "id": "evt-20260911T144315Z-project-updated-b0b7262e",
+  "at": "2026-09-11T14:43:15Z",
+  "source": {
+    "kind": "chatgpt",
+    "via": "nextplan-chrome-bridge"
+  }
+}
