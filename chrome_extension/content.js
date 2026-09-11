@@ -1,6 +1,6 @@
 (() => {
-  if (window.__NEXTPLAN_SYNC_V03__) return;
-  window.__NEXTPLAN_SYNC_V03__ = true;
+  if (window.__NEXTPLAN_SYNC_V031__) return;
+  window.__NEXTPLAN_SYNC_V031__ = true;
 
   const seen = new Set();
   let timer = null;
@@ -80,6 +80,8 @@
       showToast(`NextPlan · 自动同步失败，已放入待确认队列${result.error ? `：${result.error}` : ""}`, "bad", 6500);
     } else if (result.status === "informational") {
       showToast(`NextPlan · ${result.label || "无需变更"}`, "info");
+    } else if (result.status === "duplicate") {
+      showToast("NextPlan · 这一轮已经处理过", "info", 2500);
     } else if (result.status === "needs_setup") {
       showToast("NextPlan Sync 尚未完成连接设置", "warn", 6000);
     } else if (result.status === "error") {
