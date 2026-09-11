@@ -2,6 +2,7 @@ import { classifyTurn } from "./classifier.js";
 
 const DEFAULT_ENDPOINT = "https://lifeos-production-89ce.up.railway.app";
 const DEFAULTS = { endpoint: DEFAULT_ENDPOINT, token: "", autoSync: true, autoThreshold: 0.88 };
+const PROCESSING_GENERATION = "v0.3.1-project-create";
 
 async function getConfig() {
   return {...DEFAULTS, ...(await chrome.storage.local.get(DEFAULTS))};
@@ -31,12 +32,21 @@ async function setPending(items) {
   await chrome.action.setBadgeBackgroundColor({color: "#3478F6"});
 }
 
-async function firstTimeFingerprint(fp) {
+function fingerprintKey(fp) {
+  return `${PROCESSING_GENERATION}:${fp}`;
+}
+
+async function wasProcessed(fp) {
   const data = await chrome.storage.local.get({processedFingerprints: []});
-  if (data.processedFingerprints.includes(fp)) return false;
-  const next = [...data.processedFingerprints, fp].slice(-250);
+  return data.processedFingerprints.includes(fingerprintKey(fp));
+}
+
+async function rememberProcessed(fp) {
+  const data = await chrome.storage.local.get({processedFingerprints: []});
+  const key = fingerprintKey(fp);
+  if (data.processedFingerprints.includes(key)) return;
+  const next = [...data.processedFingerprints, key].slice(-250);
   await chrome.storage.local.set({processedFingerprints: next});
-  return true;
 }
 
 async function enqueue(candidate, turn) {
@@ -54,7 +64,11 @@ async function applyCandidate(candidate) {
 }
 
 async function handleTurn(turn) {
-  if (!await firstTimeFingerprint(turn.fingerprint)) return {status: "duplicate"};
+  // Fingerprints are versioned by classifier/processing generation. A turn that
+  // an older version classified as "no_change" can therefore be reconsidered
+  // after a feature upgrade (for example, project creation in v0.3).
+  if (await wasProcessed(turn.fingerprint)) return {status: "duplicate"};
+
   const cfg = await getConfig();
   if (!cfg.token) {
     await chrome.action.setBadgeText({text: "!"});
@@ -62,11 +76,19 @@ async function handleTurn(turn) {
     return {status: "needs_setup"};
   }
 
+  // Do not mark the turn as processed until state retrieval and classification
+  // succeed. This avoids permanently losing a turn because of a transient
+  // network/Railway/GitHub error.
   const state = await api("/extension/state");
   const candidate = classifyTurn(turn, state);
-  if (!candidate) return {status: "no_change"};
+
+  if (!candidate) {
+    await rememberProcessed(turn.fingerprint);
+    return {status: "no_change"};
+  }
 
   if (candidate.informational || !candidate.action) {
+    await rememberProcessed(turn.fingerprint);
     return {status: "informational", label: candidate.label, reason: candidate.reason};
   }
 
@@ -74,14 +96,17 @@ async function handleTurn(turn) {
   if (cfg.autoSync && canAutoSync && candidate.confidence >= Number(cfg.autoThreshold || 0.88)) {
     try {
       const result = await applyCandidate(candidate);
+      await rememberProcessed(turn.fingerprint);
       return {status: "auto_synced", label: candidate.label, result};
     } catch (err) {
       await enqueue({...candidate, reason: `${candidate.reason}；自动同步失败：${err.message}`}, turn);
+      await rememberProcessed(turn.fingerprint);
       return {status: "queued_after_error", label: candidate.label, error: err.message};
     }
   }
 
   await enqueue(candidate, turn);
+  await rememberProcessed(turn.fingerprint);
   return {
     status: "queued",
     label: candidate.label,
