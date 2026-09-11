@@ -1,0 +1,14 @@
+{
+  "id": "evt-20260911T144345Z-r1-completed-r2-authorized",
+  "at": "2026-09-11T14:43:45Z",
+  "type": "task_completed",
+  "project_id": "research-pcc-v2",
+  "task_id": "r1",
+  "project_status": "active",
+  "next_action": "执行 R2 实现验收并建立 CODE_LOCK；R2 正式启动前保持训练与测试解盲为未开始状态。",
+  "summary": "PCC v2-R2 R1 completed; R2 methods track authorized, with R2 execution not yet started.",
+  "source": {
+    "kind": "chatgpt",
+    "conversation_hint": "User requested NextPlan update for PCC v2-R2"
+  }
+}
