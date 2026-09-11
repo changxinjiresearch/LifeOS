@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-11T14:43:45Z",
+    "last_updated": "2026-09-11T14:47:43Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -44,12 +44,13 @@
         "evt-20260911T142504Z-project-created-37d0e38a",
         "evt-20260911T144315Z-project-updated-b0b7262e",
         "evt-20260911T144345Z-p1-amended-completed",
-        "evt-20260911T144345Z-r1-completed-r2-authorized"
+        "evt-20260911T144345Z-r1-completed-r2-authorized",
+        "evt-20260911T144743Z-internship-project-update"
       ],
-      "processed_count": 12,
-      "last_build_at": "2026-09-11T14:45:59Z",
+      "processed_count": 13,
+      "last_build_at": "2026-09-11T14:51:58Z",
       "last_applied": [
-        "evt-20260911T144345Z-r1-completed-r2-authorized"
+        "evt-20260911T144743Z-internship-project-update"
       ],
       "status": "ready"
     }
@@ -337,15 +338,37 @@
     },
     {
       "id": "project-item-9ef9ef",
-      "name": "找实习",
+      "name": "帮助宝宝找实习",
       "category": "行政",
       "status": "active",
       "priority": 2,
-      "next_action": "",
-      "milestones": []
+      "next_action": "帮宝宝搭建自动投简历工作流",
+      "milestones": [
+        {
+          "id": "resume",
+          "name": "做简历",
+          "status": "active"
+        },
+        {
+          "id": "auto-apply",
+          "name": "搭建自动投简历工作流",
+          "status": "planned"
+        }
+      ]
     }
   ],
   "events": [
+    {
+      "id": "evt-20260911T144743Z-internship-project-update",
+      "at": "2026-09-11T14:47:43Z",
+      "project_id": "project-item-9ef9ef",
+      "type": "project_updated",
+      "summary": "Renamed internship project, set resume as current step, and set automated resume-submission workflow as next step.",
+      "source": {
+        "kind": "chatgpt",
+        "conversation_hint": "User reported the prior NextPlan command had not executed"
+      }
+    },
     {
       "id": "evt-20260911T144345Z-r1-completed-r2-authorized",
       "at": "2026-09-11T14:43:45Z",
