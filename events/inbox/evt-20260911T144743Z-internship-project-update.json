@@ -1,0 +1,28 @@
+{
+  "id": "evt-20260911T144743Z-internship-project-update",
+  "at": "2026-09-11T14:47:43Z",
+  "type": "project_updated",
+  "project_id": "project-item-9ef9ef",
+  "changes": {
+    "name": "帮助宝宝找实习",
+    "status": "active",
+    "next_action": "帮宝宝搭建自动投简历工作流",
+    "milestones": [
+      {
+        "id": "resume",
+        "name": "做简历",
+        "status": "active"
+      },
+      {
+        "id": "auto-apply",
+        "name": "搭建自动投简历工作流",
+        "status": "planned"
+      }
+    ]
+  },
+  "summary": "Renamed internship project, set resume as current step, and set automated resume-submission workflow as next step.",
+  "source": {
+    "kind": "chatgpt",
+    "conversation_hint": "User reported the prior NextPlan command had not executed"
+  }
+}
