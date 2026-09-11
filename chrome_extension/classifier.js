@@ -37,6 +37,20 @@ function bestMilestone(text, title, state) {
   return best;
 }
 
+function exactProjectMention(text, state) {
+  const ctext = compact(text);
+  let best = null;
+  for (const p of state.projects || []) {
+    const name = compact(p.name);
+    const id = compact(p.id);
+    const hit = (name && ctext.includes(name)) || (id && id.length >= 4 && ctext.includes(id));
+    if (!hit) continue;
+    const score = Math.max(name.length, id.length);
+    if (!best || score > best.score) best = {project: p, score};
+  }
+  return best?.project || null;
+}
+
 function deletionTarget(text, title, state) {
   const ctext = compact(text);
   let bestProjectHit = null;
@@ -92,9 +106,163 @@ function inferCategory(name) {
   return "其他";
 }
 
+const AREA_DEFS = [
+  {category: "行政", label: "Life & Admin", re: /life\s*(?:&|and)\s*admin|life\s*admin|生活\s*(?:与|和)?\s*行政|行政\s*(?:与|和)?\s*生活/i},
+  {category: "科研", label: "Research", re: /\bresearch\b|科研/i},
+  {category: "PhD", label: "PhD Application", re: /phd\s*application|phd\s*申请|博士\s*申请/i},
+  {category: "学校", label: "School", re: /\bschool\b|学校/i},
+  {category: "课程", label: "Coursework", re: /\bcoursework\b|课程/i}
+];
+
+function targetArea(text) {
+  return AREA_DEFS.find(x => x.re.test(text)) || null;
+}
+
+function extractMoveProjectName(text, area) {
+  if (!area) return "";
+  const move = "(?:放入|放到|放进|归入|归到|归类到|移动到|移到|分到|划到)";
+  const re = new RegExp(`(?:把|将)?\\s*(?:这个|该)?\\s*([^，。\\n]+?)\\s*(?:项目)?\\s*${move}\\s*`, "i");
+  const m = text.match(re);
+  if (!m?.[1]) return "";
+  return m[1].trim().replace(/^(?:这个|该)\s*/, "").replace(/["'“”‘’]/g, "").slice(0, 90);
+}
+
+function stateSyncRequested(text) {
+  return /next\s*plan/i.test(text) && /(更新|同步|刷新|写入|记录|调整)/i.test(text) && /(状态|进度|当前|项目|里|中)/i.test(text);
+}
+
+function findProjectForSync(source, title, state) {
+  const exact = exactProjectMention(source, state);
+  if (exact) return exact;
+  const hit = bestProject(source, title, state);
+  return hit?.score >= 0.34 ? hit.project : null;
+}
+
+function extractNextAction(source) {
+  const focusPatterns = [
+    /任务焦点[^\n。]*?(?:切换为|改为|变为)\s*[“\"]([^”\"\n]+)[”\"]/i,
+    /(?:下一步|next\s*step)\s*[：:]\s*([^\n。]+)/i,
+    /(?:next[_\s-]*action|下一步动作)\s*[：:]\s*([^\n。]+)/i
+  ];
+  for (const re of focusPatterns) {
+    const m = source.match(re);
+    if (m?.[1]) return m[1].trim().replace(/^[-–—]\s*/, "").slice(0, 220);
+  }
+  return "";
+}
+
+function lineMentionsMilestone(line, milestone) {
+  const ln = normalize(line);
+  const full = normalize(milestone.name);
+  if (full && ln.includes(full)) return true;
+  const id = String(milestone.id || "").trim();
+  if (/^[a-z]+\d+$/i.test(id) || /^r\d+[a-z]?$/i.test(id)) {
+    return new RegExp(`(^|[^a-z0-9])${id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}([^a-z0-9]|$)`, "i").test(line);
+  }
+  const prefix = String(milestone.name || "").match(/^([A-Za-z]+\d+[A-Za-z]?)/)?.[1];
+  if (prefix) return new RegExp(`(^|[^a-z0-9])${prefix}([^a-z0-9]|$)`, "i").test(line);
+  return false;
+}
+
+function statusFromLine(line) {
+  const t = normalize(line);
+  if (/(started\s*[:=]?\s*false|尚未开始|未开始|not\s+started|planned|计划中|待开始)/i.test(t)) return "planned";
+  if (/(blocked|阻塞|被阻塞|暂停)/i.test(t)) return "blocked";
+  if (/(waiting|等待|待定)/i.test(t)) return "waiting";
+  if (/(completed_for|completed|\bdone\b|已完成|完成$|完成\s*[\/；;])/i.test(t)) return "completed";
+  if (/(started\s*[:=]?\s*true|active|进行中|正在进行|正在执行|已开始)/i.test(t)) return "active";
+  return "";
+}
+
+function extractMilestoneStatuses(source, project) {
+  const updates = {};
+  const lines = String(source || "").split(/\n+/).map(x => x.trim()).filter(Boolean);
+  for (const m of project.milestones || []) {
+    for (const line of lines) {
+      if (!lineMentionsMilestone(line, m)) continue;
+      const status = statusFromLine(line);
+      if (status) updates[m.id] = status;
+    }
+  }
+  return updates;
+}
+
+function buildStateSyncCandidate(turn, state) {
+  const text = String(turn.userText || "").trim();
+  if (!stateSyncRequested(text)) return null;
+  const assistant = String(turn.assistantText || "").trim();
+  const source = `${text}\n${assistant}`;
+  const project = findProjectForSync(source, turn.title || "", state);
+  if (!project) return null;
+
+  const nextAction = extractNextAction(assistant || text);
+  const milestoneStatuses = extractMilestoneStatuses(assistant || text, project);
+  const changedStatuses = {};
+  for (const [id, status] of Object.entries(milestoneStatuses)) {
+    const cur = (project.milestones || []).find(m => m.id === id);
+    if (cur && cur.status !== status) changedStatuses[id] = status;
+  }
+
+  const action = {action: "update_project_snapshot", project_id: project.id};
+  let changeCount = 0;
+  if (nextAction && normalize(nextAction) !== normalize(project.next_action || "")) {
+    action.next_action = nextAction;
+    changeCount++;
+  }
+  if (Object.keys(changedStatuses).length) {
+    action.milestone_statuses = changedStatuses;
+    changeCount += Object.keys(changedStatuses).length;
+  }
+  if (!changeCount) {
+    return {
+      id: crypto.randomUUID(),
+      kind: "state_sync_noop",
+      confidence: 0.96,
+      label: `状态已是最新：${project.name}`,
+      reason: "没有检测到与当前 NextPlan 状态不同的明确变更",
+      action: null,
+      informational: true
+    };
+  }
+  return {
+    id: crypto.randomUUID(),
+    kind: "state_sync",
+    confidence: 0.96,
+    label: `更新项目状态：${project.name}`,
+    reason: `识别到 ${changeCount} 项明确状态变化`,
+    action
+  };
+}
+
 export function classifyTurn(turn, state) {
   const text = String(turn.userText || "").trim();
   if (!text || /[?？]\s*$/.test(text)) return null;
+
+  const area = targetArea(text);
+  if (area && /(放入|放到|放进|归入|归到|归类到|移动到|移到|分到|划到)/i.test(text)) {
+    let project = exactProjectMention(text, state);
+    let name = project?.name || extractMoveProjectName(text, area);
+    if (project) {
+      return {
+        id: crypto.randomUUID(),
+        kind: "move_project_area",
+        confidence: 0.98,
+        label: `移动项目：${project.name} → ${area.label}`,
+        reason: "检测到明确的项目区域调整",
+        action: {action: "update_project_snapshot", project_id: project.id, category: area.category}
+      };
+    }
+    if (name) {
+      return {
+        id: crypto.randomUUID(),
+        kind: "create_project_in_area",
+        confidence: 0.95,
+        label: `新增并归类：${name} → ${area.label}`,
+        reason: "未找到同名项目；按明确指令创建并归入目标区域",
+        action: {action: "create_project", name, category: area.category, priority: 2, next_action: ""}
+      };
+    }
+  }
 
   const newProjectName = /next\s*plan/i.test(text) ? extractNewProjectName(text) : "";
   if (newProjectName) {
@@ -125,6 +293,9 @@ export function classifyTurn(turn, state) {
       }
     };
   }
+
+  const stateSync = buildStateSyncCandidate(turn, state);
+  if (stateSync) return stateSync;
 
   const deleteIntent = /(删除|删掉|移除|去掉|清除|delete|remove)/i.test(text) && /next\s*plan/i.test(text);
   if (deleteIntent) {
