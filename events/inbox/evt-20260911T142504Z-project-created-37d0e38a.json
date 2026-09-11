@@ -1,0 +1,20 @@
+{
+  "type": "project_created",
+  "project_id": "project-item-9ef9ef",
+  "project": {
+    "id": "project-item-9ef9ef",
+    "name": "找实习",
+    "category": "职业",
+    "status": "active",
+    "priority": 2,
+    "next_action": "",
+    "milestones": []
+  },
+  "summary": "Created project: 找实习",
+  "id": "evt-20260911T142504Z-project-created-37d0e38a",
+  "at": "2026-09-11T14:25:04Z",
+  "source": {
+    "kind": "chatgpt",
+    "via": "nextplan-chrome-bridge"
+  }
+}
