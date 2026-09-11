@@ -2,7 +2,7 @@ import { classifyTurn } from "./classifier.js";
 
 const DEFAULT_ENDPOINT = "https://lifeos-production-89ce.up.railway.app";
 const DEFAULTS = { endpoint: DEFAULT_ENDPOINT, token: "", autoSync: true, autoThreshold: 0.88 };
-const PROCESSING_GENERATION = "v0.3.1-project-create";
+const PROCESSING_GENERATION = "v0.4.0-area-state-sync";
 
 async function getConfig() {
   return {...DEFAULTS, ...(await chrome.storage.local.get(DEFAULTS))};
@@ -64,9 +64,6 @@ async function applyCandidate(candidate) {
 }
 
 async function handleTurn(turn) {
-  // Fingerprints are versioned by classifier/processing generation. A turn that
-  // an older version classified as "no_change" can therefore be reconsidered
-  // after a feature upgrade (for example, project creation in v0.3).
   if (await wasProcessed(turn.fingerprint)) return {status: "duplicate"};
 
   const cfg = await getConfig();
@@ -76,15 +73,12 @@ async function handleTurn(turn) {
     return {status: "needs_setup"};
   }
 
-  // Do not mark the turn as processed until state retrieval and classification
-  // succeed. This avoids permanently losing a turn because of a transient
-  // network/Railway/GitHub error.
   const state = await api("/extension/state");
   const candidate = classifyTurn(turn, state);
 
   if (!candidate) {
     await rememberProcessed(turn.fingerprint);
-    return {status: "no_change"};
+    return {status: "no_change", explicitNextPlan: /next\s*plan/i.test(String(turn.userText || ""))};
   }
 
   if (candidate.informational || !candidate.action) {
