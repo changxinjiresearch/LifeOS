@@ -43,12 +43,13 @@
         "evt-20260911-system-write-test-project",
         "evt-20260911T142504Z-project-created-37d0e38a",
         "evt-20260911T144315Z-project-updated-b0b7262e",
-        "evt-20260911T144345Z-p1-amended-completed"
+        "evt-20260911T144345Z-p1-amended-completed",
+        "evt-20260911T144345Z-r1-completed-r2-authorized"
       ],
-      "processed_count": 11,
-      "last_build_at": "2026-09-11T14:45:29Z",
+      "processed_count": 12,
+      "last_build_at": "2026-09-11T14:45:59Z",
       "last_applied": [
-        "evt-20260911T144345Z-p1-amended-completed"
+        "evt-20260911T144345Z-r1-completed-r2-authorized"
       ],
       "status": "ready"
     }
@@ -140,7 +141,7 @@
       "category": "科研",
       "status": "active",
       "priority": 3,
-      "next_action": "继续完成当前 R1 数据资格与锁定闭环；只有资格门通过后再进入 R2。",
+      "next_action": "执行 R2 实现验收并建立 CODE_LOCK；R2 正式启动前保持训练与测试解盲为未开始状态。",
       "milestones": [
         {
           "id": "p1",
@@ -155,7 +156,7 @@
         {
           "id": "r1",
           "name": "R1 数据资格与锁定",
-          "status": "active"
+          "status": "completed"
         },
         {
           "id": "r2",
@@ -345,6 +346,17 @@
     }
   ],
   "events": [
+    {
+      "id": "evt-20260911T144345Z-r1-completed-r2-authorized",
+      "at": "2026-09-11T14:43:45Z",
+      "project_id": "research-pcc-v2",
+      "type": "task_completed",
+      "summary": "PCC v2-R2 R1 completed; R2 methods track authorized, with R2 execution not yet started.",
+      "source": {
+        "kind": "chatgpt",
+        "conversation_hint": "User requested NextPlan update for PCC v2-R2"
+      }
+    },
     {
       "id": "evt-20260911T144345Z-p1-amended-completed",
       "at": "2026-09-11T14:43:45Z",
