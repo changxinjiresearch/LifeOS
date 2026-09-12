@@ -26,7 +26,14 @@
         "calendar_event_upserted",
         "calendar_event_removed",
         "note_added",
-        "resource_added"
+        "note_updated",
+        "note_removed",
+        "resource_added",
+        "resource_updated",
+        "resource_removed",
+        "automation_rule_upserted",
+        "automation_rule_removed",
+        "automation_snapshot_refreshed"
       ]
     },
     "project_id": {"type": "string"},
@@ -37,14 +44,7 @@
     "next_action": {"type": "string"},
     "auto_advance": {"type": "boolean"},
     "summary": {"type": "string"},
-    "source": {
-      "type": "object",
-      "properties": {
-        "kind": {"type": "string"},
-        "conversation_hint": {"type": "string"}
-      },
-      "additionalProperties": true
-    },
+    "source": {"type": "object", "additionalProperties": true},
     "project": {"type": "object"},
     "changes": {"type": "object"},
     "milestone": {"type": "object"},
@@ -54,7 +54,12 @@
     "calendar_event": {"type": "object"},
     "calendar_event_id": {"type": "string"},
     "note": {"type": "object"},
-    "resource": {"type": "object"}
+    "note_id": {"type": "string"},
+    "resource": {"type": "object"},
+    "resource_id": {"type": "string"},
+    "automation_rule": {"type": "object"},
+    "automation_rule_id": {"type": "string"},
+    "automation_snapshot": {"type": "object"}
   },
   "additionalProperties": true
 }
