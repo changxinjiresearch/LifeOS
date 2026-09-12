@@ -59,10 +59,8 @@
         "evt-20260912T055000Z-entity-resolution-completed"
       ],
       "processed_count": 24,
-      "last_build_at": "2026-09-12T05:49:13Z",
-      "last_applied": [
-        "evt-20260912T055000Z-entity-resolution-completed"
-      ],
+      "last_build_at": "2026-09-12T06:06:55Z",
+      "last_applied": [],
       "status": "ready"
     }
   },
@@ -761,5 +759,8 @@
       "timezone": "Australia/Adelaide",
       "category": "课程"
     }
-  ]
+  ],
+  "calendar_events": [],
+  "notes": [],
+  "resources": []
 }
