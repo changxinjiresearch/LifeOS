@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "NextPlan Sync",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "Keeps confirmed ChatGPT task and project changes in sync with NextPlan.",
   "permissions": [
     "storage",
