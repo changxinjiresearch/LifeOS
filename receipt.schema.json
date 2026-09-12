@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nextplan.local/receipt.schema.json",
+  "title": "NextPlan Execution Receipt",
+  "type": "object",
+  "required": ["receipt_version", "status", "operation"],
+  "properties": {
+    "receipt_version": {"const": "1.0"},
+    "status": {
+      "type": "string",
+      "enum": [
+        "applied",
+        "accepted_pending_builder",
+        "no_change",
+        "already_exists",
+        "already_absent",
+        "needs_confirmation",
+        "rejected",
+        "error"
+      ]
+    },
+    "operation_id": {"type": "string"},
+    "operation": {"type": "string", "minLength": 1},
+    "entity_type": {"type": "string"},
+    "entity_id": {"type": "string"},
+    "event_id": {"type": "string"},
+    "summary": {"type": "string"},
+    "commit_sha": {"type": ["string", "null"]}
+  },
+  "additionalProperties": true
+}
