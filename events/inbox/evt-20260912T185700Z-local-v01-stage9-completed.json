@@ -1,0 +1,22 @@
+{
+  "id": "evt-20260912T185700Z-local-v01-stage9-completed",
+  "at": "2026-09-12T18:57:00Z",
+  "type": "milestone_status_changed",
+  "project_id": "project-item-daed6c",
+  "milestone_id": "local-v01-stage9-release-hardening",
+  "status": "completed",
+  "summary": "Completed Local v0.1 Stage 9 — Security / Recovery / Release Hardening after verified Windows release acceptance.",
+  "source": {
+    "kind": "chatgpt",
+    "via": "stage5-local-v01-stage9-10-release-closure",
+    "evidence": {
+      "release_branch_head": "7e678f05845c4d156b8c57f61605f5211f2716f3",
+      "release_acceptance_run": "34711899416",
+      "release_job": "103602045544",
+      "clean_machine_acceptance": "PASS",
+      "artifact_id": "10303149785",
+      "artifact_digest": "sha256:204ca8d7d794bf0b6875b4acdca98a0f2d171c5628dd74fcda9cd49112adf35e",
+      "merge_commit": "11fd35592675b881b1a2423e112ab2d2b6f11bd8"
+    }
+  }
+}
