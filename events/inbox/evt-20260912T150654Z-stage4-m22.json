@@ -1,0 +1,10 @@
+{
+  "id": "evt-20260912T150654Z-stage4-m22",
+  "at": "2026-09-12T15:06:54Z",
+  "project_id": "project-item-daed6c",
+  "type": "milestone_added",
+  "summary": "Added Stage IV milestone 22: Assistant Provenance Guard.",
+  "source": {"kind": "chatgpt", "via": "nextplan-stage4-development"},
+  "milestone": {"id": "assistant-provenance-guard", "name": "Assistant Provenance Guard", "status": "planned"},
+  "activate_project": true
+}
