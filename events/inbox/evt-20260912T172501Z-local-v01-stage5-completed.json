@@ -1,0 +1,15 @@
+{
+  "id": "evt-20260912T172501Z-local-v01-stage5-completed",
+  "at": "2026-09-12T17:25:01Z",
+  "type": "milestone_status_changed",
+  "project_id": "project-item-daed6c",
+  "milestone_id": "local-v01-stage5-conversational-project-intelligence",
+  "status": "completed",
+  "auto_advance": false,
+  "summary": "Completed Local v0.1 Stage 5 — Conversational Project Intelligence",
+  "source": {
+    "kind": "chatgpt",
+    "via": "stage5-local-v01-development",
+    "evidence": "Project discovery, project growth, duplicate avoidance and provenance guards accepted on branch and main"
+  }
+}
