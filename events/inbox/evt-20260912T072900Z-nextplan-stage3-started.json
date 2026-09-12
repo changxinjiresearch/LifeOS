@@ -1,0 +1,39 @@
+{
+  "id": "evt-20260912T072900Z-nextplan-stage3-started",
+  "at": "2026-09-12T07:29:00Z",
+  "project_id": "project-item-daed6c",
+  "type": "project_updated",
+  "summary": "Started NextPlan Agent Stage III and reopened NextPlan development for the agentic execution roadmap.",
+  "source": {
+    "kind": "chatgpt",
+    "via": "nextplan-agent-stage3"
+  },
+  "project": {
+    "id": "project-item-daed6c",
+    "name": "NextPlan开发",
+    "category": "其他",
+    "status": "active",
+    "priority": 2,
+    "next_action": "Action Gateway + Permission Model",
+    "milestones": [
+      {"id":"core-schema-freeze","name":"Core Schema Freeze","status":"completed"},
+      {"id":"sync-command-protocol","name":"NextPlan Sync Command Protocol","status":"completed"},
+      {"id":"entity-resolution-confirmation-receipt","name":"Entity Resolution + Confirmation + Receipt","status":"completed"},
+      {"id":"project-task-workflow","name":"Project / Task Workflow","status":"completed"},
+      {"id":"today-next-action","name":"Today + Next Action","status":"completed"},
+      {"id":"calendar-deadline","name":"Calendar + Deadline","status":"completed"},
+      {"id":"weekly-review","name":"Weekly Review","status":"completed"},
+      {"id":"notes-resources-integration","name":"Notes / Resources Integration","status":"completed"},
+      {"id":"search-command-palette","name":"Search / Command Palette","status":"completed"},
+      {"id":"analytics","name":"Analytics","status":"completed"},
+      {"id":"ai-planning","name":"AI Planning","status":"completed"},
+      {"id":"automation","name":"Automation","status":"completed"},
+      {"id":"action-gateway-permission-model","name":"Action Gateway + Permission Model","status":"active"},
+      {"id":"external-connectors","name":"External Connectors","status":"planned"},
+      {"id":"trigger-event-intake","name":"Trigger + Event Intake","status":"planned"},
+      {"id":"agent-execution-loop","name":"Agent Execution Loop","status":"planned"},
+      {"id":"verification-reconciliation-rollback","name":"Verification + Reconciliation + Rollback","status":"planned"},
+      {"id":"proactive-agent-policies","name":"Proactive Agent Policies","status":"planned"}
+    ]
+  }
+}
