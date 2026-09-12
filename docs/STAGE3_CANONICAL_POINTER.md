@@ -1,0 +1,1 @@
+Canonical Stage III progress is represented through append-only events and materialized state.json. Documentation is descriptive only.
