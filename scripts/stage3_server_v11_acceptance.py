@@ -140,11 +140,12 @@ async def main() -> int:
             "X-GitHub-Api-Version": "2022-11-28",
             "User-Agent": "NextPlan-Stage3-Acceptance/1.0",
         }
-        verify = await client.get(
-            f"https://api.github.com/repos/{repo}/contents/{temp_path}",
-            headers=verify_headers,
-            params={"ref": "main"},
-        )
+        async with httpx.AsyncClient(timeout=30) as verify_client:
+            verify = await verify_client.get(
+                f"https://api.github.com/repos/{repo}/contents/{temp_path}",
+                headers=verify_headers,
+                params={"ref": "main"},
+            )
         if verify.status_code != 404:
             raise RuntimeError(f"rollback verification expected 404, got {verify.status_code}")
 
