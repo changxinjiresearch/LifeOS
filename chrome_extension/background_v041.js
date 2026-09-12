@@ -1,8 +1,6 @@
-import { classifyTurn } from "./classifier_v041.js";
-
 const DEFAULT_ENDPOINT = "https://lifeos-production-89ce.up.railway.app";
 const DEFAULTS = { endpoint: DEFAULT_ENDPOINT, token: "", autoSync: true, autoThreshold: 0.88 };
-const PROCESSING_GENERATION = "v0.4.3-idempotent-rename";
+const PROCESSING_GENERATION = "v0.5.0-cloud-bridge";
 
 async function getConfig() {
   return {...DEFAULTS, ...(await chrome.storage.local.get(DEFAULTS))};
@@ -13,7 +11,11 @@ async function api(path, options = {}) {
   if (!cfg.token) throw new Error("NextPlan extension token is not configured");
   const res = await fetch(`${cfg.endpoint}${path}`, {
     ...options,
-    headers: {"Authorization": `Bearer ${cfg.token}`, "Content-Type": "application/json", ...(options.headers || {})}
+    headers: {
+      "Authorization": `Bearer ${cfg.token}`,
+      "Content-Type": "application/json",
+      ...(options.headers || {})
+    }
   });
   let body = {};
   try { body = await res.json(); } catch {}
@@ -45,8 +47,7 @@ async function rememberProcessed(fp) {
   const data = await chrome.storage.local.get({processedFingerprints: []});
   const key = fingerprintKey(fp);
   if (data.processedFingerprints.includes(key)) return;
-  const next = [...data.processedFingerprints, key].slice(-250);
-  await chrome.storage.local.set({processedFingerprints: next});
+  await chrome.storage.local.set({processedFingerprints: [...data.processedFingerprints, key].slice(-250)});
 }
 
 async function enqueue(candidate, turn) {
@@ -57,10 +58,34 @@ async function enqueue(candidate, turn) {
 
 async function applyCandidate(candidate) {
   if (!candidate?.action) throw new Error("Candidate has no writable action");
-  const result = await api("/extension/action", {method: "POST", body: JSON.stringify(candidate.action)});
+  const result = await api("/extension/action", {
+    method: "POST",
+    body: JSON.stringify(candidate.action)
+  });
   await setPending((await getPending()).filter(x => x.id !== candidate.id));
-  await chrome.storage.local.set({lastSync: {at: new Date().toISOString(), label: candidate.label, result: result.status || "ok"}});
+  await chrome.storage.local.set({
+    lastSync: {at: new Date().toISOString(), label: candidate.label, result: result.status || "ok"}
+  });
   return result;
+}
+
+function clientContext() {
+  let timezone = "";
+  try { timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch {}
+  return {
+    now: new Date().toISOString(),
+    timezone,
+    utcOffsetMinutes: -new Date().getTimezoneOffset(),
+    bridgeVersion: "0.5.0"
+  };
+}
+
+async function classifyInCloud(turn) {
+  const result = await api("/extension/classify", {
+    method: "POST",
+    body: JSON.stringify({turn, client: clientContext()})
+  });
+  return result?.candidate || null;
 }
 
 async function handleTurn(turn) {
@@ -73,8 +98,12 @@ async function handleTurn(turn) {
     return {status: "needs_setup"};
   }
 
-  const state = await api("/extension/state");
-  const candidate = classifyTurn(turn, state);
+  let candidate;
+  try {
+    candidate = await classifyInCloud(turn);
+  } catch (err) {
+    return {status: "error", error: `云端解析不可用：${err.message}`};
+  }
 
   if (!candidate) {
     await rememberProcessed(turn.fingerprint);
@@ -87,13 +116,13 @@ async function handleTurn(turn) {
   }
 
   const canAutoSync = !candidate.requiresConfirmation && !candidate.destructive;
-  if (cfg.autoSync && canAutoSync && candidate.confidence >= Number(cfg.autoThreshold || 0.88)) {
+  if (cfg.autoSync && canAutoSync && Number(candidate.confidence || 0) >= Number(cfg.autoThreshold || 0.88)) {
     try {
       const result = await applyCandidate(candidate);
       await rememberProcessed(turn.fingerprint);
       return {status: "auto_synced", label: candidate.label, result};
     } catch (err) {
-      await enqueue({...candidate, reason: `${candidate.reason}；自动同步失败：${err.message}`}, turn);
+      await enqueue({...candidate, reason: `${candidate.reason || "云端识别"}；自动同步失败：${err.message}`}, turn);
       await rememberProcessed(turn.fingerprint);
       return {status: "queued_after_error", label: candidate.label, error: err.message};
     }
@@ -115,9 +144,7 @@ async function injectIntoOpenChatGPTTabs() {
     const tabs = await chrome.tabs.query({url: ["https://chatgpt.com/*"]});
     for (const tab of tabs) {
       if (!tab.id) continue;
-      try {
-        await chrome.scripting.executeScript({target: {tabId: tab.id}, files: ["content.js"]});
-      } catch {}
+      try { await chrome.scripting.executeScript({target: {tabId: tab.id}, files: ["content.js"]}); } catch {}
     }
   } catch {}
 }
@@ -129,9 +156,7 @@ chrome.runtime.onInstalled.addListener(async () => {
   await injectIntoOpenChatGPTTabs();
 });
 
-chrome.runtime.onStartup.addListener(() => {
-  injectIntoOpenChatGPTTabs();
-});
+chrome.runtime.onStartup.addListener(() => { injectIntoOpenChatGPTTabs(); });
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message?.type === "NEXTPLAN_TURN") {
@@ -140,7 +165,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   }
   if (message?.type === "NEXTPLAN_GET_STATUS") {
     Promise.all([getConfig(), getPending(), chrome.storage.local.get({lastSync: null})]).then(([config, pending, extra]) => {
-      sendResponse({configured: Boolean(config.token), autoSync: config.autoSync, autoThreshold: config.autoThreshold, pending, lastSync: extra.lastSync});
+      sendResponse({configured: Boolean(config.token), autoSync: config.autoSync, autoThreshold: config.autoThreshold, pending, lastSync: extra.lastSync, mode: "cloud-bridge", version: "0.5.0"});
     });
     return true;
   }
@@ -157,7 +182,14 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     return true;
   }
   if (message?.type === "NEXTPLAN_TEST") {
-    api("/extension/state").then(state => sendResponse({status: "ok", projects: (state.projects || []).length})).catch(err => sendResponse({status: "error", error: err.message}));
+    Promise.all([
+      api("/extension/state"),
+      api("/extension/classify", {
+        method: "POST",
+        body: JSON.stringify({turn: {userText: "NextPlan bridge health test?", assistantText: "", title: "", url: ""}, client: clientContext()})
+      })
+    ]).then(([state, cloud]) => sendResponse({status: "ok", projects: (state.projects || []).length, classifier: cloud.classifier || "cloud"}))
+      .catch(err => sendResponse({status: "error", error: err.message}));
     return true;
   }
 });
