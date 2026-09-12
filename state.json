@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-12T17:13:00Z",
+    "last_updated": "2026-09-12T17:25:00Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -111,12 +111,13 @@
         "evt-20260912T151205Z-stage4-close-project",
         "evt-20260912T151400Z-stage4-finalize-canonical",
         "evt-20260912T152922Z-agent-github-head-f03ec6b3",
-        "evt-20260912T171300Z-local-v01-stage1-3-close"
+        "evt-20260912T171300Z-local-v01-stage1-3-close",
+        "evt-20260912T172500Z-local-v01-stage4-completed"
       ],
-      "processed_count": 79,
-      "last_build_at": "2026-09-12T17:12:02Z",
+      "processed_count": 80,
+      "last_build_at": "2026-09-12T17:24:45Z",
       "last_applied": [
-        "evt-20260912T171300Z-local-v01-stage1-3-close"
+        "evt-20260912T172500Z-local-v01-stage4-completed"
       ],
       "status": "ready"
     }
@@ -568,7 +569,7 @@
         {
           "id": "local-v01-stage4-chatgpt-local-bridge",
           "name": "Local v0.1 Stage 4 — ChatGPT ↔ NextPlan Local Bridge",
-          "status": "active"
+          "status": "completed"
         },
         {
           "id": "local-v01-stage5-conversational-project-intelligence",
@@ -604,6 +605,18 @@
     }
   ],
   "events": [
+    {
+      "id": "evt-20260912T172500Z-local-v01-stage4-completed",
+      "at": "2026-09-12T17:25:00Z",
+      "project_id": "project-item-daed6c",
+      "type": "milestone_status_changed",
+      "summary": "Completed Local v0.1 Stage 4 — ChatGPT ↔ NextPlan Local Bridge",
+      "source": {
+        "kind": "chatgpt",
+        "via": "stage5-local-v01-development",
+        "evidence": "PR #3 merged; branch and main Stage 4-5 acceptance passed"
+      }
+    },
     {
       "id": "evt-20260912T171300Z-local-v01-stage1-3-close",
       "at": "2026-09-12T17:13:00Z",
