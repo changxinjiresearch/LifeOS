@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-12T06:17:01Z",
+    "last_updated": "2026-09-12T06:17:02Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -61,12 +61,13 @@
         "evt-20260912T061321Z-remove-legacy-meeting-deadline",
         "evt-20260912T061405Z-link-meeting-project",
         "evt-20260912T061700Z-phase-b4-completed",
-        "evt-20260912T061701Z-phase-b5-completed"
+        "evt-20260912T061701Z-phase-b5-completed",
+        "evt-20260912T061702Z-phase-b6-completed"
       ],
-      "processed_count": 29,
-      "last_build_at": "2026-09-12T06:18:15Z",
+      "processed_count": 30,
+      "last_build_at": "2026-09-12T06:18:37Z",
       "last_applied": [
-        "evt-20260912T061701Z-phase-b5-completed"
+        "evt-20260912T061702Z-phase-b6-completed"
       ],
       "status": "ready"
     }
@@ -378,7 +379,7 @@
       "category": "其他",
       "status": "active",
       "priority": 2,
-      "next_action": "Calendar + Deadline",
+      "next_action": "Weekly Review",
       "milestones": [
         {
           "id": "core-schema-freeze",
@@ -408,12 +409,12 @@
         {
           "id": "calendar-deadline",
           "name": "Calendar + Deadline",
-          "status": "active"
+          "status": "completed"
         },
         {
           "id": "weekly-review",
           "name": "Weekly Review",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "notes-resources-integration",
@@ -444,6 +445,17 @@
     }
   ],
   "events": [
+    {
+      "id": "evt-20260912T061702Z-phase-b6-completed",
+      "at": "2026-09-12T06:17:02Z",
+      "project_id": "project-item-daed6c",
+      "type": "milestone_status_changed",
+      "summary": "Completed Phase B6 Calendar + Deadline v1.",
+      "source": {
+        "kind": "chatgpt",
+        "via": "nextplan-phase-b"
+      }
+    },
     {
       "id": "evt-20260912T061701Z-phase-b5-completed",
       "at": "2026-09-12T06:17:01Z",
