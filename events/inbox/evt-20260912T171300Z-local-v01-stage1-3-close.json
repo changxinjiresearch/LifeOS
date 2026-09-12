@@ -1,0 +1,57 @@
+{
+  "id": "evt-20260912T171300Z-local-v01-stage1-3-close",
+  "at": "2026-09-12T17:13:00Z",
+  "project_id": "project-item-daed6c",
+  "type": "project_updated",
+  "summary": "NextPlan Local v0.1 Stage 1-3 completed; Stage 4 is now the active development step.",
+  "source": {
+    "kind": "chatgpt",
+    "via": "nextplan-local-stage1-3-development",
+    "evidence": {
+      "main_commit": "18dd96894ba6ade0f085a61b3a3742fcd9013069",
+      "branch_acceptance_run": "34707385285",
+      "main_acceptance_run": "34707425103",
+      "railway_deployment": "ae11229f-2107-4c15-8580-5f7af18b6808"
+    }
+  },
+  "changes": {
+    "status": "active",
+    "next_action": "Stage 4 — ChatGPT ↔ NextPlan Local Bridge",
+    "milestones": [
+      {"id": "core-schema-freeze", "name": "Core Schema Freeze", "status": "completed"},
+      {"id": "sync-command-protocol", "name": "NextPlan Sync Command Protocol", "status": "completed"},
+      {"id": "entity-resolution-confirmation-receipt", "name": "Entity Resolution + Confirmation + Receipt", "status": "completed"},
+      {"id": "project-task-workflow", "name": "Project / Task Workflow", "status": "completed"},
+      {"id": "today-next-action", "name": "Today + Next Action", "status": "completed"},
+      {"id": "calendar-deadline", "name": "Calendar + Deadline", "status": "completed"},
+      {"id": "weekly-review", "name": "Weekly Review", "status": "completed"},
+      {"id": "notes-resources-integration", "name": "Notes / Resources Integration", "status": "completed"},
+      {"id": "search-command-palette", "name": "Search / Command Palette", "status": "completed"},
+      {"id": "analytics", "name": "Analytics", "status": "completed"},
+      {"id": "ai-planning", "name": "AI Planning", "status": "completed"},
+      {"id": "automation", "name": "Automation", "status": "completed"},
+      {"id": "action-gateway-permission-model", "name": "Action Gateway + Permission Model", "status": "completed"},
+      {"id": "external-connectors", "name": "External Connectors", "status": "completed"},
+      {"id": "trigger-event-intake", "name": "Trigger + Event Intake", "status": "completed"},
+      {"id": "agent-execution-loop", "name": "Agent Execution Loop", "status": "completed"},
+      {"id": "verification-reconciliation-rollback", "name": "Verification + Reconciliation + Rollback", "status": "completed"},
+      {"id": "proactive-agent-policies", "name": "Proactive Agent Policies", "status": "completed"},
+      {"id": "conversational-capture-policy-freeze", "name": "Conversational Capture Policy Freeze", "status": "completed"},
+      {"id": "fuzzy-entity-fact-extraction", "name": "Fuzzy Entity Resolution + Fact Extraction", "status": "completed"},
+      {"id": "cloud-classifier-auto-sync", "name": "Cloud Classifier + Auto-Sync", "status": "completed"},
+      {"id": "assistant-provenance-guard", "name": "Assistant Provenance Guard", "status": "completed"},
+      {"id": "conversation-acceptance-tests", "name": "Conversation Acceptance Tests", "status": "completed"},
+      {"id": "production-rollout-health-acceptance", "name": "Production Rollout + Health Acceptance", "status": "completed"},
+      {"id": "local-v01-stage1-product-architecture-freeze", "name": "Local v0.1 Stage 1 — Product & Architecture Freeze", "status": "completed"},
+      {"id": "local-v01-stage2-canonical-storage", "name": "Local v0.1 Stage 2 — Canonical Storage Localisation", "status": "completed"},
+      {"id": "local-v01-stage3-local-core", "name": "Local v0.1 Stage 3 — NextPlan Local Core", "status": "completed"},
+      {"id": "local-v01-stage4-chatgpt-local-bridge", "name": "Local v0.1 Stage 4 — ChatGPT ↔ NextPlan Local Bridge", "status": "active"},
+      {"id": "local-v01-stage5-conversational-project-intelligence", "name": "Local v0.1 Stage 5 — Conversational Project Intelligence", "status": "planned"},
+      {"id": "local-v01-stage6-desktop-app", "name": "Local v0.1 Stage 6 — NextPlan Desktop App", "status": "planned"},
+      {"id": "local-v01-stage7-workspace-artifact", "name": "Local v0.1 Stage 7 — Workspace & Artifact Layer", "status": "planned"},
+      {"id": "local-v01-stage8-local-execution-verification", "name": "Local v0.1 Stage 8 — Local Execution & Verification", "status": "planned"},
+      {"id": "local-v01-stage9-release-hardening", "name": "Local v0.1 Stage 9 — Security / Recovery / Release Hardening", "status": "planned"},
+      {"id": "local-v01-stage10-packaging-clean-machine", "name": "Local v0.1 Stage 10 — Packaging + Clean Machine Acceptance", "status": "planned"}
+    ]
+  }
+}
