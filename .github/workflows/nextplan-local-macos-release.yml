@@ -1,0 +1,165 @@
+name: NextPlan Local macOS release acceptance
+
+on:
+  push:
+    branches: [main, 'stage5/local-v01-macos']
+    paths:
+      - 'mcp_server/storage_v3.py'
+      - 'mcp_server/local_core_v4.py'
+      - 'mcp_server/local_execution_v1.py'
+      - 'scripts/local_core_entry.py'
+      - 'scripts/clean_macos_acceptance.sh'
+      - 'desktop_local/**'
+      - 'chrome_extension_local/**'
+      - 'tests/test_local_stage9_10.py'
+      - 'tests/test_local_stage6_8.py'
+      - '.github/workflows/nextplan-local-macos-release.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  macos-release-acceptance:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            artifact_arch: apple-silicon
+            expected_uname: arm64
+          - runner: macos-15-intel
+            artifact_arch: intel
+            expected_uname: x86_64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 55
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify native architecture
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "runner=$(uname -a)"
+          test "$(uname -m)" = "${{ matrix.expected_uname }}"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install release dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          pip install -r mcp_server/requirements.txt pytest pytest-asyncio pyinstaller
+
+      - name: Compile and test local runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m py_compile mcp_server/storage_v3.py mcp_server/local_core_v4.py mcp_server/local_execution_v1.py scripts/local_core_entry.py
+          python -m pytest -q tests/test_local_stage9_10.py tests/test_local_stage6_8.py tests/test_local_stage4_5.py tests/test_local_stage1_3.py tests/test_conversation_capture.py
+          node --check desktop_local/ui/app.js
+          node --check chrome_extension_local/background.js
+          node --check chrome_extension_local/content.js
+          node --check chrome_extension_local/popup.js
+          node --check chrome_extension_local/options.js
+
+      - name: Verify macOS release security contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          execution = Path('mcp_server/local_execution_v1.py').read_text()
+          core = Path('mcp_server/local_core_v4.py').read_text()
+          rust = Path('desktop_local/src-tauri/src/main.rs').read_text()
+          conf = json.loads(Path('desktop_local/src-tauri/tauri.conf.json').read_text())
+          assert 'platform.system().lower()' in execution
+          assert 'system == "darwin"' in execution
+          assert 'subprocess.Popen(["open", str(path)]' in execution
+          assert 'subprocess.Popen(["open", "-a", str(path)]' in execution
+          assert '127.0.0.1' in core
+          assert 'shell.execute' not in core
+          assert 'bundled-sidecar' in rust
+          assert 'nextplan-core.exe' in rust and 'nextplan-core' in rust
+          assert conf['bundle']['active'] is True
+          print('macOS release security contract PASS')
+          PY
+
+      - name: Build standalone Local Core
+        shell: bash
+        run: |
+          set -euo pipefail
+          pyinstaller --noconfirm --clean --onefile --name nextplan-core --paths . \
+            --hidden-import uvicorn.logging \
+            --hidden-import uvicorn.loops.auto \
+            --hidden-import uvicorn.protocols.http.auto \
+            --hidden-import uvicorn.protocols.websockets.auto \
+            --hidden-import uvicorn.lifespan.on \
+            scripts/local_core_entry.py
+          test -x dist/nextplan-core
+          file dist/nextplan-core
+          cp dist/nextplan-core desktop_local/src-tauri/resources/nextplan-core
+          chmod +x desktop_local/src-tauri/resources/nextplan-core
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Generate macOS icon set
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes @tauri-apps/cli@2 icon desktop_local/src-tauri/icons/icon.png --output desktop_local/src-tauri/icons
+          test -f desktop_local/src-tauri/icons/icon.icns
+
+      - name: Rust check macOS desktop shell
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo check --manifest-path desktop_local/src-tauri/Cargo.toml
+
+      - name: Build macOS app and DMG
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes @tauri-apps/cli@2 build --bundles app,dmg --config desktop_local/src-tauri/tauri.conf.json
+          APP="$(find desktop_local/src-tauri/target/release/bundle/macos -maxdepth 1 -name '*.app' -print -quit)"
+          DMG="$(find desktop_local/src-tauri/target/release/bundle/dmg -maxdepth 1 -name '*.dmg' -print -quit)"
+          test -n "$APP" && test -d "$APP"
+          test -n "$DMG" && test -f "$DMG"
+          test -x "$APP/Contents/Resources/resources/nextplan-core"
+          echo "APP_PATH=$APP" >> "$GITHUB_ENV"
+          echo "DMG_PATH=$DMG" >> "$GITHUB_ENV"
+
+      - name: Clean-machine macOS acceptance
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x scripts/clean_macos_acceptance.sh
+          scripts/clean_macos_acceptance.sh "$APP_PATH"
+
+      - name: Package macOS release artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          ARCH='${{ matrix.artifact_arch }}'
+          RELEASE_DIR="$PWD/release-artifacts"
+          mkdir -p "$RELEASE_DIR"
+          cp "$DMG_PATH" "$RELEASE_DIR/NextPlan-Local-v0.1.0-macOS-${ARCH}.dmg"
+          ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "$RELEASE_DIR/NextPlan-Local-v0.1.0-macOS-${ARCH}.app.zip"
+          (cd chrome_extension_local && zip -qr "$RELEASE_DIR/NextPlan-Local-Bridge-v0.1.0.zip" .)
+          shasum -a 256 "$RELEASE_DIR"/* | tee "$RELEASE_DIR/SHA256SUMS.txt"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nextplan-local-v0.1.0-macos-${{ matrix.artifact_arch }}-beta
+          path: release-artifacts/*
+          if-no-files-found: error
+          retention-days: 30
