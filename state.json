@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-12T05:45:00Z",
+    "last_updated": "2026-09-12T05:45:01Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -54,12 +54,13 @@
         "evt-20260912T052727Z-resume-completed",
         "evt-20260912T053700Z-core-schema-freeze-completed",
         "evt-20260912T053701Z-sync-command-protocol-active",
-        "evt-20260912T054500Z-sync-command-protocol-completed"
+        "evt-20260912T054500Z-sync-command-protocol-completed",
+        "evt-20260912T054501Z-entity-resolution-active"
       ],
-      "processed_count": 22,
-      "last_build_at": "2026-09-12T05:45:38Z",
+      "processed_count": 23,
+      "last_build_at": "2026-09-12T05:45:48Z",
       "last_applied": [
-        "evt-20260912T054500Z-sync-command-protocol-completed"
+        "evt-20260912T054501Z-entity-resolution-active"
       ],
       "status": "ready"
     }
@@ -386,7 +387,7 @@
         {
           "id": "entity-resolution-confirmation-receipt",
           "name": "Entity Resolution + Confirmation + Receipt",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "project-task-workflow",
@@ -437,6 +438,17 @@
     }
   ],
   "events": [
+    {
+      "id": "evt-20260912T054501Z-entity-resolution-active",
+      "at": "2026-09-12T05:45:01Z",
+      "project_id": "project-item-daed6c",
+      "type": "milestone_status_changed",
+      "summary": "Started Entity Resolution + Confirmation + Receipt for NextPlan Phase A.",
+      "source": {
+        "kind": "chatgpt",
+        "via": "nextplan-phase-a"
+      }
+    },
     {
       "id": "evt-20260912T054500Z-sync-command-protocol-completed",
       "at": "2026-09-12T05:45:00Z",
