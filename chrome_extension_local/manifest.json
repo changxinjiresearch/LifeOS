@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "NextPlan Local Bridge",
+  "version": "0.1.0",
+  "description": "Thin ChatGPT-to-NextPlan bridge for the local-first NextPlan runtime.",
+  "permissions": ["storage", "scripting"],
+  "host_permissions": [
+    "https://chatgpt.com/*",
+    "http://127.0.0.1/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://chatgpt.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_title": "NextPlan Local",
+    "default_popup": "popup.html"
+  },
+  "options_page": "options.html"
+}
