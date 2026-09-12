@@ -23,6 +23,8 @@
         "task_deleted",
         "deadline_set",
         "deadline_removed",
+        "calendar_event_upserted",
+        "calendar_event_removed",
         "note_added",
         "resource_added"
       ]
@@ -33,6 +35,7 @@
     "status": {"enum": ["active", "waiting", "planned", "completed", "done", "blocked"]},
     "project_status": {"enum": ["active", "waiting", "planned", "completed", "done", "blocked"]},
     "next_action": {"type": "string"},
+    "auto_advance": {"type": "boolean"},
     "summary": {"type": "string"},
     "source": {
       "type": "object",
@@ -48,6 +51,8 @@
     "task": {"type": "object"},
     "deadline": {"type": "object"},
     "deadline_id": {"type": "string"},
+    "calendar_event": {"type": "object"},
+    "calendar_event_id": {"type": "string"},
     "note": {"type": "object"},
     "resource": {"type": "object"}
   },
