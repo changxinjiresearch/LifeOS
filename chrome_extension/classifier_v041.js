@@ -40,13 +40,9 @@ function findExactProject(text, state) {
 function extractRenameTarget(text) {
   const raw = String(text || "").trim();
   const patterns = [
-    // 将 NextPlan 系统中名称为「这个」的项目重命名为「NextPlan开发」
     /(?:把|将)\s*(?:NextPlan\s*系统中\s*)?(?:名称(?:为|是)|名为)\s*([^，。；;\n]+?)\s*的\s*项目\s*(?:改成|改为|改名为|更名为|重命名为)\s*([^，。；;\n]+)/i,
-    // 把项目「这个」重命名为「NextPlan开发」
     /(?:把|将)\s*(?:NextPlan\s*系统中\s*)?项目\s*([^，。；;\n]+?)\s*(?:改成|改为|改名为|更名为|重命名为)\s*([^，。；;\n]+)/i,
-    // 把「这个」项目重命名为「NextPlan开发」
     /(?:把|将)\s*(?:NextPlan\s*系统中\s*)?([^，。；;\n]+?)\s*项目\s*(?:改成|改为|改名为|更名为|重命名为)\s*([^，。；;\n]+)/i,
-    // 「这个」项目重命名为「NextPlan开发」
     /([^，。；;\n]+?)\s*项目\s*(?:改成|改为|改名为|更名为|重命名为)\s*([^，。；;\n]+)/i
   ];
 
@@ -91,9 +87,26 @@ function directProjectEdit(turn, state) {
   const nextAction = extractNextAction(text);
   if (!rename && !currentStep && !nextAction) return null;
 
-  // If a rename command explicitly names the source project, exact-name resolution wins.
-  // This prevents the target name or surrounding words from stealing the match.
   let project = rename?.from ? findProjectByExactName(rename.from, state) : null;
+
+  // Idempotent rename: if the source name no longer exists but the desired target
+  // already exists, the command was already applied. Treat this as confirmed state,
+  // not as an unrecognized command.
+  if (rename && !project) {
+    const targetProject = findProjectByExactName(rename.to, state);
+    if (targetProject) {
+      return {
+        id: crypto.randomUUID(),
+        kind: "project_rename_already_applied",
+        confidence: 1,
+        informational: true,
+        alreadyApplied: true,
+        label: `已确认：项目已经是「${targetProject.name}」`,
+        reason: `重命名 ${rename.from} → ${rename.to} 已经写入 NextPlan`
+      };
+    }
+  }
+
   if (!project) project = findExactProject(text, state);
   if (!project) return null;
 
@@ -112,7 +125,17 @@ function directProjectEdit(turn, state) {
     action.next_action = nextAction;
     count++;
   }
-  if (!count) return null;
+  if (!count) {
+    return {
+      id: crypto.randomUUID(),
+      kind: "project_edit_already_applied",
+      confidence: 1,
+      informational: true,
+      alreadyApplied: true,
+      label: `已确认：${project.name} 已经是目标状态`,
+      reason: "这条项目更新已经写入 NextPlan"
+    };
+  }
 
   return {
     id: crypto.randomUUID(),
