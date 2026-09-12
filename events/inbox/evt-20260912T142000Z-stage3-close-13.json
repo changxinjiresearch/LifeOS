@@ -1,0 +1,13 @@
+{
+  "id": "evt-20260912T142000Z-stage3-close-13",
+  "at": "2026-09-12T14:20:00Z",
+  "project_id": "project-item-daed6c",
+  "type": "milestone_status_changed",
+  "summary": "Stage III final acceptance passed: Action Gateway + Permission Model completed.",
+  "source": {
+    "kind": "chatgpt",
+    "via": "nextplan-agent-stage3-final-acceptance"
+  },
+  "milestone_id": "action-gateway-permission-model",
+  "status": "completed"
+}
