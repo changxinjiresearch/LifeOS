@@ -65,10 +65,8 @@
         "evt-20260912T061702Z-phase-b6-completed"
       ],
       "processed_count": 30,
-      "last_build_at": "2026-09-12T06:18:37Z",
-      "last_applied": [
-        "evt-20260912T061702Z-phase-b6-completed"
-      ],
+      "last_build_at": "2026-09-12T06:30:57Z",
+      "last_applied": [],
       "status": "ready"
     }
   },
