@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-12T06:13:21Z",
+    "last_updated": "2026-09-12T06:14:05Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -58,12 +58,13 @@
         "evt-20260912T054501Z-entity-resolution-active",
         "evt-20260912T055000Z-entity-resolution-completed",
         "evt-20260912T061320Z-migrate-meeting-calendar",
-        "evt-20260912T061321Z-remove-legacy-meeting-deadline"
+        "evt-20260912T061321Z-remove-legacy-meeting-deadline",
+        "evt-20260912T061405Z-link-meeting-project"
       ],
-      "processed_count": 26,
-      "last_build_at": "2026-09-12T06:14:44Z",
+      "processed_count": 27,
+      "last_build_at": "2026-09-12T06:15:10Z",
       "last_applied": [
-        "evt-20260912T061321Z-remove-legacy-meeting-deadline"
+        "evt-20260912T061405Z-link-meeting-project"
       ],
       "status": "ready"
     }
@@ -442,6 +443,17 @@
   ],
   "events": [
     {
+      "id": "evt-20260912T061405Z-link-meeting-project",
+      "at": "2026-09-12T06:14:05Z",
+      "project_id": "flinders-presentation",
+      "type": "calendar_event_upserted",
+      "summary": "Linked the migrated supervisor meeting to the Research Proposal / Presentation project.",
+      "source": {
+        "kind": "system-migration",
+        "via": "nextplan-phase-b"
+      }
+    },
+    {
       "id": "evt-20260912T061321Z-remove-legacy-meeting-deadline",
       "at": "2026-09-12T06:13:21Z",
       "project_id": "system",
@@ -784,7 +796,8 @@
       "time": "16:30",
       "timezone": "Australia/Adelaide",
       "kind": "meeting",
-      "category": "课程"
+      "category": "课程",
+      "project_id": "flinders-presentation"
     }
   ],
   "notes": [],
