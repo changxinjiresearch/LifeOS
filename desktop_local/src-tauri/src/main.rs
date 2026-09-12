@@ -84,14 +84,13 @@ fn main() {
     app.run(|handle, event| {
         if matches!(event, RunEvent::Exit) {
             let state = handle.state::<CoreRuntime>();
-            {
-                if let Ok(mut slot) = state.child.lock() {
-                    if let Some(child) = slot.as_mut() {
-                        let _ = child.kill();
-                        let _ = child.wait();
-                    }
-                    *slot = None;
+            let lock_result = state.child.lock();
+            if let Ok(mut slot) = lock_result {
+                if let Some(child) = slot.as_mut() {
+                    let _ = child.kill();
+                    let _ = child.wait();
                 }
+                *slot = None;
             }
         }
     });
