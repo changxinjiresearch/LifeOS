@@ -1,0 +1,12 @@
+{
+  "id": "evt-20260912T151205Z-stage4-close-project",
+  "at": "2026-09-12T15:12:05Z",
+  "project_id": "project-item-daed6c",
+  "type": "project_updated",
+  "summary": "NextPlan Stage IV Conversational State Capture production acceptance completed.",
+  "source": {"kind": "chatgpt", "via": "nextplan-stage4-final-acceptance"},
+  "changes": {
+    "status": "completed",
+    "next_action": "项目已完成"
+  }
+}
