@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-12T06:17:00Z",
+    "last_updated": "2026-09-12T06:17:01Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -60,12 +60,13 @@
         "evt-20260912T061320Z-migrate-meeting-calendar",
         "evt-20260912T061321Z-remove-legacy-meeting-deadline",
         "evt-20260912T061405Z-link-meeting-project",
-        "evt-20260912T061700Z-phase-b4-completed"
+        "evt-20260912T061700Z-phase-b4-completed",
+        "evt-20260912T061701Z-phase-b5-completed"
       ],
-      "processed_count": 28,
-      "last_build_at": "2026-09-12T06:18:02Z",
+      "processed_count": 29,
+      "last_build_at": "2026-09-12T06:18:15Z",
       "last_applied": [
-        "evt-20260912T061700Z-phase-b4-completed"
+        "evt-20260912T061701Z-phase-b5-completed"
       ],
       "status": "ready"
     }
@@ -377,7 +378,7 @@
       "category": "其他",
       "status": "active",
       "priority": 2,
-      "next_action": "Today + Next Action",
+      "next_action": "Calendar + Deadline",
       "milestones": [
         {
           "id": "core-schema-freeze",
@@ -402,12 +403,12 @@
         {
           "id": "today-next-action",
           "name": "Today + Next Action",
-          "status": "active"
+          "status": "completed"
         },
         {
           "id": "calendar-deadline",
           "name": "Calendar + Deadline",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "weekly-review",
@@ -443,6 +444,17 @@
     }
   ],
   "events": [
+    {
+      "id": "evt-20260912T061701Z-phase-b5-completed",
+      "at": "2026-09-12T06:17:01Z",
+      "project_id": "project-item-daed6c",
+      "type": "milestone_status_changed",
+      "summary": "Completed Phase B5 Today + Next Action / Decision Engine v1.",
+      "source": {
+        "kind": "chatgpt",
+        "via": "nextplan-phase-b"
+      }
+    },
     {
       "id": "evt-20260912T061700Z-phase-b4-completed",
       "at": "2026-09-12T06:17:00Z",
