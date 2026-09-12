@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-12T06:14:05Z",
+    "last_updated": "2026-09-12T06:17:00Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -59,12 +59,13 @@
         "evt-20260912T055000Z-entity-resolution-completed",
         "evt-20260912T061320Z-migrate-meeting-calendar",
         "evt-20260912T061321Z-remove-legacy-meeting-deadline",
-        "evt-20260912T061405Z-link-meeting-project"
+        "evt-20260912T061405Z-link-meeting-project",
+        "evt-20260912T061700Z-phase-b4-completed"
       ],
-      "processed_count": 27,
-      "last_build_at": "2026-09-12T06:15:10Z",
+      "processed_count": 28,
+      "last_build_at": "2026-09-12T06:18:02Z",
       "last_applied": [
-        "evt-20260912T061405Z-link-meeting-project"
+        "evt-20260912T061700Z-phase-b4-completed"
       ],
       "status": "ready"
     }
@@ -376,7 +377,7 @@
       "category": "其他",
       "status": "active",
       "priority": 2,
-      "next_action": "Project / Task Workflow",
+      "next_action": "Today + Next Action",
       "milestones": [
         {
           "id": "core-schema-freeze",
@@ -396,12 +397,12 @@
         {
           "id": "project-task-workflow",
           "name": "Project / Task Workflow",
-          "status": "planned"
+          "status": "completed"
         },
         {
           "id": "today-next-action",
           "name": "Today + Next Action",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "calendar-deadline",
@@ -442,6 +443,17 @@
     }
   ],
   "events": [
+    {
+      "id": "evt-20260912T061700Z-phase-b4-completed",
+      "at": "2026-09-12T06:17:00Z",
+      "project_id": "project-item-daed6c",
+      "type": "milestone_status_changed",
+      "summary": "Completed Phase B4 Project / Task Workflow v1.",
+      "source": {
+        "kind": "chatgpt",
+        "via": "nextplan-phase-b"
+      }
+    },
     {
       "id": "evt-20260912T061405Z-link-meeting-project",
       "at": "2026-09-12T06:14:05Z",
