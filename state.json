@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-12T05:27:27Z",
+    "last_updated": "2026-09-12T05:37:00Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -51,12 +51,13 @@
         "evt-20260912T042110Z-nextplan-development-workflow",
         "evt-20260912T042724Z-project-updated-2f46b2f9",
         "evt-20260912T052420Z-deadline-set-2db01979",
-        "evt-20260912T052727Z-resume-completed"
+        "evt-20260912T052727Z-resume-completed",
+        "evt-20260912T053700Z-core-schema-freeze-completed"
       ],
-      "processed_count": 19,
-      "last_build_at": "2026-09-12T05:28:08Z",
+      "processed_count": 20,
+      "last_build_at": "2026-09-12T05:40:55Z",
       "last_applied": [
-        "evt-20260912T052727Z-resume-completed"
+        "evt-20260912T053700Z-core-schema-freeze-completed"
       ],
       "status": "ready"
     }
@@ -368,12 +369,12 @@
       "category": "其他",
       "status": "active",
       "priority": 2,
-      "next_action": "Core Schema Freeze",
+      "next_action": "NextPlan Sync Command Protocol",
       "milestones": [
         {
           "id": "core-schema-freeze",
           "name": "Core Schema Freeze",
-          "status": "active"
+          "status": "completed"
         },
         {
           "id": "sync-command-protocol",
@@ -434,6 +435,17 @@
     }
   ],
   "events": [
+    {
+      "id": "evt-20260912T053700Z-core-schema-freeze-completed",
+      "at": "2026-09-12T05:37:00Z",
+      "project_id": "project-item-daed6c",
+      "type": "milestone_status_changed",
+      "summary": "Completed Core Schema Freeze v1 and advanced NextPlan development to the sync command protocol.",
+      "source": {
+        "kind": "chatgpt",
+        "via": "nextplan-phase-a"
+      }
+    },
     {
       "id": "evt-20260912T052727Z-resume-completed",
       "at": "2026-09-12T05:27:27Z",
