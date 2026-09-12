@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-11T17:46:08Z",
+    "last_updated": "2026-09-12T04:14:00Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -46,12 +46,13 @@
         "evt-20260911T144345Z-p1-amended-completed",
         "evt-20260911T144345Z-r1-completed-r2-authorized",
         "evt-20260911T144743Z-internship-project-update",
-        "evt-20260911T174608Z-project-created-7fbfe24f"
+        "evt-20260911T174608Z-project-created-7fbfe24f",
+        "evt-20260912T041400Z-project-updated-cdfde9a0"
       ],
-      "processed_count": 14,
-      "last_build_at": "2026-09-11T17:46:18Z",
+      "processed_count": 15,
+      "last_build_at": "2026-09-12T04:14:09Z",
       "last_applied": [
-        "evt-20260911T174608Z-project-created-7fbfe24f"
+        "evt-20260912T041400Z-project-updated-cdfde9a0"
       ],
       "status": "ready"
     }
@@ -359,7 +360,7 @@
     },
     {
       "id": "project-item-daed6c",
-      "name": "这个",
+      "name": "NextPlan开发",
       "category": "其他",
       "status": "active",
       "priority": 2,
@@ -368,6 +369,17 @@
     }
   ],
   "events": [
+    {
+      "id": "evt-20260912T041400Z-project-updated-cdfde9a0",
+      "at": "2026-09-12T04:14:00Z",
+      "project_id": "project-item-daed6c",
+      "type": "project_updated",
+      "summary": "Updated project snapshot: 这个",
+      "source": {
+        "kind": "chatgpt",
+        "via": "nextplan-chrome-bridge"
+      }
+    },
     {
       "id": "evt-20260911T174608Z-project-created-7fbfe24f",
       "at": "2026-09-11T17:46:08Z",
