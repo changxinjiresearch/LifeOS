@@ -1,0 +1,11 @@
+{
+  "id": "evt-20260912T061700Z-phase-b4-completed",
+  "at": "2026-09-12T06:17:00Z",
+  "type": "milestone_status_changed",
+  "project_id": "project-item-daed6c",
+  "milestone_id": "project-task-workflow",
+  "status": "completed",
+  "auto_advance": true,
+  "summary": "Completed Phase B4 Project / Task Workflow v1.",
+  "source": {"kind": "chatgpt", "via": "nextplan-phase-b"}
+}
