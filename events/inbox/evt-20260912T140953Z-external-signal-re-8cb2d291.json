@@ -1,0 +1,28 @@
+{
+  "type": "external_signal_recorded",
+  "project_id": "project-item-daed6c",
+  "external_signal": {
+    "id": "signal-d8481abb230024ff9757a53b",
+    "provider": "github",
+    "event_type": "stage3_acceptance_probe",
+    "provider_event_id": "github-actions:34698459801-1",
+    "verified_source": true,
+    "received_at": "2026-09-12T14:09:53Z",
+    "project_id": "project-item-daed6c",
+    "payload": {
+      "repository": "changxinjiresearch/LifeOS",
+      "workflow": "NextPlan Stage III contract tests",
+      "run_id": "34698459801",
+      "attempt": "1",
+      "purpose": "server_v11 canonical production acceptance evidence"
+    },
+    "status": "observed"
+  },
+  "summary": "External signal: github stage3_acceptance_probe",
+  "id": "evt-20260912T140953Z-external-signal-re-8cb2d291",
+  "at": "2026-09-12T14:09:53Z",
+  "source": {
+    "kind": "chatgpt",
+    "via": "nextplan-agent-stage3"
+  }
+}
