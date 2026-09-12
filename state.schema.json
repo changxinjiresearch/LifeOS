@@ -20,6 +20,7 @@
     "isoDate": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
     "localTime": {"type": "string", "pattern": "^(?:[01]\\d|2[0-3]):[0-5]\\d$"},
     "dateTime": {"type": "string", "format": "date-time"},
+    "tags": {"type": "array", "items": {"type": "string", "minLength": 1}, "maxItems": 20, "uniqueItems": true},
     "workItem": {
       "type": "object",
       "required": ["id", "name", "status"],
@@ -98,7 +99,10 @@
         "title": {"type": "string", "minLength": 1},
         "body": {"type": "string"},
         "category": {"type": "string"},
-        "at": {"type": "string", "format": "date-time"}
+        "project_id": {"type": "string"},
+        "tags": {"$ref": "#/$defs/tags"},
+        "at": {"type": "string", "format": "date-time"},
+        "updated_at": {"type": "string", "format": "date-time"}
       },
       "additionalProperties": true
     },
@@ -110,7 +114,11 @@
         "title": {"type": "string", "minLength": 1},
         "location": {"type": "string", "minLength": 1},
         "type": {"type": "string"},
-        "description": {"type": "string"}
+        "description": {"type": "string"},
+        "project_id": {"type": "string"},
+        "tags": {"$ref": "#/$defs/tags"},
+        "at": {"type": "string", "format": "date-time"},
+        "updated_at": {"type": "string", "format": "date-time"}
       },
       "additionalProperties": true
     },
