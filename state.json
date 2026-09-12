@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-12T17:25:00Z",
+    "last_updated": "2026-09-12T17:25:02Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -112,12 +112,15 @@
         "evt-20260912T151400Z-stage4-finalize-canonical",
         "evt-20260912T152922Z-agent-github-head-f03ec6b3",
         "evt-20260912T171300Z-local-v01-stage1-3-close",
-        "evt-20260912T172500Z-local-v01-stage4-completed"
+        "evt-20260912T172500Z-local-v01-stage4-completed",
+        "evt-20260912T172501Z-local-v01-stage5-completed",
+        "evt-20260912T172502Z-local-v01-stage6-active"
       ],
-      "processed_count": 80,
-      "last_build_at": "2026-09-12T17:24:45Z",
+      "processed_count": 82,
+      "last_build_at": "2026-09-12T17:25:10Z",
       "last_applied": [
-        "evt-20260912T172500Z-local-v01-stage4-completed"
+        "evt-20260912T172501Z-local-v01-stage5-completed",
+        "evt-20260912T172502Z-local-v01-stage6-active"
       ],
       "status": "ready"
     }
@@ -429,7 +432,7 @@
       "category": "其他",
       "status": "active",
       "priority": 2,
-      "next_action": "Stage 4 — ChatGPT ↔ NextPlan Local Bridge",
+      "next_action": "Local v0.1 Stage 6 — NextPlan Desktop App",
       "milestones": [
         {
           "id": "core-schema-freeze",
@@ -574,12 +577,12 @@
         {
           "id": "local-v01-stage5-conversational-project-intelligence",
           "name": "Local v0.1 Stage 5 — Conversational Project Intelligence",
-          "status": "planned"
+          "status": "completed"
         },
         {
           "id": "local-v01-stage6-desktop-app",
           "name": "Local v0.1 Stage 6 — NextPlan Desktop App",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "local-v01-stage7-workspace-artifact",
@@ -605,6 +608,29 @@
     }
   ],
   "events": [
+    {
+      "id": "evt-20260912T172502Z-local-v01-stage6-active",
+      "at": "2026-09-12T17:25:02Z",
+      "project_id": "project-item-daed6c",
+      "type": "milestone_status_changed",
+      "summary": "Activated Local v0.1 Stage 6 — NextPlan Desktop App",
+      "source": {
+        "kind": "chatgpt",
+        "via": "stage5-local-v01-development"
+      }
+    },
+    {
+      "id": "evt-20260912T172501Z-local-v01-stage5-completed",
+      "at": "2026-09-12T17:25:01Z",
+      "project_id": "project-item-daed6c",
+      "type": "milestone_status_changed",
+      "summary": "Completed Local v0.1 Stage 5 — Conversational Project Intelligence",
+      "source": {
+        "kind": "chatgpt",
+        "via": "stage5-local-v01-development",
+        "evidence": "Project discovery, project growth, duplicate avoidance and provenance guards accepted on branch and main"
+      }
+    },
     {
       "id": "evt-20260912T172500Z-local-v01-stage4-completed",
       "at": "2026-09-12T17:25:00Z",
