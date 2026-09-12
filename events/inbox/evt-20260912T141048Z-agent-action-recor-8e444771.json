@@ -1,0 +1,40 @@
+{
+  "type": "agent_action_recorded",
+  "project_id": "project-item-daed6c",
+  "agent_action": {
+    "receipt_version": "agent-action-1.0",
+    "action_id": "act-d63b32ca-f864-4c9d-80ed-3d97fa0dafc6",
+    "provider": "github",
+    "capability": "file.create",
+    "risk_class": "reversible_write",
+    "idempotency_key": "stage3-write-34698459801-1",
+    "status": "verified",
+    "provider_result_id": "3f88737623b3c79b0c12720f4432d3c5b975679e",
+    "verified": true,
+    "rollback_supported": true,
+    "summary": "Provider action executed and verified.",
+    "at": "2026-09-12T14:10:48Z",
+    "project_id": "project-item-daed6c",
+    "verification": {
+      "verified": true,
+      "evidence": {
+        "path": "agent_sandbox/stage3-server-v11-34698459801-1.txt",
+        "sha": "3f88737623b3c79b0c12720f4432d3c5b975679e"
+      }
+    },
+    "provider_result": {
+      "provider_result_id": "3f88737623b3c79b0c12720f4432d3c5b975679e",
+      "path": "agent_sandbox/stage3-server-v11-34698459801-1.txt",
+      "sha": "3f88737623b3c79b0c12720f4432d3c5b975679e",
+      "commit_sha": "956764ca032e934fb019c06fb063983d940f1ad6"
+    },
+    "id": "act-d63b32ca-f864-4c9d-80ed-3d97fa0dafc6"
+  },
+  "summary": "Agent action github:file.create -> verified",
+  "id": "evt-20260912T141048Z-agent-action-recor-8e444771",
+  "at": "2026-09-12T14:10:48Z",
+  "source": {
+    "kind": "chatgpt",
+    "via": "nextplan-agent-stage3"
+  }
+}
