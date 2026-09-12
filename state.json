@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-12T15:29:22Z",
+    "last_updated": "2026-09-12T17:13:00Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -110,11 +110,14 @@
         "evt-20260912T151204Z-stage4-close-24",
         "evt-20260912T151205Z-stage4-close-project",
         "evt-20260912T151400Z-stage4-finalize-canonical",
-        "evt-20260912T152922Z-agent-github-head-f03ec6b3"
+        "evt-20260912T152922Z-agent-github-head-f03ec6b3",
+        "evt-20260912T171300Z-local-v01-stage1-3-close"
       ],
-      "processed_count": 78,
-      "last_build_at": "2026-09-12T15:29:23Z",
-      "last_applied": [],
+      "processed_count": 79,
+      "last_build_at": "2026-09-12T17:12:02Z",
+      "last_applied": [
+        "evt-20260912T171300Z-local-v01-stage1-3-close"
+      ],
       "status": "ready"
     }
   },
@@ -423,9 +426,9 @@
       "id": "project-item-daed6c",
       "name": "NextPlan开发",
       "category": "其他",
-      "status": "completed",
+      "status": "active",
       "priority": 2,
-      "next_action": "项目已完成",
+      "next_action": "Stage 4 — ChatGPT ↔ NextPlan Local Bridge",
       "milestones": [
         {
           "id": "core-schema-freeze",
@@ -546,11 +549,78 @@
           "id": "production-rollout-health-acceptance",
           "name": "Production Rollout + Health Acceptance",
           "status": "completed"
+        },
+        {
+          "id": "local-v01-stage1-product-architecture-freeze",
+          "name": "Local v0.1 Stage 1 — Product & Architecture Freeze",
+          "status": "completed"
+        },
+        {
+          "id": "local-v01-stage2-canonical-storage",
+          "name": "Local v0.1 Stage 2 — Canonical Storage Localisation",
+          "status": "completed"
+        },
+        {
+          "id": "local-v01-stage3-local-core",
+          "name": "Local v0.1 Stage 3 — NextPlan Local Core",
+          "status": "completed"
+        },
+        {
+          "id": "local-v01-stage4-chatgpt-local-bridge",
+          "name": "Local v0.1 Stage 4 — ChatGPT ↔ NextPlan Local Bridge",
+          "status": "active"
+        },
+        {
+          "id": "local-v01-stage5-conversational-project-intelligence",
+          "name": "Local v0.1 Stage 5 — Conversational Project Intelligence",
+          "status": "planned"
+        },
+        {
+          "id": "local-v01-stage6-desktop-app",
+          "name": "Local v0.1 Stage 6 — NextPlan Desktop App",
+          "status": "planned"
+        },
+        {
+          "id": "local-v01-stage7-workspace-artifact",
+          "name": "Local v0.1 Stage 7 — Workspace & Artifact Layer",
+          "status": "planned"
+        },
+        {
+          "id": "local-v01-stage8-local-execution-verification",
+          "name": "Local v0.1 Stage 8 — Local Execution & Verification",
+          "status": "planned"
+        },
+        {
+          "id": "local-v01-stage9-release-hardening",
+          "name": "Local v0.1 Stage 9 — Security / Recovery / Release Hardening",
+          "status": "planned"
+        },
+        {
+          "id": "local-v01-stage10-packaging-clean-machine",
+          "name": "Local v0.1 Stage 10 — Packaging + Clean Machine Acceptance",
+          "status": "planned"
         }
       ]
     }
   ],
   "events": [
+    {
+      "id": "evt-20260912T171300Z-local-v01-stage1-3-close",
+      "at": "2026-09-12T17:13:00Z",
+      "project_id": "project-item-daed6c",
+      "type": "project_updated",
+      "summary": "NextPlan Local v0.1 Stage 1-3 completed; Stage 4 is now the active development step.",
+      "source": {
+        "kind": "chatgpt",
+        "via": "nextplan-local-stage1-3-development",
+        "evidence": {
+          "main_commit": "18dd96894ba6ade0f085a61b3a3742fcd9013069",
+          "branch_acceptance_run": "34707385285",
+          "main_acceptance_run": "34707425103",
+          "railway_deployment": "ae11229f-2107-4c15-8580-5f7af18b6808"
+        }
+      }
+    },
     {
       "id": "evt-20260912T152922Z-agent-github-head-f03ec6b3",
       "at": "2026-09-12T15:29:22Z",
