@@ -1,0 +1,13 @@
+{
+  "id": "evt-20260912T142005Z-stage3-close-18",
+  "at": "2026-09-12T14:20:05Z",
+  "project_id": "project-item-daed6c",
+  "type": "milestone_status_changed",
+  "summary": "Stage III final acceptance passed: Proactive Agent Policies completed.",
+  "source": {
+    "kind": "chatgpt",
+    "via": "nextplan-agent-stage3-final-acceptance"
+  },
+  "milestone_id": "proactive-agent-policies",
+  "status": "completed"
+}
