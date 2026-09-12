@@ -1,0 +1,20 @@
+{
+  "type": "deadline_set",
+  "project_id": "calendar",
+  "deadline": {
+    "id": "calendar-meeting-2026-09-16-1630",
+    "title": "与导师 Meeting",
+    "date": "2026-09-16",
+    "kind": "event",
+    "time": "16:30",
+    "timezone": "Australia/Adelaide",
+    "category": "课程"
+  },
+  "summary": "Calendar: 与导师 Meeting on 2026-09-16 16:30",
+  "id": "evt-20260912T052420Z-deadline-set-2db01979",
+  "at": "2026-09-12T05:24:20Z",
+  "source": {
+    "kind": "chatgpt",
+    "via": "nextplan-cloud-classifier"
+  }
+}
