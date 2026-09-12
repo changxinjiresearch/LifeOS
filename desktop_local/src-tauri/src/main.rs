@@ -1,4 +1,5 @@
 use serde::Serialize;
+use std::path::PathBuf;
 use std::process::{Child, Command, Stdio};
 use std::sync::Mutex;
 use tauri::{Manager, RunEvent, State};
@@ -48,7 +49,9 @@ fn main() {
             let python = std::env::var("NEXTPLAN_LOCAL_PYTHON").unwrap_or_else(|_| {
                 if cfg!(target_os = "windows") { "python".into() } else { "python3".into() }
             });
-            let repo_root = std::env::var("NEXTPLAN_LOCAL_REPO_ROOT").ok();
+            let repo_root = std::env::var("NEXTPLAN_LOCAL_REPO_ROOT")
+                .map(PathBuf::from)
+                .unwrap_or_else(|_| PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../.."));
             let mut command = Command::new(python);
             command
                 .args(["-m", "mcp_server.local_core_v3"])
@@ -58,8 +61,8 @@ fn main() {
                 .stdin(Stdio::null())
                 .stdout(Stdio::null())
                 .stderr(Stdio::null());
-            if let Some(root) = repo_root {
-                command.current_dir(root);
+            if repo_root.exists() {
+                command.current_dir(repo_root);
             }
             match command.spawn() {
                 Ok(child) => {
