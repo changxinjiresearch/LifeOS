@@ -1,0 +1,15 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>NextPlan Local Settings</title>
+<style>
+body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;max-width:680px;margin:40px auto;padding:0 20px;color:#111827}h1{font-size:24px}label{display:block;font-weight:650;margin-top:18px}input{width:100%;box-sizing:border-box;padding:10px;border:1px solid #d1d5db;border-radius:10px;margin-top:6px}button{margin-top:14px;border:0;border-radius:10px;padding:9px 14px;background:#111827;color:white;cursor:pointer}.muted{color:#6b7280;font-size:13px}.ok{color:#087a55}.bad{color:#b42318}</style>
+<h1>NextPlan Local</h1>
+<p class="muted">NextPlan connects only to the local core on your computer. Enter the one-time pairing code shown by NextPlan Desktop.</p>
+<label>Local Core</label>
+<input id="endpoint" value="http://127.0.0.1:47123">
+<label>Pairing code</label>
+<input id="code" inputmode="numeric" maxlength="6" placeholder="000000">
+<button id="pair">Pair browser</button>
+<button id="test">Test connection</button>
+<p id="result" class="muted"></p>
+<script src="options.js"></script>
