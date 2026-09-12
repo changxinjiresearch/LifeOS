@@ -1,0 +1,29 @@
+{
+  "id": "evt-20260912T203117Z-agent-github-head-84bec21c",
+  "at": "2026-09-12T20:31:17Z",
+  "project_id": "project-item-daed6c",
+  "type": "external_signal_recorded",
+  "summary": "Observed verified GitHub repository head change: 84bec21c88ae",
+  "source": {
+    "kind": "automation",
+    "via": "nextplan-agent-github-poll"
+  },
+  "external_signal": {
+    "id": "signal-github-head-84bec21c88ae36238a08513c",
+    "provider": "github",
+    "event_type": "repo_head_changed",
+    "provider_event_id": "84bec21c88ae36238a08513c36baae3722297e02",
+    "verified_source": true,
+    "received_at": "2026-09-12T20:31:17Z",
+    "project_id": "project-item-daed6c",
+    "status": "observed",
+    "payload": {
+      "repository": "changxinjiresearch/LifeOS",
+      "head_sha": "84bec21c88ae36238a08513c36baae3722297e02",
+      "branch": "main",
+      "message": "Close NextPlan Local v0.1 Stage 10",
+      "author_name": "Changxin Ji",
+      "committed_at": "2026-09-12T18:59:24Z"
+    }
+  }
+}

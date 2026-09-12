@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-12T18:57:01Z",
+    "last_updated": "2026-09-12T20:31:17Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -120,13 +120,12 @@
         "evt-20260912T175902Z-local-v01-stage8-completed",
         "evt-20260912T175903Z-local-v01-stage9-active",
         "evt-20260912T185700Z-local-v01-stage9-completed",
-        "evt-20260912T185701Z-local-v01-stage10-completed"
+        "evt-20260912T185701Z-local-v01-stage10-completed",
+        "evt-20260912T203117Z-agent-github-head-84bec21c"
       ],
-      "processed_count": 88,
-      "last_build_at": "2026-09-12T18:59:50Z",
-      "last_applied": [
-        "evt-20260912T185701Z-local-v01-stage10-completed"
-      ],
+      "processed_count": 89,
+      "last_build_at": "2026-09-12T20:31:17Z",
+      "last_applied": [],
       "status": "ready"
     }
   },
@@ -613,6 +612,17 @@
     }
   ],
   "events": [
+    {
+      "id": "evt-20260912T203117Z-agent-github-head-84bec21c",
+      "at": "2026-09-12T20:31:17Z",
+      "project_id": "project-item-daed6c",
+      "type": "external_signal_recorded",
+      "summary": "Observed verified GitHub repository head change: 84bec21c88ae",
+      "source": {
+        "kind": "automation",
+        "via": "nextplan-agent-github-poll"
+      }
+    },
     {
       "id": "evt-20260912T185701Z-local-v01-stage10-completed",
       "at": "2026-09-12T18:57:01Z",
@@ -1792,6 +1802,24 @@
         "author_name": "Changxin Ji",
         "committed_at": "2026-09-12T15:14:27Z"
       }
+    },
+    {
+      "id": "signal-github-head-84bec21c88ae36238a08513c",
+      "provider": "github",
+      "event_type": "repo_head_changed",
+      "provider_event_id": "84bec21c88ae36238a08513c36baae3722297e02",
+      "verified_source": true,
+      "received_at": "2026-09-12T20:31:17Z",
+      "project_id": "project-item-daed6c",
+      "status": "observed",
+      "payload": {
+        "repository": "changxinjiresearch/LifeOS",
+        "head_sha": "84bec21c88ae36238a08513c36baae3722297e02",
+        "branch": "main",
+        "message": "Close NextPlan Local v0.1 Stage 10",
+        "author_name": "Changxin Ji",
+        "committed_at": "2026-09-12T18:59:24Z"
+      }
     }
   ],
   "agent_actions": [
@@ -2079,9 +2107,9 @@
   "agent_meta": {
     "agent_version": "1.0",
     "provider_cursors": {
-      "github:changxinjiresearch/LifeOS:head": "f03ec6b3fbb7abbfceea73f2be0df7bae8b86312"
+      "github:changxinjiresearch/LifeOS:head": "84bec21c88ae36238a08513c36baae3722297e02"
     },
-    "last_signal_at": "2026-09-12T15:29:22Z",
+    "last_signal_at": "2026-09-12T20:31:17Z",
     "last_action_at": "2026-09-12T14:15:40Z",
     "last_reconciliation_at": "2026-09-12T14:15:35Z",
     "last_run_at": "2026-09-12T14:15:42Z"
