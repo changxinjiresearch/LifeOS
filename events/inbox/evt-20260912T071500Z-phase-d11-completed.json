@@ -1,0 +1,14 @@
+{
+  "id": "evt-20260912T071500Z-phase-d11-completed",
+  "at": "2026-09-12T07:15:00Z",
+  "type": "milestone_status_changed",
+  "project_id": "project-item-daed6c",
+  "milestone_id": "ai-planning",
+  "status": "completed",
+  "auto_advance": true,
+  "summary": "Completed Phase D11 AI Planning v1.",
+  "source": {
+    "kind": "chatgpt",
+    "via": "nextplan-phase-d"
+  }
+}
