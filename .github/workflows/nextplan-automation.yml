@@ -1,6 +1,12 @@
 name: NextPlan daily automation
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'engine/run_automations.py'
+      - 'mcp_server/phase_d_engine.py'
+      - '.github/workflows/nextplan-automation.yml'
   schedule:
     - cron: '30 21 * * *'
   workflow_dispatch:
