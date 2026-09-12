@@ -1,6 +1,11 @@
 name: NextPlan agent external trigger poll
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/stage3_github_poll.py'
+      - '.github/workflows/nextplan-agent-poll.yml'
   schedule:
     - cron: '17 */6 * * *'
   workflow_dispatch:
