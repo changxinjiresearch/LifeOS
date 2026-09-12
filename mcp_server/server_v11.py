@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from typing import Any
 import uuid
 
@@ -18,6 +19,10 @@ from .connectors_v1 import ConnectorRegistry, GitHubConnector, ConnectorError
 base = v10.base
 _LEGACY_EXECUTE = v10._phase_d_action
 _LEGACY_APP = v10.app
+
+
+def _now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
 
 
 def _registry() -> ConnectorRegistry:
@@ -134,6 +139,16 @@ async def _record_reconciliation(reconciliation: dict[str, Any]) -> dict[str, An
     return await base._emit(event, via="nextplan-agent-stage3")
 
 
+async def _record_run(run: dict[str, Any]) -> dict[str, Any]:
+    event = {
+        "type": "agent_run_recorded",
+        "project_id": str(run.get("project_id") or "project-item-daed6c"),
+        "agent_run": run,
+        "summary": str(run.get("summary") or f"Agent run {run.get('id')} -> {run.get('status')}"),
+    }
+    return await base._emit(event, via="nextplan-agent-stage3")
+
+
 async def app(scope, receive, send):
     if scope.get("type") == "http":
         path = scope.get("path", "")
@@ -145,6 +160,7 @@ async def app(scope, receive, send):
             "/extension/agent/rollback",
             "/extension/agent/trigger",
             "/extension/agent/reconcile",
+            "/extension/agent/run",
             "/extension/agent/policies/evaluate",
         }
         if path in agent_paths and method == "POST":
@@ -181,6 +197,28 @@ async def app(scope, receive, send):
                     }
                     write = await base._emit(event, via="nextplan-agent-stage3")
                     return await base._send_json(send, 200, {"status": "recorded", "signal": signal, "write": write})
+
+                if path == "/extension/agent/run":
+                    status = str(payload.get("status") or "completed").strip().lower()
+                    if status not in {"started", "completed", "failed", "partial"}:
+                        raise ValueError("status must be started, completed, failed, or partial")
+                    project_id = str(payload.get("project_id") or "").strip()
+                    action_ids = [str(x).strip() for x in (payload.get("action_ids") or []) if str(x).strip()][:100]
+                    reconciliation_ids = [str(x).strip() for x in (payload.get("reconciliation_ids") or []) if str(x).strip()][:100]
+                    signal_ids = [str(x).strip() for x in (payload.get("signal_ids") or []) if str(x).strip()][:100]
+                    run = {
+                        "id": str(payload.get("run_id") or f"run-{uuid.uuid4()}"),
+                        "project_id": project_id or None,
+                        "status": status,
+                        "verified": bool(payload.get("verified", False)),
+                        "signal_ids": signal_ids,
+                        "action_ids": action_ids,
+                        "reconciliation_ids": reconciliation_ids,
+                        "summary": str(payload.get("summary") or f"Stage III agent run {status}").strip()[:500],
+                        "at": _now_iso(),
+                    }
+                    write = await _record_run(run)
+                    return await base._send_json(send, 200, {"status": "recorded", "run": run, "write": write})
 
                 provider = str(payload.get("provider") or "").strip()
                 capability = str(payload.get("capability") or "").strip()
