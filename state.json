@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-12T15:06:56Z",
+    "last_updated": "2026-09-12T15:12:00Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -102,13 +102,13 @@
         "evt-20260912T150653Z-stage4-m21",
         "evt-20260912T150654Z-stage4-m22",
         "evt-20260912T150655Z-stage4-m23",
-        "evt-20260912T150656Z-stage4-m24"
+        "evt-20260912T150656Z-stage4-m24",
+        "evt-20260912T151200Z-stage4-close-20"
       ],
-      "processed_count": 70,
-      "last_build_at": "2026-09-12T15:06:35Z",
+      "processed_count": 71,
+      "last_build_at": "2026-09-12T15:12:09Z",
       "last_applied": [
-        "evt-20260912T150655Z-stage4-m23",
-        "evt-20260912T150656Z-stage4-m24"
+        "evt-20260912T151200Z-stage4-close-20"
       ],
       "status": "ready"
     }
@@ -420,7 +420,7 @@
       "category": "其他",
       "status": "active",
       "priority": 2,
-      "next_action": "Fuzzy Entity Resolution + Fact Extraction",
+      "next_action": "Cloud Classifier + Auto-Sync",
       "milestones": [
         {
           "id": "core-schema-freeze",
@@ -520,12 +520,12 @@
         {
           "id": "fuzzy-entity-fact-extraction",
           "name": "Fuzzy Entity Resolution + Fact Extraction",
-          "status": "active"
+          "status": "completed"
         },
         {
           "id": "cloud-classifier-auto-sync",
           "name": "Cloud Classifier + Auto-Sync",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "assistant-provenance-guard",
@@ -546,6 +546,17 @@
     }
   ],
   "events": [
+    {
+      "id": "evt-20260912T151200Z-stage4-close-20",
+      "at": "2026-09-12T15:12:00Z",
+      "project_id": "project-item-daed6c",
+      "type": "milestone_status_changed",
+      "summary": "Stage IV acceptance passed: Fuzzy Entity Resolution + Fact Extraction completed.",
+      "source": {
+        "kind": "chatgpt",
+        "via": "nextplan-stage4-final-acceptance"
+      }
+    },
     {
       "id": "evt-20260912T150656Z-stage4-m24",
       "at": "2026-09-12T15:06:56Z",
