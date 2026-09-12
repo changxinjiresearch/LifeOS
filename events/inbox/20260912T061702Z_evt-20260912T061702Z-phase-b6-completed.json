@@ -1,0 +1,11 @@
+{
+  "id": "evt-20260912T061702Z-phase-b6-completed",
+  "at": "2026-09-12T06:17:02Z",
+  "type": "milestone_status_changed",
+  "project_id": "project-item-daed6c",
+  "milestone_id": "calendar-deadline",
+  "status": "completed",
+  "auto_advance": true,
+  "summary": "Completed Phase B6 Calendar + Deadline v1.",
+  "source": {"kind": "chatgpt", "via": "nextplan-phase-b"}
+}
