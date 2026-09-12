@@ -7,5 +7,9 @@
   "source": {
     "kind": "chatgpt",
     "via": "nextplan-agent-stage3"
+  },
+  "changes": {
+    "status": "active",
+    "next_action": "Action Gateway + Permission Model"
   }
 }
