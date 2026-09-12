@@ -39,6 +39,30 @@ function Stop-Tree {
   }
 }
 
+function Find-InstalledDesktop {
+  # Tauri's NSIS folder is driven by productName ("NextPlan"), while the
+  # executable filename is driven by the Cargo package name
+  # ("nextplan-local-desktop"). Check deterministic current-user locations
+  # first, then use a narrow LOCALAPPDATA fallback for packaging variations.
+  $names = @('nextplan-local-desktop.exe', 'NextPlan.exe')
+  $roots = @(
+    (Join-Path $env:LOCALAPPDATA 'NextPlan'),
+    (Join-Path $env:LOCALAPPDATA 'Programs\NextPlan')
+  )
+  foreach ($rootPath in $roots) {
+    foreach ($name in $names) {
+      $candidate = Join-Path $rootPath $name
+      if (Test-Path $candidate) { return $candidate }
+    }
+  }
+  foreach ($name in $names) {
+    $found = Get-ChildItem -Path $env:LOCALAPPDATA -Filter $name -File -Recurse -ErrorAction SilentlyContinue |
+      Select-Object -First 1 -ExpandProperty FullName
+    if ($found) { return $found }
+  }
+  return $null
+}
+
 $headers = @{ Authorization = "Bearer $desktopToken" }
 $core = $null
 $app = $null
@@ -70,16 +94,13 @@ try {
 
   # Install the real NSIS bundle. Force an invalid Python path: if the desktop
   # accidentally falls back to Python, this test cannot reach /healthz.
-  Start-Process -FilePath $Installer -ArgumentList '/S' -Wait
-  $candidates = @(
-    (Join-Path $env:LOCALAPPDATA 'NextPlan\NextPlan.exe'),
-    (Join-Path $env:LOCALAPPDATA 'Programs\NextPlan\NextPlan.exe')
-  )
-  $desktopExe = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+  $install = Start-Process -FilePath $Installer -ArgumentList '/S' -Wait -PassThru
+  if ($install.ExitCode -ne 0) { throw "NSIS installer exited with code $($install.ExitCode)" }
+
+  $desktopExe = Find-InstalledDesktop
   if (-not $desktopExe) {
-    $desktopExe = Get-ChildItem -Path $env:LOCALAPPDATA -Filter 'NextPlan.exe' -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
+    throw 'Installed NextPlan desktop executable was not found'
   }
-  if (-not $desktopExe) { throw 'Installed NextPlan.exe was not found' }
 
   $env:NEXTPLAN_LOCAL_PYTHON = 'C:\definitely-not-python\python.exe'
   Remove-Item Env:NEXTPLAN_LOCAL_DB -ErrorAction SilentlyContinue
