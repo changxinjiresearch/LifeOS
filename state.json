@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-12T17:59:03Z",
+    "last_updated": "2026-09-12T18:57:00Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -118,15 +118,13 @@
         "evt-20260912T175900Z-local-v01-stage6-completed",
         "evt-20260912T175901Z-local-v01-stage7-completed",
         "evt-20260912T175902Z-local-v01-stage8-completed",
-        "evt-20260912T175903Z-local-v01-stage9-active"
+        "evt-20260912T175903Z-local-v01-stage9-active",
+        "evt-20260912T185700Z-local-v01-stage9-completed"
       ],
-      "processed_count": 86,
-      "last_build_at": "2026-09-12T18:01:22Z",
+      "processed_count": 87,
+      "last_build_at": "2026-09-12T18:58:50Z",
       "last_applied": [
-        "evt-20260912T175900Z-local-v01-stage6-completed",
-        "evt-20260912T175901Z-local-v01-stage7-completed",
-        "evt-20260912T175902Z-local-v01-stage8-completed",
-        "evt-20260912T175903Z-local-v01-stage9-active"
+        "evt-20260912T185700Z-local-v01-stage9-completed"
       ],
       "status": "ready"
     }
@@ -438,7 +436,7 @@
       "category": "其他",
       "status": "active",
       "priority": 2,
-      "next_action": "Local v0.1 Stage 9 — Security / Recovery / Release Hardening",
+      "next_action": "Local v0.1 Stage 10 — Packaging + Clean Machine Acceptance",
       "milestones": [
         {
           "id": "core-schema-freeze",
@@ -603,17 +601,37 @@
         {
           "id": "local-v01-stage9-release-hardening",
           "name": "Local v0.1 Stage 9 — Security / Recovery / Release Hardening",
-          "status": "active"
+          "status": "completed"
         },
         {
           "id": "local-v01-stage10-packaging-clean-machine",
           "name": "Local v0.1 Stage 10 — Packaging + Clean Machine Acceptance",
-          "status": "planned"
+          "status": "active"
         }
       ]
     }
   ],
   "events": [
+    {
+      "id": "evt-20260912T185700Z-local-v01-stage9-completed",
+      "at": "2026-09-12T18:57:00Z",
+      "project_id": "project-item-daed6c",
+      "type": "milestone_status_changed",
+      "summary": "Completed Local v0.1 Stage 9 — Security / Recovery / Release Hardening after verified Windows release acceptance.",
+      "source": {
+        "kind": "chatgpt",
+        "via": "stage5-local-v01-stage9-10-release-closure",
+        "evidence": {
+          "release_branch_head": "7e678f05845c4d156b8c57f61605f5211f2716f3",
+          "release_acceptance_run": "34711899416",
+          "release_job": "103602045544",
+          "clean_machine_acceptance": "PASS",
+          "artifact_id": "10303149785",
+          "artifact_digest": "sha256:204ca8d7d794bf0b6875b4acdca98a0f2d171c5628dd74fcda9cd49112adf35e",
+          "merge_commit": "11fd35592675b881b1a2423e112ab2d2b6f11bd8"
+        }
+      }
+    },
     {
       "id": "evt-20260912T175903Z-local-v01-stage9-active",
       "at": "2026-09-12T17:59:03Z",
