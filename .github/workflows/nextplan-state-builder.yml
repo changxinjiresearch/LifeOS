@@ -6,6 +6,7 @@ on:
     paths:
       - 'events/inbox/**.json'
       - 'engine/build_state.py'
+      - 'engine/build_state_v2.py'
       - 'event.schema.json'
       - '.github/workflows/nextplan-state-builder.yml'
   workflow_dispatch:
@@ -27,7 +28,7 @@ jobs:
           fetch-depth: 0
 
       - name: Build canonical state from unprocessed events
-        run: python3 engine/build_state.py
+        run: python3 engine/build_state_v2.py
 
       - name: Commit state if changed
         shell: bash
@@ -41,8 +42,6 @@ jobs:
           git add state.json
           git commit -m 'Build NextPlan state from conversation events'
 
-          # Another event may have landed while this run was executing. Rebase before push;
-          # a later queued run will process any newly arrived event files as well.
           for attempt in 1 2 3; do
             git pull --rebase origin main && git push origin HEAD:main && exit 0
             echo "Push attempt ${attempt} failed; retrying..."
