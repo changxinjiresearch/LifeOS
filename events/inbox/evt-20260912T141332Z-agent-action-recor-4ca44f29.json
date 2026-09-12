@@ -1,0 +1,28 @@
+{
+  "type": "agent_action_recorded",
+  "project_id": "project-item-daed6c",
+  "agent_action": {
+    "id": "rollback-act-d63b32ca-f864-4c9d-80ed-3d97fa0dafc6",
+    "action_id": "rollback-act-d63b32ca-f864-4c9d-80ed-3d97fa0dafc6",
+    "provider": "github",
+    "capability": "rollback:file.create",
+    "risk_class": "reversible_write",
+    "status": "rolled_back",
+    "verified": true,
+    "rollback_of": "act-d63b32ca-f864-4c9d-80ed-3d97fa0dafc6",
+    "provider_result": {
+      "status": "rolled_back",
+      "provider_result_id": "b8e23c91fe72b9362ee17d406135eece59f61306",
+      "verified": true,
+      "path": "agent_sandbox/stage3-server-v11-34698459801-1.txt"
+    },
+    "summary": "Rollback of act-d63b32ca-f864-4c9d-80ed-3d97fa0dafc6: rolled_back"
+  },
+  "summary": "Agent action github:rollback:file.create -> rolled_back",
+  "id": "evt-20260912T141332Z-agent-action-recor-4ca44f29",
+  "at": "2026-09-12T14:13:32Z",
+  "source": {
+    "kind": "chatgpt",
+    "via": "nextplan-agent-stage3"
+  }
+}
