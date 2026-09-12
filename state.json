@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-12T18:57:00Z",
+    "last_updated": "2026-09-12T18:57:01Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -119,12 +119,13 @@
         "evt-20260912T175901Z-local-v01-stage7-completed",
         "evt-20260912T175902Z-local-v01-stage8-completed",
         "evt-20260912T175903Z-local-v01-stage9-active",
-        "evt-20260912T185700Z-local-v01-stage9-completed"
+        "evt-20260912T185700Z-local-v01-stage9-completed",
+        "evt-20260912T185701Z-local-v01-stage10-completed"
       ],
-      "processed_count": 87,
-      "last_build_at": "2026-09-12T18:58:50Z",
+      "processed_count": 88,
+      "last_build_at": "2026-09-12T18:59:50Z",
       "last_applied": [
-        "evt-20260912T185700Z-local-v01-stage9-completed"
+        "evt-20260912T185701Z-local-v01-stage10-completed"
       ],
       "status": "ready"
     }
@@ -434,9 +435,9 @@
       "id": "project-item-daed6c",
       "name": "NextPlan开发",
       "category": "其他",
-      "status": "active",
+      "status": "completed",
       "priority": 2,
-      "next_action": "Local v0.1 Stage 10 — Packaging + Clean Machine Acceptance",
+      "next_action": "项目已完成",
       "milestones": [
         {
           "id": "core-schema-freeze",
@@ -606,12 +607,36 @@
         {
           "id": "local-v01-stage10-packaging-clean-machine",
           "name": "Local v0.1 Stage 10 — Packaging + Clean Machine Acceptance",
-          "status": "active"
+          "status": "completed"
         }
       ]
     }
   ],
   "events": [
+    {
+      "id": "evt-20260912T185701Z-local-v01-stage10-completed",
+      "at": "2026-09-12T18:57:01Z",
+      "project_id": "project-item-daed6c",
+      "type": "milestone_status_changed",
+      "summary": "Completed Local v0.1 Stage 10 — Packaging + Clean Machine Acceptance; NextPlan Local v0.1 Windows Beta passed release acceptance.",
+      "source": {
+        "kind": "chatgpt",
+        "via": "stage5-local-v01-stage9-10-release-closure",
+        "evidence": {
+          "release_branch_head": "7e678f05845c4d156b8c57f61605f5211f2716f3",
+          "release_acceptance_run": "34711899416",
+          "release_job": "103602045544",
+          "tests": "27 passed",
+          "clean_machine_acceptance": "CLEAN_MACHINE_ACCEPTANCE_PASS",
+          "installed_executable": "C:\\Users\\runneradmin\\AppData\\Local\\NextPlan\\nextplan-local-desktop.exe",
+          "runtime": "nextplan-local-core-v4",
+          "schema_version": 3,
+          "artifact_id": "10303149785",
+          "artifact_digest": "sha256:204ca8d7d794bf0b6875b4acdca98a0f2d171c5628dd74fcda9cd49112adf35e",
+          "merge_commit": "11fd35592675b881b1a2423e112ab2d2b6f11bd8"
+        }
+      }
+    },
     {
       "id": "evt-20260912T185700Z-local-v01-stage9-completed",
       "at": "2026-09-12T18:57:00Z",
