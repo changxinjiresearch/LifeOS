@@ -1,0 +1,15 @@
+{
+  "id": "evt-20260912T175902Z-local-v01-stage8-completed",
+  "at": "2026-09-12T17:59:02Z",
+  "type": "milestone_status_changed",
+  "project_id": "project-item-daed6c",
+  "milestone_id": "local-v01-stage8-local-execution-verification",
+  "status": "completed",
+  "auto_advance": false,
+  "summary": "Completed Local v0.1 Stage 8 — Local Execution & Verification",
+  "source": {
+    "kind": "chatgpt",
+    "via": "stage5-local-v01-stage6-8-release-closure",
+    "evidence": "Structured artifact.open, folder.open, file.copy and application.open actions accepted through the Action Gateway with permission, confirmation, execution receipts and verification; no arbitrary shell execution"
+  }
+}
