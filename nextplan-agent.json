@@ -10,6 +10,8 @@
   "protocol_path": "NEXTPLAN_AGENT_PROTOCOL.md",
   "sync_command_protocol_path": "NEXTPLAN_SYNC_COMMAND_PROTOCOL_V1.md",
   "sync_command_protocol_version": "1.0",
+  "entity_resolution_protocol_path": "NEXTPLAN_ENTITY_RESOLUTION_V1.md",
+  "entity_resolution_protocol_version": "1.0",
   "command_schema_path": "command.schema.json",
   "receipt_schema_path": "receipt.schema.json",
   "event_schema_path": "event.schema.json",
