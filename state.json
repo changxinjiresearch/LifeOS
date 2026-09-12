@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-12T04:21:10Z",
+    "last_updated": "2026-09-12T04:27:24Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -48,12 +48,13 @@
         "evt-20260911T144743Z-internship-project-update",
         "evt-20260911T174608Z-project-created-7fbfe24f",
         "evt-20260912T041400Z-project-updated-cdfde9a0",
-        "evt-20260912T042110Z-nextplan-development-workflow"
+        "evt-20260912T042110Z-nextplan-development-workflow",
+        "evt-20260912T042724Z-project-updated-2f46b2f9"
       ],
-      "processed_count": 16,
-      "last_build_at": "2026-09-12T04:22:32Z",
+      "processed_count": 17,
+      "last_build_at": "2026-09-12T04:27:34Z",
       "last_applied": [
-        "evt-20260912T042110Z-nextplan-development-workflow"
+        "evt-20260912T042724Z-project-updated-2f46b2f9"
       ],
       "status": "ready"
     }
@@ -145,7 +146,7 @@
       "category": "科研",
       "status": "active",
       "priority": 3,
-      "next_action": "执行 R2 实现验收并建立 CODE_LOCK；R2 正式启动前保持训练与测试解盲为未开始状态。",
+      "next_action": "R4 — Main Training，执行五主种子的正式主训练",
       "milestones": [
         {
           "id": "p1",
@@ -165,7 +166,7 @@
         {
           "id": "r2",
           "name": "R2 核心训练执行",
-          "status": "planned"
+          "status": "completed"
         },
         {
           "id": "external",
@@ -431,6 +432,17 @@
     }
   ],
   "events": [
+    {
+      "id": "evt-20260912T042724Z-project-updated-2f46b2f9",
+      "at": "2026-09-12T04:27:24Z",
+      "project_id": "research-pcc-v2",
+      "type": "project_updated",
+      "summary": "Updated project snapshot: PCC v2-R2",
+      "source": {
+        "kind": "chatgpt",
+        "via": "nextplan-chrome-bridge"
+      }
+    },
     {
       "id": "evt-20260912T042110Z-nextplan-development-workflow",
       "at": "2026-09-12T04:21:10Z",
