@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-12T14:15:42Z",
+    "last_updated": "2026-09-12T14:20:00Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -89,11 +89,14 @@
         "evt-20260912T141534Z-agent-action-recor-863e2450",
         "evt-20260912T141535Z-agent-reconciliati-a5c5b7fd",
         "evt-20260912T141540Z-agent-action-recor-25702658",
-        "evt-20260912T141542Z-agent-run-recorded-2e7fcf20"
+        "evt-20260912T141542Z-agent-run-recorded-2e7fcf20",
+        "evt-20260912T142000Z-stage3-close-13"
       ],
-      "processed_count": 57,
-      "last_build_at": "2026-09-12T14:15:43Z",
-      "last_applied": [],
+      "processed_count": 58,
+      "last_build_at": "2026-09-12T14:20:16Z",
+      "last_applied": [
+        "evt-20260912T142000Z-stage3-close-13"
+      ],
       "status": "ready"
     }
   },
@@ -404,7 +407,7 @@
       "category": "其他",
       "status": "active",
       "priority": 2,
-      "next_action": "Action Gateway + Permission Model",
+      "next_action": "External Connectors",
       "milestones": [
         {
           "id": "core-schema-freeze",
@@ -469,12 +472,12 @@
         {
           "id": "action-gateway-permission-model",
           "name": "Action Gateway + Permission Model",
-          "status": "active"
+          "status": "completed"
         },
         {
           "id": "external-connectors",
           "name": "External Connectors",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "trigger-event-intake",
@@ -500,6 +503,17 @@
     }
   ],
   "events": [
+    {
+      "id": "evt-20260912T142000Z-stage3-close-13",
+      "at": "2026-09-12T14:20:00Z",
+      "project_id": "project-item-daed6c",
+      "type": "milestone_status_changed",
+      "summary": "Stage III final acceptance passed: Action Gateway + Permission Model completed.",
+      "source": {
+        "kind": "chatgpt",
+        "via": "nextplan-agent-stage3-final-acceptance"
+      }
+    },
     {
       "id": "evt-20260912T141542Z-agent-run-recorded-2e7fcf20",
       "at": "2026-09-12T14:15:42Z",
