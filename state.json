@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-12T15:12:04Z",
+    "last_updated": "2026-09-12T15:14:00Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -107,14 +107,15 @@
         "evt-20260912T151201Z-stage4-close-21",
         "evt-20260912T151202Z-stage4-close-22",
         "evt-20260912T151203Z-stage4-close-23",
-        "evt-20260912T151204Z-stage4-close-24"
+        "evt-20260912T151204Z-stage4-close-24",
+        "evt-20260912T151205Z-stage4-close-project",
+        "evt-20260912T151400Z-stage4-finalize-canonical"
       ],
-      "processed_count": 75,
-      "last_build_at": "2026-09-12T15:13:33Z",
+      "processed_count": 77,
+      "last_build_at": "2026-09-12T15:14:34Z",
       "last_applied": [
-        "evt-20260912T151202Z-stage4-close-22",
-        "evt-20260912T151203Z-stage4-close-23",
-        "evt-20260912T151204Z-stage4-close-24"
+        "evt-20260912T151205Z-stage4-close-project",
+        "evt-20260912T151400Z-stage4-finalize-canonical"
       ],
       "status": "ready"
     }
@@ -552,6 +553,28 @@
     }
   ],
   "events": [
+    {
+      "id": "evt-20260912T151400Z-stage4-finalize-canonical",
+      "at": "2026-09-12T15:14:00Z",
+      "project_id": "project-item-daed6c",
+      "type": "project_updated",
+      "summary": "Reasserted final Stage IV canonical closure after state-builder commit race.",
+      "source": {
+        "kind": "chatgpt",
+        "via": "nextplan-stage4-final-acceptance"
+      }
+    },
+    {
+      "id": "evt-20260912T151205Z-stage4-close-project",
+      "at": "2026-09-12T15:12:05Z",
+      "project_id": "project-item-daed6c",
+      "type": "project_updated",
+      "summary": "NextPlan Stage IV Conversational State Capture production acceptance completed.",
+      "source": {
+        "kind": "chatgpt",
+        "via": "nextplan-stage4-final-acceptance"
+      }
+    },
     {
       "id": "evt-20260912T151204Z-stage4-close-24",
       "at": "2026-09-12T15:12:04Z",
