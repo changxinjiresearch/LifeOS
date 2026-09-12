@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-12T07:31:00Z",
+    "last_updated": "2026-09-12T13:47:33Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -72,15 +72,12 @@
         "evt-20260912T071501Z-phase-d12-completed",
         "evt-20260912T072900Z-nextplan-stage3-started",
         "evt-20260912T073000Z-stage3-version-bump",
-        "evt-20260912T073100Z-stage3-gate-a-start"
+        "evt-20260912T073100Z-stage3-gate-a-start",
+        "evt-20260912T134733Z-automation-rule-up-e25faa26"
       ],
-      "processed_count": 40,
-      "last_build_at": "2026-09-12T10:40:07Z",
-      "last_applied": [
-        "evt-20260912T072900Z-nextplan-stage3-started",
-        "evt-20260912T073000Z-stage3-version-bump",
-        "evt-20260912T073100Z-stage3-gate-a-start"
-      ],
+      "processed_count": 41,
+      "last_build_at": "2026-09-12T13:47:42Z",
+      "last_applied": [],
       "status": "ready"
     }
   },
@@ -487,6 +484,17 @@
     }
   ],
   "events": [
+    {
+      "id": "evt-20260912T134733Z-automation-rule-up-e25faa26",
+      "at": "2026-09-12T13:47:33Z",
+      "project_id": "project-item-daed6c",
+      "type": "automation_rule_upserted",
+      "summary": "Updated automation rule: preparation-window",
+      "source": {
+        "kind": "chatgpt",
+        "via": "nextplan-phase-d"
+      }
+    },
     {
       "id": "evt-20260912T073100Z-stage3-gate-a-start",
       "at": "2026-09-12T07:31:00Z",
@@ -990,7 +998,12 @@
   ],
   "notes": [],
   "resources": [],
-  "automation_rules": [],
+  "automation_rules": [
+    {
+      "id": "preparation-window",
+      "enabled": false
+    }
+  ],
   "automation_feed": [
     {
       "rule_id": "preparation-window",
