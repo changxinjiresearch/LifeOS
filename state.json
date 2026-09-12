@@ -31,7 +31,7 @@
       "version": 1,
       "mode": "append-only-event-files",
       "inbox": "events/inbox",
-      "builder": "engine/build_state.py",
+      "builder": "engine/build_state_v2.py",
       "processed_event_ids": [
         "evt-20260910T170426Z-task-created-ad83839a",
         "evt-20260910T172100Z-delete-backend-test-create",
@@ -69,10 +69,8 @@
         "evt-20260912T063703Z-phase-c10-completed"
       ],
       "processed_count": 34,
-      "last_build_at": "2026-09-12T06:38:24Z",
-      "last_applied": [
-        "evt-20260912T063703Z-phase-c10-completed"
-      ],
+      "last_build_at": "2026-09-12T07:07:35Z",
+      "last_applied": [],
       "status": "ready"
     }
   },
@@ -885,5 +883,8 @@
     }
   ],
   "notes": [],
-  "resources": []
+  "resources": [],
+  "automation_rules": [],
+  "automation_feed": [],
+  "automation_meta": {}
 }
