@@ -38,6 +38,10 @@ def test_corrupt_database_recovers_from_verified_checkpoint(tmp_path):
     checkpoint = store.create_recovery_checkpoint()
     assert Path(checkpoint["path"]).is_file()
 
+    # A valid WAL can legitimately reconstruct a damaged main database. Remove
+    # sidecars first so this specifically tests recovery from an unrecoverable
+    # canonical DB file rather than SQLite's own WAL recovery path.
+    SQLiteCanonicalStoreV3._clear_sidecars(db)
     db.write_bytes(b"not-a-sqlite-database")
     recovered = SQLiteCanonicalStoreV3(db)
     assert recovered.recovered_on_startup is True
