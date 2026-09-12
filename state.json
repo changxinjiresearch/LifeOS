@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-12T15:12:01Z",
+    "last_updated": "2026-09-12T15:12:04Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -104,12 +104,17 @@
         "evt-20260912T150655Z-stage4-m23",
         "evt-20260912T150656Z-stage4-m24",
         "evt-20260912T151200Z-stage4-close-20",
-        "evt-20260912T151201Z-stage4-close-21"
+        "evt-20260912T151201Z-stage4-close-21",
+        "evt-20260912T151202Z-stage4-close-22",
+        "evt-20260912T151203Z-stage4-close-23",
+        "evt-20260912T151204Z-stage4-close-24"
       ],
-      "processed_count": 72,
-      "last_build_at": "2026-09-12T15:13:08Z",
+      "processed_count": 75,
+      "last_build_at": "2026-09-12T15:13:33Z",
       "last_applied": [
-        "evt-20260912T151201Z-stage4-close-21"
+        "evt-20260912T151202Z-stage4-close-22",
+        "evt-20260912T151203Z-stage4-close-23",
+        "evt-20260912T151204Z-stage4-close-24"
       ],
       "status": "ready"
     }
@@ -419,9 +424,9 @@
       "id": "project-item-daed6c",
       "name": "NextPlan开发",
       "category": "其他",
-      "status": "active",
+      "status": "completed",
       "priority": 2,
-      "next_action": "Assistant Provenance Guard",
+      "next_action": "项目已完成",
       "milestones": [
         {
           "id": "core-schema-freeze",
@@ -531,22 +536,55 @@
         {
           "id": "assistant-provenance-guard",
           "name": "Assistant Provenance Guard",
-          "status": "active"
+          "status": "completed"
         },
         {
           "id": "conversation-acceptance-tests",
           "name": "Conversation Acceptance Tests",
-          "status": "planned"
+          "status": "completed"
         },
         {
           "id": "production-rollout-health-acceptance",
           "name": "Production Rollout + Health Acceptance",
-          "status": "planned"
+          "status": "completed"
         }
       ]
     }
   ],
   "events": [
+    {
+      "id": "evt-20260912T151204Z-stage4-close-24",
+      "at": "2026-09-12T15:12:04Z",
+      "project_id": "project-item-daed6c",
+      "type": "milestone_status_changed",
+      "summary": "Stage IV acceptance passed: Production Rollout + Health Acceptance completed.",
+      "source": {
+        "kind": "chatgpt",
+        "via": "nextplan-stage4-final-acceptance"
+      }
+    },
+    {
+      "id": "evt-20260912T151203Z-stage4-close-23",
+      "at": "2026-09-12T15:12:03Z",
+      "project_id": "project-item-daed6c",
+      "type": "milestone_status_changed",
+      "summary": "Stage IV acceptance passed: Conversation Acceptance Tests completed.",
+      "source": {
+        "kind": "chatgpt",
+        "via": "nextplan-stage4-final-acceptance"
+      }
+    },
+    {
+      "id": "evt-20260912T151202Z-stage4-close-22",
+      "at": "2026-09-12T15:12:02Z",
+      "project_id": "project-item-daed6c",
+      "type": "milestone_status_changed",
+      "summary": "Stage IV acceptance passed: Assistant Provenance Guard completed.",
+      "source": {
+        "kind": "chatgpt",
+        "via": "nextplan-stage4-final-acceptance"
+      }
+    },
     {
       "id": "evt-20260912T151201Z-stage4-close-21",
       "at": "2026-09-12T15:12:01Z",
