@@ -1,0 +1,1 @@
+Authoritative roadmap: NEXTPLAN_AGENT_STAGE3_V1.md. Authoritative acceptance gates: NEXTPLAN_AGENT_STAGE3_ACCEPTANCE.md.
