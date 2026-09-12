@@ -7,9 +7,10 @@ import shutil
 import sqlite3
 import tempfile
 import zipfile
+from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterator
 
 from .storage_v2 import SQLiteCanonicalStoreV2
 
@@ -33,9 +34,10 @@ def _sha256(path: Path) -> str:
 class SQLiteCanonicalStoreV3(SQLiteCanonicalStoreV2):
     """Release-hardened local canonical store.
 
-    Adds integrity checks, rotating recovery checkpoints, and sanitized ZIP
-    backup/restore. Pairing credentials are intentionally excluded from user
-    backups so restoring a backup always requires a fresh local pairing.
+    Adds deterministic connection closing, integrity checks, rotating recovery
+    checkpoints, and sanitized ZIP backup/restore. Pairing credentials are
+    intentionally excluded from user backups so restoring a backup always
+    requires a fresh local pairing.
     """
 
     SCHEMA_VERSION = 3
@@ -63,6 +65,29 @@ class SQLiteCanonicalStoreV3(SQLiteCanonicalStoreV2):
         if not self.integrity_status()["ok"]:
             raise RuntimeError("NextPlan local database failed integrity check after initialization")
 
+    @contextmanager
+    def _connect(self) -> Iterator[sqlite3.Connection]:
+        """Open a transaction-scoped connection and always close its handle.
+
+        sqlite3.Connection.__exit__ commits/rolls back but does not close the
+        connection. That leaves WAL handles alive until GC on Windows. V3 makes
+        connection lifetime deterministic, which is required for safe backup,
+        restore, checkpoint replacement and uninstall/restart behavior.
+        """
+        conn = sqlite3.connect(self.path, timeout=10.0)
+        conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA foreign_keys = ON")
+        conn.execute("PRAGMA journal_mode = WAL")
+        conn.execute("PRAGMA synchronous = FULL")
+        try:
+            yield conn
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+
     @staticmethod
     def _clear_sidecars(path: Path) -> None:
         for suffix in ("-wal", "-shm"):
@@ -70,13 +95,7 @@ class SQLiteCanonicalStoreV3(SQLiteCanonicalStoreV2):
 
     @staticmethod
     def _replace_path(source: Path, destination: Path) -> None:
-        """Replace a file safely across POSIX and Windows semantics.
-
-        Windows can reject ReplaceFile-style semantics when SQLite has recently
-        used WAL/shared-memory handles. At this point every NextPlan connection
-        is closed and the destination has already been checkpointed, so a
-        delete-then-rename fallback is safe and deterministic.
-        """
+        """Replace a file safely across POSIX and Windows semantics."""
         try:
             os.replace(source, destination)
         except PermissionError:
@@ -232,8 +251,6 @@ class SQLiteCanonicalStoreV3(SQLiteCanonicalStoreV2):
             self._clear_sidecars(self.path)
             self._replace_path(replacement, self.path)
 
-        # Bring older valid backups forward to the current schema and explicitly
-        # require a fresh browser pairing after restore.
         self._init_schema()
         self._init_stage_v_schema()
         with self._connect() as conn:
