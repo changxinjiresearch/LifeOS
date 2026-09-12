@@ -10,4 +10,4 @@ RUN pip install --no-cache-dir -r /app/mcp_server/requirements.txt
 
 COPY mcp_server /app/mcp_server
 
-CMD ["sh", "-c", "uvicorn mcp_server.server_v9:app --host 0.0.0.0 --port ${PORT:-8000} --no-access-log"]
+CMD ["sh", "-c", "uvicorn mcp_server.server_v10:app --host 0.0.0.0 --port ${PORT:-8000} --no-access-log"]
