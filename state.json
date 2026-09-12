@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-12T14:20:00Z",
+    "last_updated": "2026-09-12T14:20:02Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -90,12 +90,15 @@
         "evt-20260912T141535Z-agent-reconciliati-a5c5b7fd",
         "evt-20260912T141540Z-agent-action-recor-25702658",
         "evt-20260912T141542Z-agent-run-recorded-2e7fcf20",
-        "evt-20260912T142000Z-stage3-close-13"
+        "evt-20260912T142000Z-stage3-close-13",
+        "evt-20260912T142001Z-stage3-close-14",
+        "evt-20260912T142002Z-stage3-close-15"
       ],
-      "processed_count": 58,
-      "last_build_at": "2026-09-12T14:20:16Z",
+      "processed_count": 60,
+      "last_build_at": "2026-09-12T14:20:40Z",
       "last_applied": [
-        "evt-20260912T142000Z-stage3-close-13"
+        "evt-20260912T142001Z-stage3-close-14",
+        "evt-20260912T142002Z-stage3-close-15"
       ],
       "status": "ready"
     }
@@ -407,7 +410,7 @@
       "category": "其他",
       "status": "active",
       "priority": 2,
-      "next_action": "External Connectors",
+      "next_action": "Agent Execution Loop",
       "milestones": [
         {
           "id": "core-schema-freeze",
@@ -477,17 +480,17 @@
         {
           "id": "external-connectors",
           "name": "External Connectors",
-          "status": "active"
+          "status": "completed"
         },
         {
           "id": "trigger-event-intake",
           "name": "Trigger + Event Intake",
-          "status": "planned"
+          "status": "completed"
         },
         {
           "id": "agent-execution-loop",
           "name": "Agent Execution Loop",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "verification-reconciliation-rollback",
@@ -503,6 +506,28 @@
     }
   ],
   "events": [
+    {
+      "id": "evt-20260912T142002Z-stage3-close-15",
+      "at": "2026-09-12T14:20:02Z",
+      "project_id": "project-item-daed6c",
+      "type": "milestone_status_changed",
+      "summary": "Stage III final acceptance passed: Trigger + Event Intake completed.",
+      "source": {
+        "kind": "chatgpt",
+        "via": "nextplan-agent-stage3-final-acceptance"
+      }
+    },
+    {
+      "id": "evt-20260912T142001Z-stage3-close-14",
+      "at": "2026-09-12T14:20:01Z",
+      "project_id": "project-item-daed6c",
+      "type": "milestone_status_changed",
+      "summary": "Stage III final acceptance passed: External Connectors completed.",
+      "source": {
+        "kind": "chatgpt",
+        "via": "nextplan-agent-stage3-final-acceptance"
+      }
+    },
     {
       "id": "evt-20260912T142000Z-stage3-close-13",
       "at": "2026-09-12T14:20:00Z",
