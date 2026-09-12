@@ -1,0 +1,17 @@
+{
+  "id": "evt-20260912T061320Z-migrate-meeting-calendar",
+  "at": "2026-09-12T06:13:20Z",
+  "type": "calendar_event_upserted",
+  "project_id": "flinders-presentation",
+  "calendar_event": {
+    "id": "calendar-meeting-2026-09-16-1630",
+    "title": "与导师 Meeting",
+    "date": "2026-09-16",
+    "time": "16:30",
+    "timezone": "Australia/Adelaide",
+    "kind": "meeting",
+    "category": "课程"
+  },
+  "summary": "Migrated the confirmed supervisor meeting into the canonical calendar_events collection.",
+  "source": {"kind": "system-migration", "via": "nextplan-phase-b"}
+}
