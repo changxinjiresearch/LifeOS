@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-12T05:50:00Z",
+    "last_updated": "2026-09-12T06:13:20Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -56,11 +56,14 @@
         "evt-20260912T053701Z-sync-command-protocol-active",
         "evt-20260912T054500Z-sync-command-protocol-completed",
         "evt-20260912T054501Z-entity-resolution-active",
-        "evt-20260912T055000Z-entity-resolution-completed"
+        "evt-20260912T055000Z-entity-resolution-completed",
+        "evt-20260912T061320Z-migrate-meeting-calendar"
       ],
-      "processed_count": 24,
-      "last_build_at": "2026-09-12T06:08:10Z",
-      "last_applied": [],
+      "processed_count": 25,
+      "last_build_at": "2026-09-12T06:14:31Z",
+      "last_applied": [
+        "evt-20260912T061320Z-migrate-meeting-calendar"
+      ],
       "status": "ready"
     }
   },
@@ -438,6 +441,17 @@
   ],
   "events": [
     {
+      "id": "evt-20260912T061320Z-migrate-meeting-calendar",
+      "at": "2026-09-12T06:13:20Z",
+      "project_id": "flinders-presentation",
+      "type": "calendar_event_upserted",
+      "summary": "Migrated the confirmed supervisor meeting into the canonical calendar_events collection.",
+      "source": {
+        "kind": "system-migration",
+        "via": "nextplan-phase-b"
+      }
+    },
+    {
       "id": "evt-20260912T055000Z-entity-resolution-completed",
       "at": "2026-09-12T05:50:00Z",
       "project_id": "project-item-daed6c",
@@ -760,7 +774,17 @@
       "category": "课程"
     }
   ],
-  "calendar_events": [],
+  "calendar_events": [
+    {
+      "id": "calendar-meeting-2026-09-16-1630",
+      "title": "与导师 Meeting",
+      "date": "2026-09-16",
+      "time": "16:30",
+      "timezone": "Australia/Adelaide",
+      "kind": "meeting",
+      "category": "课程"
+    }
+  ],
   "notes": [],
   "resources": []
 }
