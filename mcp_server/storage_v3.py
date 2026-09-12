@@ -19,7 +19,7 @@ def _now_iso() -> str:
 
 
 def _stamp() -> str:
-    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
 
 
 def _sha256(path: Path) -> str:
@@ -50,12 +50,9 @@ class SQLiteCanonicalStoreV3(SQLiteCanonicalStoreV2):
         if resolved.exists() and not self._database_ok(resolved):
             recovered = self._restore_latest_recovery_file(resolved)
             if not recovered:
+                self._clear_sidecars(resolved)
                 corrupt = resolved.with_name(f"{resolved.name}.corrupt-{_stamp()}")
-                os.replace(resolved, corrupt)
-                for suffix in ("-wal", "-shm"):
-                    side = Path(str(resolved) + suffix)
-                    if side.exists():
-                        side.unlink(missing_ok=True)
+                self._replace_path(resolved, corrupt)
                 self.recovery_detail = f"Corrupt database quarantined as {corrupt.name}; started a new local database."
             else:
                 self.recovered_on_startup = True
@@ -65,6 +62,26 @@ class SQLiteCanonicalStoreV3(SQLiteCanonicalStoreV2):
             conn.execute("INSERT OR IGNORE INTO schema_migrations(version) VALUES (3)")
         if not self.integrity_status()["ok"]:
             raise RuntimeError("NextPlan local database failed integrity check after initialization")
+
+    @staticmethod
+    def _clear_sidecars(path: Path) -> None:
+        for suffix in ("-wal", "-shm"):
+            Path(str(path) + suffix).unlink(missing_ok=True)
+
+    @staticmethod
+    def _replace_path(source: Path, destination: Path) -> None:
+        """Replace a file safely across POSIX and Windows semantics.
+
+        Windows can reject ReplaceFile-style semantics when SQLite has recently
+        used WAL/shared-memory handles. At this point every NextPlan connection
+        is closed and the destination has already been checkpointed, so a
+        delete-then-rename fallback is safe and deterministic.
+        """
+        try:
+            os.replace(source, destination)
+        except PermissionError:
+            destination.unlink(missing_ok=True)
+            os.replace(source, destination)
 
     @staticmethod
     def _database_ok(path: Path) -> bool:
@@ -93,9 +110,8 @@ class SQLiteCanonicalStoreV3(SQLiteCanonicalStoreV2):
                 continue
             tmp = db_path.with_name(f".{db_path.name}.recovering")
             shutil.copy2(candidate, tmp)
-            os.replace(tmp, db_path)
-            for suffix in ("-wal", "-shm"):
-                Path(str(db_path) + suffix).unlink(missing_ok=True)
+            cls._clear_sidecars(db_path)
+            cls._replace_path(tmp, db_path)
             return True
         return False
 
@@ -178,7 +194,7 @@ class SQLiteCanonicalStoreV3(SQLiteCanonicalStoreV2):
             with zipfile.ZipFile(tmp_zip, "w", compression=zipfile.ZIP_DEFLATED) as zf:
                 zf.write(db_copy, "nextplan.db")
                 zf.write(manifest_path, "manifest.json")
-            os.replace(tmp_zip, target)
+            self._replace_path(tmp_zip, target)
         return {"status": "ok", "path": str(target), "sha256": _sha256(target), "manifest": manifest}
 
     def restore_backup(self, source: str | Path) -> dict[str, Any]:
@@ -213,9 +229,8 @@ class SQLiteCanonicalStoreV3(SQLiteCanonicalStoreV2):
                 self._sqlite_backup(pre, sanitize_credentials=False)
             replacement = self.path.with_name(f".{self.path.name}.restoring")
             shutil.copy2(incoming, replacement)
-            os.replace(replacement, self.path)
-            for suffix in ("-wal", "-shm"):
-                Path(str(self.path) + suffix).unlink(missing_ok=True)
+            self._clear_sidecars(self.path)
+            self._replace_path(replacement, self.path)
 
         # Bring older valid backups forward to the current schema and explicitly
         # require a fresh browser pairing after restore.
