@@ -1,0 +1,10 @@
+{
+  "id": "evt-20260912T151204Z-stage4-close-24",
+  "at": "2026-09-12T15:12:04Z",
+  "project_id": "project-item-daed6c",
+  "type": "milestone_status_changed",
+  "summary": "Stage IV acceptance passed: Production Rollout + Health Acceptance completed.",
+  "source": {"kind": "chatgpt", "via": "nextplan-stage4-final-acceptance"},
+  "milestone_id": "production-rollout-health-acceptance",
+  "status": "completed"
+}
