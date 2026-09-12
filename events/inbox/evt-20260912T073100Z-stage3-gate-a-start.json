@@ -8,9 +8,6 @@
     "kind": "chatgpt",
     "via": "nextplan-agent-stage3"
   },
-  "milestone": {
-    "id": "action-gateway-permission-model",
-    "name": "Action Gateway + Permission Model",
-    "status": "active"
-  }
+  "milestone_id": "action-gateway-permission-model",
+  "status": "active"
 }
