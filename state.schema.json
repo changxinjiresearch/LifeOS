@@ -1,0 +1,161 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nextplan.local/state.schema.json",
+  "title": "NextPlan Canonical State",
+  "type": "object",
+  "required": ["schema_version", "system", "projects", "events"],
+  "properties": {
+    "schema_version": {"type": "integer", "minimum": 1},
+    "system": {"type": "object"},
+    "projects": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/project"}
+    },
+    "deadlines": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/deadline"},
+      "default": []
+    },
+    "calendar_events": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/calendarEvent"},
+      "default": []
+    },
+    "notes": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/note"},
+      "default": []
+    },
+    "resources": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/resource"},
+      "default": []
+    },
+    "events": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/historyEvent"}
+    }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "status": {
+      "type": "string",
+      "enum": ["planned", "active", "waiting", "blocked", "completed", "done"]
+    },
+    "isoDate": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "localTime": {
+      "type": "string",
+      "pattern": "^(?:[01]\\d|2[0-3]):[0-5]\\d$"
+    },
+    "workItem": {
+      "type": "object",
+      "required": ["id", "name", "status"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "name": {"type": "string", "minLength": 1},
+        "status": {"$ref": "#/$defs/status"},
+        "deadline": {"$ref": "#/$defs/isoDate"},
+        "due": {"$ref": "#/$defs/isoDate"},
+        "kind": {"type": "string", "enum": ["task", "milestone"]}
+      },
+      "additionalProperties": true
+    },
+    "project": {
+      "type": "object",
+      "required": ["id", "name", "category", "status", "priority", "next_action", "milestones"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "name": {"type": "string", "minLength": 1},
+        "category": {"type": "string", "minLength": 1},
+        "status": {"$ref": "#/$defs/status"},
+        "priority": {"type": "integer", "minimum": 1, "maximum": 3},
+        "next_action": {"type": "string"},
+        "deadline": {"$ref": "#/$defs/isoDate"},
+        "due": {"$ref": "#/$defs/isoDate"},
+        "milestones": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/workItem"}
+        }
+      },
+      "additionalProperties": true
+    },
+    "deadline": {
+      "type": "object",
+      "required": ["id", "title", "date"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "title": {"type": "string", "minLength": 1},
+        "date": {"$ref": "#/$defs/isoDate"},
+        "project_id": {"type": "string"},
+        "task_id": {"type": "string"},
+        "category": {"type": "string"},
+        "time": {"$ref": "#/$defs/localTime"},
+        "timezone": {"type": "string"},
+        "kind": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "calendarEvent": {
+      "type": "object",
+      "required": ["id", "title", "date", "kind"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "title": {"type": "string", "minLength": 1},
+        "date": {"$ref": "#/$defs/isoDate"},
+        "time": {"$ref": "#/$defs/localTime"},
+        "end_time": {"$ref": "#/$defs/localTime"},
+        "timezone": {"type": "string"},
+        "kind": {
+          "type": "string",
+          "enum": ["event", "meeting", "appointment", "presentation", "reminder"]
+        },
+        "project_id": {"type": "string"},
+        "task_id": {"type": "string"},
+        "category": {"type": "string"},
+        "location": {"type": "string"},
+        "notes": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "note": {
+      "type": "object",
+      "required": ["id", "title"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "title": {"type": "string", "minLength": 1},
+        "body": {"type": "string"},
+        "category": {"type": "string"},
+        "at": {"type": "string", "format": "date-time"}
+      },
+      "additionalProperties": true
+    },
+    "resource": {
+      "type": "object",
+      "required": ["id", "title", "location"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "title": {"type": "string", "minLength": 1},
+        "location": {"type": "string", "minLength": 1},
+        "type": {"type": "string"},
+        "description": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "historyEvent": {
+      "type": "object",
+      "required": ["id", "at", "type", "summary"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "at": {"type": "string", "format": "date-time"},
+        "project_id": {"type": "string"},
+        "type": {"type": "string", "minLength": 1},
+        "summary": {"type": "string"},
+        "source": {"type": "object"}
+      },
+      "additionalProperties": true
+    }
+  }
+}
