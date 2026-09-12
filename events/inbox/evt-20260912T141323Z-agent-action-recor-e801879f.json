@@ -1,0 +1,40 @@
+{
+  "type": "agent_action_recorded",
+  "project_id": "project-item-daed6c",
+  "agent_action": {
+    "receipt_version": "agent-action-1.0",
+    "action_id": "act-b5d8ff61-1d06-49ab-b765-a863c7c6409e",
+    "provider": "github",
+    "capability": "repo.get",
+    "risk_class": "read_only",
+    "idempotency_key": "stage3-read-34698634953-1",
+    "status": "verified",
+    "provider_result_id": "1364088011",
+    "verified": true,
+    "rollback_supported": false,
+    "summary": "Provider action executed and verified.",
+    "at": "2026-09-12T14:13:23Z",
+    "project_id": "project-item-daed6c",
+    "verification": {
+      "verified": true,
+      "evidence": {
+        "full_name": "changxinjiresearch/LifeOS"
+      }
+    },
+    "provider_result": {
+      "provider_result_id": "1364088011",
+      "full_name": "changxinjiresearch/LifeOS",
+      "default_branch": "main",
+      "private": true,
+      "updated_at": "2026-09-12T14:13:22Z"
+    },
+    "id": "act-b5d8ff61-1d06-49ab-b765-a863c7c6409e"
+  },
+  "summary": "Agent action github:repo.get -> verified",
+  "id": "evt-20260912T141323Z-agent-action-recor-e801879f",
+  "at": "2026-09-12T14:13:23Z",
+  "source": {
+    "kind": "chatgpt",
+    "via": "nextplan-agent-stage3"
+  }
+}
