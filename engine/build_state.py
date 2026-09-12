@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import json
-import os
 from copy import deepcopy
 from datetime import datetime, timezone
 from pathlib import Path
@@ -22,8 +21,6 @@ def save_json(path: Path, obj):
 
 
 def now_iso():
-    # GitHub runner is UTC. Event timestamps supplied by ChatGPT remain authoritative;
-    # this value is only the state build timestamp.
     return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
 
 
@@ -67,21 +64,32 @@ def append_history(state, event):
         "project_id": event.get("project_id", "system"),
         "type": event["type"],
         "summary": event.get("summary") or event.get("title") or event["type"],
-        "source": event.get("source", {"kind": "chatgpt"})
+        "source": event.get("source", {"kind": "chatgpt"}),
     })
 
 
 def upsert_deadline(state, d):
     deadlines = state.setdefault("deadlines", [])
     did = d.get("id")
-    key = (d.get("project_id"), d.get("title") or d.get("name"), d.get("date") or d.get("due"))
+    key = (d.get("project_id"), d.get("task_id"), d.get("title") or d.get("name"), d.get("date") or d.get("due"))
     for cur in deadlines:
-        if (did and cur.get("id") == did) or (
-            (cur.get("project_id"), cur.get("title") or cur.get("name"), cur.get("date") or cur.get("due")) == key
-        ):
+        cur_key = (cur.get("project_id"), cur.get("task_id"), cur.get("title") or cur.get("name"), cur.get("date") or cur.get("due"))
+        if (did and cur.get("id") == did) or cur_key == key:
             cur.update(d)
             return
     deadlines.append(d)
+
+
+def upsert_calendar_event(state, obj):
+    items = state.setdefault("calendar_events", [])
+    oid = obj.get("id")
+    key = (obj.get("project_id"), obj.get("title"), obj.get("date"), obj.get("time"), obj.get("kind"))
+    for cur in items:
+        cur_key = (cur.get("project_id"), cur.get("title"), cur.get("date"), cur.get("time"), cur.get("kind"))
+        if (oid and cur.get("id") == oid) or cur_key == key:
+            cur.update(obj)
+            return
+    items.append(obj)
 
 
 def upsert_named(items, obj, *, id_key="id", name_keys=("title", "name")):
@@ -97,6 +105,32 @@ def upsert_named(items, obj, *, id_key="id", name_keys=("title", "name")):
                     cur.update(obj)
                     return
     items.append(obj)
+
+
+def auto_advance_project(project, completed_id):
+    milestones = project.setdefault("milestones", [])
+    if any(m.get("status") == "active" for m in milestones):
+        project["status"] = "active"
+        active = next((m for m in milestones if m.get("status") == "active"), None)
+        if active:
+            project["next_action"] = active.get("name", project.get("next_action", ""))
+        return
+    planned = [m for m in milestones if m.get("status") == "planned"]
+    if planned:
+        completed_index = next((i for i, m in enumerate(milestones) if m.get("id") == completed_id), -1)
+        next_item = next((m for i, m in enumerate(milestones) if i > completed_index and m.get("status") == "planned"), planned[0])
+        next_item["status"] = "active"
+        project["status"] = "active"
+        project["next_action"] = next_item.get("name", "")
+        return
+    if milestones and all(m.get("status") in {"completed", "done"} for m in milestones):
+        project["status"] = "completed"
+        project["next_action"] = "项目已完成"
+        return
+    if any(m.get("status") == "blocked" for m in milestones):
+        project["status"] = "blocked"
+    elif any(m.get("status") == "waiting" for m in milestones):
+        project["status"] = "waiting"
 
 
 def apply_event(state, event):
@@ -142,6 +176,7 @@ def apply_event(state, event):
             raise ValueError(f"unknown project_id: {project_id}")
         state["projects"] = [p for p in state["projects"] if p.get("id") != project_id]
         state["deadlines"] = [d for d in state.setdefault("deadlines", []) if d.get("project_id") != project_id]
+        state["calendar_events"] = [d for d in state.setdefault("calendar_events", []) if d.get("project_id") != project_id]
 
     elif et in {"milestone_added", "task_created"}:
         p = find_project(state, require(event, "project_id", str))
@@ -157,10 +192,12 @@ def apply_event(state, event):
             existing.update(m)
         else:
             p["milestones"].append(m)
-        if event.get("activate_project", True) and p.get("status") in {"planned", "waiting"}:
+        if event.get("activate_project", True) and p.get("status") in {"planned", "waiting", "blocked"}:
             p["status"] = "active"
         if "next_action" in event:
             p["next_action"] = event["next_action"]
+        elif m.get("status") == "active":
+            p["next_action"] = m.get("name", p.get("next_action", ""))
 
     elif et in {"milestone_status_changed", "task_updated", "task_completed"}:
         p = find_project(state, require(event, "project_id", str))
@@ -174,10 +211,19 @@ def apply_event(state, event):
             m["name"] = event["name"]
         if "deadline" in event:
             m["deadline"] = event["deadline"]
+        if "prep_days" in event:
+            m["prep_days"] = event["prep_days"]
+        if "last_worked_at" in event:
+            m["last_worked_at"] = event["last_worked_at"]
         if "next_action" in event:
             p["next_action"] = event["next_action"]
         if "project_status" in event:
             set_status(p, event["project_status"])
+        elif status == "active":
+            p["status"] = "active"
+            p["next_action"] = m.get("name", p.get("next_action", ""))
+        elif status == "completed" and event.get("auto_advance", True):
+            auto_advance_project(p, mid)
 
     elif et == "task_deleted":
         p = find_project(state, require(event, "project_id", str))
@@ -196,6 +242,18 @@ def apply_event(state, event):
         did = require(event, "deadline_id", str)
         state["deadlines"] = [d for d in state.setdefault("deadlines", []) if d.get("id") != did]
 
+    elif et == "calendar_event_upserted":
+        c = deepcopy(require(event, "calendar_event", dict))
+        require(c, "id", str)
+        require(c, "title", str)
+        require(c, "date", str)
+        c.setdefault("kind", "event")
+        upsert_calendar_event(state, c)
+
+    elif et == "calendar_event_removed":
+        cid = require(event, "calendar_event_id", str)
+        state["calendar_events"] = [c for c in state.setdefault("calendar_events", []) if c.get("id") != cid]
+
     elif et == "note_added":
         note = deepcopy(require(event, "note", dict))
         note.setdefault("at", event["at"])
@@ -213,19 +271,22 @@ def apply_event(state, event):
 
 def main():
     state = load_json(STATE_PATH)
+    state.setdefault("deadlines", [])
+    state.setdefault("calendar_events", [])
+    state.setdefault("notes", [])
+    state.setdefault("resources", [])
     system = state.setdefault("system", {})
     layer = system.setdefault("event_layer", {
         "version": 1,
         "mode": "append-only-event-files",
         "inbox": "events/inbox",
         "builder": "engine/build_state.py",
-        "processed_event_ids": []
+        "processed_event_ids": [],
     })
     processed = set(layer.setdefault("processed_event_ids", []))
 
     paths = sorted(EVENT_DIR.glob("*.json")) if EVENT_DIR.exists() else []
-    applied = []
-    errors = []
+    applied, errors = [], []
     for path in paths:
         try:
             event = load_json(path)
@@ -247,17 +308,20 @@ def main():
     layer["last_applied"] = applied
     layer["status"] = "ready"
     system["architecture"] = "conversation-event-layer-central-state"
-    system.setdefault("rules", {})["assistant_writes_confirmed_state_changes"] = True
-    system["rules"]["discussion_does_not_change_status"] = True
-    system["rules"]["planning_does_not_equal_completion"] = True
-    system["rules"]["completion_requires_confirmed_evidence"] = True
-    system["rules"]["waiting_items_are_not_actionable"] = True
-    system["rules"]["event_ids_are_idempotent"] = True
-    system["rules"]["event_files_are_append_only"] = True
+    rules = system.setdefault("rules", {})
+    rules.update({
+        "assistant_writes_confirmed_state_changes": True,
+        "discussion_does_not_change_status": True,
+        "planning_does_not_equal_completion": True,
+        "completion_requires_confirmed_evidence": True,
+        "waiting_items_are_not_actionable": True,
+        "event_ids_are_idempotent": True,
+        "event_files_are_append_only": True,
+    })
     system["last_updated"] = max(
-        [event_at for event_at in [state.get("events", [{}])[0].get("at") if state.get("events") else None] if event_at] or [system.get("last_updated") or now_iso()]
+        [x for x in [state.get("events", [{}])[0].get("at") if state.get("events") else None] if x]
+        or [system.get("last_updated") or now_iso()]
     )
-
     save_json(STATE_PATH, state)
     print(json.dumps({"applied": applied, "processed_count": len(processed)}, ensure_ascii=False))
 
