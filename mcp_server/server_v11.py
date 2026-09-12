@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import asyncio
 from datetime import datetime, timezone
 from typing import Any
 import uuid
+
+import httpx
 
 from . import server_v10 as v10
 from . import server_v6 as v6
@@ -19,6 +22,29 @@ from .connectors_v1 import ConnectorRegistry, GitHubConnector, ConnectorError
 base = v10.base
 _LEGACY_EXECUTE = v10._phase_d_action
 _LEGACY_APP = v10.app
+_ORIGINAL_GITHUB_CREATE_TEXT = getattr(base, "_github_create_text_v11_original", base._github_create_text)
+base._github_create_text_v11_original = _ORIGINAL_GITHUB_CREATE_TEXT
+
+
+async def _github_create_text_v11(path: str, text: str, message: str) -> dict[str, Any]:
+    """Retry append-only canonical event writes across short GitHub branch races."""
+    last_error: httpx.HTTPStatusError | None = None
+    for attempt in range(1, 9):
+        try:
+            return await _ORIGINAL_GITHUB_CREATE_TEXT(path, text, message)
+        except httpx.HTTPStatusError as exc:
+            last_error = exc
+            if exc.response.status_code != 409 or attempt == 8:
+                raise
+            await asyncio.sleep(min(0.15 * attempt, 1.0))
+    assert last_error is not None
+    raise last_error
+
+
+# server_v11 is the production composition root. All inherited _emit callers use
+# the base module's global writer at runtime, so this hardens every Stage III
+# canonical event write without changing older server contracts.
+base._github_create_text = _github_create_text_v11
 
 
 def _now_iso() -> str:
