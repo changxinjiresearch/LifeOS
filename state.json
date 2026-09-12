@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-12T04:27:24Z",
+    "last_updated": "2026-09-12T05:24:20Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -49,12 +49,13 @@
         "evt-20260911T174608Z-project-created-7fbfe24f",
         "evt-20260912T041400Z-project-updated-cdfde9a0",
         "evt-20260912T042110Z-nextplan-development-workflow",
-        "evt-20260912T042724Z-project-updated-2f46b2f9"
+        "evt-20260912T042724Z-project-updated-2f46b2f9",
+        "evt-20260912T052420Z-deadline-set-2db01979"
       ],
-      "processed_count": 17,
-      "last_build_at": "2026-09-12T04:27:34Z",
+      "processed_count": 18,
+      "last_build_at": "2026-09-12T05:24:30Z",
       "last_applied": [
-        "evt-20260912T042724Z-project-updated-2f46b2f9"
+        "evt-20260912T052420Z-deadline-set-2db01979"
       ],
       "status": "ready"
     }
@@ -433,6 +434,17 @@
   ],
   "events": [
     {
+      "id": "evt-20260912T052420Z-deadline-set-2db01979",
+      "at": "2026-09-12T05:24:20Z",
+      "project_id": "calendar",
+      "type": "deadline_set",
+      "summary": "Calendar: 与导师 Meeting on 2026-09-16 16:30",
+      "source": {
+        "kind": "chatgpt",
+        "via": "nextplan-cloud-classifier"
+      }
+    },
+    {
       "id": "evt-20260912T042724Z-project-updated-2f46b2f9",
       "at": "2026-09-12T04:27:24Z",
       "project_id": "research-pcc-v2",
@@ -667,5 +679,15 @@
       "summary": "Academic CV updated for PhD outreach with current Neuroscience Informatics, PCC and PCC v2 status."
     }
   ],
-  "deadlines": []
+  "deadlines": [
+    {
+      "id": "calendar-meeting-2026-09-16-1630",
+      "title": "与导师 Meeting",
+      "date": "2026-09-16",
+      "kind": "event",
+      "time": "16:30",
+      "timezone": "Australia/Adelaide",
+      "category": "课程"
+    }
+  ]
 }
