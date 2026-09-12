@@ -1,0 +1,14 @@
+{
+  "id": "evt-20260912T063703Z-phase-c10-completed",
+  "at": "2026-09-12T06:37:03Z",
+  "type": "milestone_status_changed",
+  "project_id": "project-item-daed6c",
+  "milestone_id": "analytics",
+  "status": "completed",
+  "auto_advance": true,
+  "summary": "Completed Phase C10 Analytics v1.",
+  "source": {
+    "kind": "chatgpt",
+    "via": "nextplan-phase-c"
+  }
+}
