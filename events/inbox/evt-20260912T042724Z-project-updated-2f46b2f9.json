@@ -1,0 +1,56 @@
+{
+  "type": "project_updated",
+  "project_id": "research-pcc-v2",
+  "changes": {
+    "next_action": "R4 — Main Training，执行五主种子的正式主训练",
+    "milestones": [
+      {
+        "id": "p1",
+        "name": "P1.1 科学协议冻结",
+        "status": "completed"
+      },
+      {
+        "id": "r0",
+        "name": "R0 Authority / inheritance",
+        "status": "completed"
+      },
+      {
+        "id": "r1",
+        "name": "R1 数据资格与锁定",
+        "status": "completed"
+      },
+      {
+        "id": "r2",
+        "name": "R2 核心训练执行",
+        "status": "completed"
+      },
+      {
+        "id": "external",
+        "name": "独立外部验证",
+        "status": "planned"
+      },
+      {
+        "id": "path",
+        "name": "组织病理验证",
+        "status": "planned"
+      },
+      {
+        "id": "function",
+        "name": "功能使用实验",
+        "status": "planned"
+      },
+      {
+        "id": "paper",
+        "name": "论文写作与投稿",
+        "status": "planned"
+      }
+    ]
+  },
+  "summary": "Updated project snapshot: PCC v2-R2",
+  "id": "evt-20260912T042724Z-project-updated-2f46b2f9",
+  "at": "2026-09-12T04:27:24Z",
+  "source": {
+    "kind": "chatgpt",
+    "via": "nextplan-chrome-bridge"
+  }
+}
