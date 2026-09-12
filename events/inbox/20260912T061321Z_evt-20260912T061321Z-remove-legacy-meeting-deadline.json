@@ -1,0 +1,8 @@
+{
+  "id": "evt-20260912T061321Z-remove-legacy-meeting-deadline",
+  "at": "2026-09-12T06:13:21Z",
+  "type": "deadline_removed",
+  "deadline_id": "calendar-meeting-2026-09-16-1630",
+  "summary": "Removed the legacy deadline-form record for the supervisor meeting after calendar migration.",
+  "source": {"kind": "system-migration", "via": "nextplan-phase-b"}
+}
