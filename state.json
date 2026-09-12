@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-12T20:31:17Z",
+    "last_updated": "2026-09-12T23:15:22Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -31,7 +31,7 @@
       "version": 1,
       "mode": "append-only-event-files",
       "inbox": "events/inbox",
-      "builder": "engine/build_state_v2.py",
+      "builder": "engine/build_state_v3.py",
       "processed_event_ids": [
         "evt-20260910T170426Z-task-created-ad83839a",
         "evt-20260910T172100Z-delete-backend-test-create",
@@ -121,11 +121,14 @@
         "evt-20260912T175903Z-local-v01-stage9-active",
         "evt-20260912T185700Z-local-v01-stage9-completed",
         "evt-20260912T185701Z-local-v01-stage10-completed",
-        "evt-20260912T203117Z-agent-github-head-84bec21c"
+        "evt-20260912T203117Z-agent-github-head-84bec21c",
+        "evt-20260912T231522Z-nextplan-local-platform-testing-note"
       ],
-      "processed_count": 89,
-      "last_build_at": "2026-09-12T23:13:39Z",
-      "last_applied": [],
+      "processed_count": 90,
+      "last_build_at": "2026-09-12T23:17:03Z",
+      "last_applied": [
+        "evt-20260912T231522Z-nextplan-local-platform-testing-note"
+      ],
       "status": "ready"
     }
   },
@@ -612,6 +615,17 @@
     }
   ],
   "events": [
+    {
+      "id": "evt-20260912T231522Z-nextplan-local-platform-testing-note",
+      "at": "2026-09-12T23:15:22Z",
+      "project_id": "project-item-daed6c",
+      "type": "note_added",
+      "summary": "记录 NextPlan Local Windows 与 macOS 实机测试稍后进行",
+      "source": {
+        "kind": "chatgpt",
+        "via": "nextplan-conversation"
+      }
+    },
     {
       "id": "evt-20260912T203117Z-agent-github-head-84bec21c",
       "at": "2026-09-12T20:31:17Z",
@@ -1685,7 +1699,16 @@
       "project_id": "flinders-presentation"
     }
   ],
-  "notes": [],
+  "notes": [
+    {
+      "id": "note-20260912-nextplan-local-platform-testing",
+      "project_id": "project-item-daed6c",
+      "title": "NextPlan Local 实机测试待办",
+      "content": "稍后进行 Windows 与 macOS 两套实机测试。Windows：继续完成真实安装、Chrome Extension 配对、ChatGPT 对话捕获、项目创建/状态推进、重启持久化等端到端验收。macOS：在真实 MacBook 上完成 DMG 安装、Gatekeeper、Chrome Extension 配对、ChatGPT 对话捕获、项目创建/状态推进、重启持久化以及实际文件/应用权限测试。当前先暂停测试，转入 NextPlan 功能修改讨论。",
+      "status": "planned",
+      "at": "2026-09-12T23:15:22Z"
+    }
+  ],
   "resources": [],
   "automation_rules": [
     {
