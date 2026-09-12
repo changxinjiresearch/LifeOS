@@ -1,0 +1,10 @@
+{
+  "id": "evt-20260912T151200Z-stage4-close-20",
+  "at": "2026-09-12T15:12:00Z",
+  "project_id": "project-item-daed6c",
+  "type": "milestone_status_changed",
+  "summary": "Stage IV acceptance passed: Fuzzy Entity Resolution + Fact Extraction completed.",
+  "source": {"kind": "chatgpt", "via": "nextplan-stage4-final-acceptance"},
+  "milestone_id": "fuzzy-entity-fact-extraction",
+  "status": "completed"
+}
