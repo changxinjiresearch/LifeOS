@@ -1,0 +1,11 @@
+{
+  "id": "evt-20260912T150652Z-stage4-m20",
+  "at": "2026-09-12T15:06:52Z",
+  "project_id": "project-item-daed6c",
+  "type": "milestone_added",
+  "summary": "Added Stage IV milestone 20: Fuzzy Entity Resolution + Fact Extraction.",
+  "source": {"kind": "chatgpt", "via": "nextplan-stage4-development"},
+  "milestone": {"id": "fuzzy-entity-fact-extraction", "name": "Fuzzy Entity Resolution + Fact Extraction", "status": "active"},
+  "activate_project": true,
+  "next_action": "Fuzzy Entity Resolution + Fact Extraction"
+}
