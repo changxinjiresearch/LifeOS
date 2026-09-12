@@ -1,0 +1,1 @@
+Use NEXTPLAN_AGENT_STAGE3_V1.md as the Stage III roadmap and NEXTPLAN_AGENT_STAGE3_ACCEPTANCE.md as the completion authority.
