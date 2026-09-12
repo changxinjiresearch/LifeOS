@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-12T15:06:54Z",
+    "last_updated": "2026-09-12T15:06:56Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -100,15 +100,15 @@
         "evt-20260912T150651Z-stage4-m19",
         "evt-20260912T150652Z-stage4-m20",
         "evt-20260912T150653Z-stage4-m21",
-        "evt-20260912T150654Z-stage4-m22"
+        "evt-20260912T150654Z-stage4-m22",
+        "evt-20260912T150655Z-stage4-m23",
+        "evt-20260912T150656Z-stage4-m24"
       ],
-      "processed_count": 68,
-      "last_build_at": "2026-09-12T15:06:11Z",
+      "processed_count": 70,
+      "last_build_at": "2026-09-12T15:06:35Z",
       "last_applied": [
-        "evt-20260912T150651Z-stage4-m19",
-        "evt-20260912T150652Z-stage4-m20",
-        "evt-20260912T150653Z-stage4-m21",
-        "evt-20260912T150654Z-stage4-m22"
+        "evt-20260912T150655Z-stage4-m23",
+        "evt-20260912T150656Z-stage4-m24"
       ],
       "status": "ready"
     }
@@ -531,11 +531,43 @@
           "id": "assistant-provenance-guard",
           "name": "Assistant Provenance Guard",
           "status": "planned"
+        },
+        {
+          "id": "conversation-acceptance-tests",
+          "name": "Conversation Acceptance Tests",
+          "status": "planned"
+        },
+        {
+          "id": "production-rollout-health-acceptance",
+          "name": "Production Rollout + Health Acceptance",
+          "status": "planned"
         }
       ]
     }
   ],
   "events": [
+    {
+      "id": "evt-20260912T150656Z-stage4-m24",
+      "at": "2026-09-12T15:06:56Z",
+      "project_id": "project-item-daed6c",
+      "type": "milestone_added",
+      "summary": "Added Stage IV milestone 24: Production Rollout + Health Acceptance.",
+      "source": {
+        "kind": "chatgpt",
+        "via": "nextplan-stage4-development"
+      }
+    },
+    {
+      "id": "evt-20260912T150655Z-stage4-m23",
+      "at": "2026-09-12T15:06:55Z",
+      "project_id": "project-item-daed6c",
+      "type": "milestone_added",
+      "summary": "Added Stage IV milestone 23: Conversation Acceptance Tests.",
+      "source": {
+        "kind": "chatgpt",
+        "via": "nextplan-stage4-development"
+      }
+    },
     {
       "id": "evt-20260912T150654Z-stage4-m22",
       "at": "2026-09-12T15:06:54Z",
