@@ -1,0 +1,15 @@
+{
+  "id": "evt-20260912T055000Z-entity-resolution-completed",
+  "at": "2026-09-12T05:50:00Z",
+  "type": "milestone_status_changed",
+  "project_id": "project-item-daed6c",
+  "milestone_id": "entity-resolution-confirmation-receipt",
+  "status": "completed",
+  "next_action": "Project / Task Workflow",
+  "project_status": "active",
+  "summary": "Completed Phase A entity resolution, confirmation policy, and normalized receipt layer for NextPlan.",
+  "source": {
+    "kind": "chatgpt",
+    "via": "nextplan-phase-a"
+  }
+}
