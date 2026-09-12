@@ -1,0 +1,10 @@
+{
+  "id": "evt-20260912T150651Z-stage4-m19",
+  "at": "2026-09-12T15:06:51Z",
+  "project_id": "project-item-daed6c",
+  "type": "milestone_added",
+  "summary": "Added and completed Stage IV milestone 19: Conversational Capture Policy Freeze.",
+  "source": {"kind": "chatgpt", "via": "nextplan-stage4-development"},
+  "milestone": {"id": "conversational-capture-policy-freeze", "name": "Conversational Capture Policy Freeze", "status": "completed"},
+  "activate_project": true
+}
