@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-12T06:37:00Z",
+    "last_updated": "2026-09-12T06:37:01Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -63,12 +63,13 @@
         "evt-20260912T061700Z-phase-b4-completed",
         "evt-20260912T061701Z-phase-b5-completed",
         "evt-20260912T061702Z-phase-b6-completed",
-        "evt-20260912T063700Z-phase-c7-completed"
+        "evt-20260912T063700Z-phase-c7-completed",
+        "evt-20260912T063701Z-phase-c8-completed"
       ],
-      "processed_count": 31,
-      "last_build_at": "2026-09-12T06:37:50Z",
+      "processed_count": 32,
+      "last_build_at": "2026-09-12T06:38:01Z",
       "last_applied": [
-        "evt-20260912T063700Z-phase-c7-completed"
+        "evt-20260912T063701Z-phase-c8-completed"
       ],
       "status": "ready"
     }
@@ -380,7 +381,7 @@
       "category": "其他",
       "status": "active",
       "priority": 2,
-      "next_action": "Notes / Resources Integration",
+      "next_action": "Search / Command Palette",
       "milestones": [
         {
           "id": "core-schema-freeze",
@@ -420,12 +421,12 @@
         {
           "id": "notes-resources-integration",
           "name": "Notes / Resources Integration",
-          "status": "active"
+          "status": "completed"
         },
         {
           "id": "search-command-palette",
           "name": "Search / Command Palette",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "analytics",
@@ -446,6 +447,17 @@
     }
   ],
   "events": [
+    {
+      "id": "evt-20260912T063701Z-phase-c8-completed",
+      "at": "2026-09-12T06:37:01Z",
+      "project_id": "project-item-daed6c",
+      "type": "milestone_status_changed",
+      "summary": "Completed Phase C8 Notes / Resources Integration v1.",
+      "source": {
+        "kind": "chatgpt",
+        "via": "nextplan-phase-c"
+      }
+    },
     {
       "id": "evt-20260912T063700Z-phase-c7-completed",
       "at": "2026-09-12T06:37:00Z",
