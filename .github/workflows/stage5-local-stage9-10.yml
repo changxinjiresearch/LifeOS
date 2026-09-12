@@ -1,0 +1,138 @@
+name: NextPlan Local Stage 9-10 release acceptance
+
+on:
+  push:
+    branches: [main, 'stage5/local-v01-stage9-10']
+    paths:
+      - 'mcp_server/storage_v3.py'
+      - 'mcp_server/local_core_v4.py'
+      - 'scripts/local_core_entry.py'
+      - 'scripts/clean_machine_acceptance.ps1'
+      - 'desktop_local/**'
+      - 'chrome_extension_local/**'
+      - 'tests/test_local_stage9_10.py'
+      - '.github/workflows/stage5-local-stage9-10.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  release-acceptance:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Python release dependencies
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          python -m pip install --upgrade pip
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          pip install -r mcp_server/requirements.txt pytest pytest-asyncio pyinstaller
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Compile and test Stage 9-10
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          python -m py_compile mcp_server/storage_v3.py mcp_server/local_core_v4.py scripts/local_core_entry.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -m pytest -q tests/test_local_stage9_10.py tests/test_local_stage6_8.py tests/test_local_stage4_5.py tests/test_local_stage1_3.py tests/test_conversation_capture.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node --check desktop_local/ui/app.js
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node --check chrome_extension_local/background.js
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node --check chrome_extension_local/content.js
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node --check chrome_extension_local/popup.js
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node --check chrome_extension_local/options.js
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Verify release security contract
+        shell: pwsh
+        run: |
+          @'
+          from pathlib import Path
+          import json
+          storage = Path('mcp_server/storage_v3.py').read_text()
+          core = Path('mcp_server/local_core_v4.py').read_text()
+          rust = Path('desktop_local/src-tauri/src/main.rs').read_text()
+          conf = json.loads(Path('desktop_local/src-tauri/tauri.conf.json').read_text())
+          assert "paired_extension_token','paired_extension_id" in storage
+          assert '127.0.0.1' in core
+          assert 'shell.execute' not in core
+          assert 'bundled-sidecar' in rust
+          assert 'local_core_v4' in rust
+          assert conf['bundle']['active'] is True
+          assert conf['bundle']['targets'] == ['nsis']
+          assert conf['bundle']['windows']['nsis']['installMode'] == 'currentUser'
+          print('release security contract PASS')
+          '@ | python -
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Build standalone Local Core executable
+        shell: pwsh
+        run: |
+          pyinstaller --noconfirm --clean --onefile --name nextplan-core --paths . --hidden-import uvicorn.logging --hidden-import uvicorn.loops.auto --hidden-import uvicorn.protocols.http.auto --hidden-import uvicorn.protocols.websockets.auto --hidden-import uvicorn.lifespan.on scripts/local_core_entry.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if (-not (Test-Path 'dist/nextplan-core.exe')) { throw 'nextplan-core.exe missing' }
+          Copy-Item 'dist/nextplan-core.exe' 'desktop_local/src-tauri/resources/nextplan-core.exe' -Force
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Generate Windows icon set
+        shell: pwsh
+        run: |
+          npx --yes @tauri-apps/cli@2 icon desktop_local/src-tauri/icons/icon.png --output desktop_local/src-tauri/icons
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if (-not (Test-Path 'desktop_local/src-tauri/icons/icon.ico')) { throw 'Windows icon.ico missing' }
+
+      - name: Rust check release desktop shell
+        shell: pwsh
+        run: cargo check --manifest-path desktop_local/src-tauri/Cargo.toml
+
+      - name: Build NSIS installer
+        shell: pwsh
+        run: |
+          npx --yes @tauri-apps/cli@2 build --bundles nsis --config desktop_local/src-tauri/tauri.conf.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Package Chrome extension release bundle
+        shell: pwsh
+        run: |
+          $releaseDir = Join-Path $pwd 'release-artifacts'
+          New-Item -ItemType Directory -Path $releaseDir -Force | Out-Null
+          Compress-Archive -Path 'chrome_extension_local/*' -DestinationPath (Join-Path $releaseDir 'NextPlan-Local-Bridge-v0.1.0.zip') -Force
+          $manifest = Get-Content 'chrome_extension_local/manifest.json' -Raw | ConvertFrom-Json
+          if ($manifest.manifest_version -ne 3 -or $manifest.version -ne '0.1.0') { throw 'Extension manifest contract failed' }
+          $installer = Get-ChildItem 'desktop_local/src-tauri/target/release/bundle/nsis' -Filter '*.exe' | Select-Object -First 1
+          if (-not $installer) { throw 'NSIS installer missing' }
+          Copy-Item $installer.FullName (Join-Path $releaseDir 'NextPlan-Local-v0.1.0-Setup.exe') -Force
+
+      - name: Clean-machine acceptance
+        shell: pwsh
+        run: |
+          $core = (Resolve-Path 'dist/nextplan-core.exe').Path
+          $installer = (Resolve-Path 'release-artifacts/NextPlan-Local-v0.1.0-Setup.exe').Path
+          & 'scripts/clean_machine_acceptance.ps1' -CoreExe $core -Installer $installer
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Release artifact hashes
+        shell: pwsh
+        run: |
+          Get-FileHash release-artifacts/* -Algorithm SHA256 | Format-Table -AutoSize
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nextplan-local-v0.1.0-windows-beta
+          path: release-artifacts/*
+          if-no-files-found: error
+          retention-days: 30
