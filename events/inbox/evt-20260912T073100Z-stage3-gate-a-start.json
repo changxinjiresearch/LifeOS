@@ -1,0 +1,16 @@
+{
+  "id": "evt-20260912T073100Z-stage3-gate-a-start",
+  "at": "2026-09-12T07:31:00Z",
+  "project_id": "project-item-daed6c",
+  "type": "milestone_status_changed",
+  "summary": "Stage III Gate A started: Action Gateway + Permission Model is now the active development step.",
+  "source": {
+    "kind": "chatgpt",
+    "via": "nextplan-agent-stage3"
+  },
+  "milestone": {
+    "id": "action-gateway-permission-model",
+    "name": "Action Gateway + Permission Model",
+    "status": "active"
+  }
+}
