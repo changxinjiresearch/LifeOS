@@ -1,0 +1,15 @@
+{
+  "id": "evt-20260912T172502Z-local-v01-stage6-active",
+  "at": "2026-09-12T17:25:02Z",
+  "type": "milestone_status_changed",
+  "project_id": "project-item-daed6c",
+  "milestone_id": "local-v01-stage6-desktop-app",
+  "status": "active",
+  "project_status": "active",
+  "next_action": "Local v0.1 Stage 6 — NextPlan Desktop App",
+  "summary": "Activated Local v0.1 Stage 6 — NextPlan Desktop App",
+  "source": {
+    "kind": "chatgpt",
+    "via": "stage5-local-v01-development"
+  }
+}
