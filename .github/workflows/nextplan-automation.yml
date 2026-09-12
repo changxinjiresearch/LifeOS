@@ -1,0 +1,42 @@
+name: NextPlan daily automation
+
+on:
+  schedule:
+    - cron: '30 21 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nextplan-daily-automation
+  cancel-in-progress: false
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Evaluate automation rules
+        run: python3 engine/run_automations.py
+      - name: Rebuild canonical state
+        run: python3 engine/build_state_v2.py
+      - name: Commit automation snapshot
+        shell: bash
+        run: |
+          if git diff --quiet -- state.json events/inbox; then
+            echo 'No automation state change.'
+            exit 0
+          fi
+          git config user.name 'nextplan-automation-bot'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add state.json events/inbox
+          git commit -m 'Refresh NextPlan automation feed'
+          for attempt in 1 2 3; do
+            git pull --rebase origin main && git push origin HEAD:main && exit 0
+            echo "Push attempt ${attempt} failed; retrying..."
+            sleep 2
+          done
+          exit 1
