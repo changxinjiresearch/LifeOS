@@ -28,6 +28,11 @@ def ensure_local_defaults(state: dict[str, Any]) -> dict[str, Any]:
     state.setdefault("agent_reconciliations", [])
     state.setdefault("agent_runs", [])
     state.setdefault("agent_meta", {}).setdefault("provider_cursors", {})
+    # Stage V Local v0.1 runtime state. These remain event-projected and local-only.
+    state.setdefault("workspace_bindings", [])
+    state.setdefault("artifacts", [])
+    state.setdefault("local_execution_receipts", [])
+    state.setdefault("local_permissions", {"mode": "balanced"})
     system = state.setdefault("system", {})
     system.setdefault("name", "NextPlan")
     system["architecture"] = "local-conversation-event-layer-central-state"
@@ -54,6 +59,8 @@ def new_local_state() -> dict[str, Any]:
                 "waiting_items_are_not_actionable": True,
                 "event_ids_are_idempotent": True,
                 "assistant_statement_is_not_fact_authority": True,
+                "local_shell_is_not_exposed": True,
+                "workspace_access_requires_explicit_binding": True,
             },
         },
         "projects": [],
@@ -61,12 +68,63 @@ def new_local_state() -> dict[str, Any]:
     })
 
 
-def apply_event(state: dict[str, Any], event: dict[str, Any]) -> dict[str, Any]:
-    """Apply one canonical event without any GitHub/file-system side effects.
+def _replace_by_id(items: list[dict[str, Any]], value: dict[str, Any], key: str = "id") -> None:
+    target = str(value.get(key) or "")
+    for idx, item in enumerate(items):
+        if str(item.get(key) or "") == target:
+            items[idx] = deepcopy(value)
+            return
+    items.append(deepcopy(value))
 
-    This deliberately reuses the proven Stage I-III pure projectors. The local
-    store owns transactionality/idempotency; this function only projects state.
-    """
+
+def _apply_local_runtime_event(state: dict[str, Any], event: dict[str, Any]) -> bool:
+    et = str(event.get("type") or "")
+    if et == "workspace_bound":
+        binding = deepcopy(event.get("binding") or {})
+        pid = str(binding.get("project_id") or event.get("project_id") or "")
+        if not pid:
+            raise ValueError("workspace_bound requires project_id")
+        binding["project_id"] = pid
+        _replace_by_id(state["workspace_bindings"], binding, key="project_id")
+        return True
+    if et == "workspace_unbound":
+        pid = str(event.get("project_id") or "")
+        state["workspace_bindings"] = [x for x in state["workspace_bindings"] if str(x.get("project_id") or "") != pid]
+        return True
+    if et == "artifact_attached":
+        artifact = deepcopy(event.get("artifact") or {})
+        if not artifact.get("id"):
+            raise ValueError("artifact_attached requires artifact.id")
+        _replace_by_id(state["artifacts"], artifact)
+        return True
+    if et == "artifact_verified":
+        aid = str(event.get("artifact_id") or "")
+        changes = deepcopy(event.get("changes") or {})
+        for artifact in state["artifacts"]:
+            if str(artifact.get("id") or "") == aid:
+                artifact.update(changes)
+                break
+        return True
+    if et == "artifact_removed":
+        aid = str(event.get("artifact_id") or "")
+        state["artifacts"] = [x for x in state["artifacts"] if str(x.get("id") or "") != aid]
+        return True
+    if et == "local_execution_recorded":
+        receipt = deepcopy(event.get("receipt") or {})
+        if receipt:
+            state["local_execution_receipts"].append(receipt)
+            state["local_execution_receipts"] = state["local_execution_receipts"][-1000:]
+        return True
+    if et == "local_permission_updated":
+        changes = event.get("changes") or {}
+        if isinstance(changes, dict):
+            state["local_permissions"].update(deepcopy(changes))
+        return True
+    return False
+
+
+def apply_event(state: dict[str, Any], event: dict[str, Any]) -> dict[str, Any]:
+    """Apply one canonical event without GitHub or external service side effects."""
     working = ensure_local_defaults(deepcopy(state))
     eid = legacy.require(event, "id", str)
     legacy.require(event, "at", str)
@@ -76,7 +134,9 @@ def apply_event(state: dict[str, Any], event: dict[str, Any]) -> dict[str, Any]:
     if eid in processed:
         return working
 
-    if et in v3.AGENT_TYPES:
+    if _apply_local_runtime_event(working, event):
+        pass
+    elif et in v3.AGENT_TYPES:
         v3._apply_agent_event(working, event)
     elif et in v2.AUTOMATION_TYPES:
         v2._apply_automation_event(working, event)
@@ -99,7 +159,7 @@ def apply_event(state: dict[str, Any], event: dict[str, Any]) -> dict[str, Any]:
 
 
 def semantic_projection(state: dict[str, Any]) -> dict[str, Any]:
-    """Return stable canonical semantics for GitHub -> SQLite parity checks."""
+    """Return stable pre-Local-v0.1 semantics for GitHub -> SQLite parity checks."""
     keys = (
         "projects",
         "deadlines",
