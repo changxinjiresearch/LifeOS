@@ -270,8 +270,22 @@ class GitHubConnector(Connector):
 
         if capability == "file.delete":
             path = str(result.get("path") or payload.get("path") or "")
-            response = await self._request_allow_404("GET", self._repo_path(f"/contents/{path}"), params={"ref": str(payload.get("branch") or self.branch)})
-            return {"verified": response.status_code == 404, "evidence": {"path": path, "status_code": response.status_code}}
+            branch = str(payload.get("branch") or self.branch)
+            last_status = 0
+            # GitHub's contents endpoint can briefly serve the pre-delete branch
+            # view immediately after a successful DELETE commit. Verification is
+            # therefore bounded-retry rather than a single eventually-consistent GET.
+            for attempt in range(1, 8):
+                response = await self._request_allow_404(
+                    "GET",
+                    self._repo_path(f"/contents/{path}"),
+                    params={"ref": branch},
+                )
+                last_status = response.status_code
+                if last_status == 404:
+                    return {"verified": True, "evidence": {"path": path, "status_code": 404, "attempt": attempt}}
+                await asyncio.sleep(min(0.2 * attempt, 1.0))
+            return {"verified": False, "evidence": {"path": path, "status_code": last_status, "attempts": 7}}
 
         if capability in {"issue.create", "issue.set_state", "issue.comment"}:
             number = int(result.get("issue_number") or payload.get("issue_number") or 0)
