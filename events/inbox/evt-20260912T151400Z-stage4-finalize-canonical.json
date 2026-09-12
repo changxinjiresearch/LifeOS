@@ -1,0 +1,12 @@
+{
+  "id": "evt-20260912T151400Z-stage4-finalize-canonical",
+  "at": "2026-09-12T15:14:00Z",
+  "project_id": "project-item-daed6c",
+  "type": "project_updated",
+  "summary": "Reasserted final Stage IV canonical closure after state-builder commit race.",
+  "source": {"kind": "chatgpt", "via": "nextplan-stage4-final-acceptance"},
+  "changes": {
+    "status": "completed",
+    "next_action": "项目已完成"
+  }
+}
