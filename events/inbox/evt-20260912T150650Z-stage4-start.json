@@ -1,0 +1,12 @@
+{
+  "id": "evt-20260912T150650Z-stage4-start",
+  "at": "2026-09-12T15:06:50Z",
+  "project_id": "project-item-daed6c",
+  "type": "project_updated",
+  "summary": "Started NextPlan Stage IV Conversational State Capture.",
+  "source": {"kind": "chatgpt", "via": "nextplan-stage4-development"},
+  "changes": {
+    "status": "active",
+    "next_action": "Stage IV — Fuzzy Entity Resolution + Fact Extraction"
+  }
+}
