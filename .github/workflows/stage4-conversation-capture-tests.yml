@@ -7,6 +7,7 @@ on:
       - 'mcp_server/conversation_capture.py'
       - 'mcp_server/cloud_classifier_v6.py'
       - 'mcp_server/server_v12.py'
+      - 'scripts/stage4_server_v12_acceptance.py'
       - 'tests/test_conversation_capture.py'
       - 'Dockerfile'
       - 'NEXTPLAN_CONVERSATIONAL_CAPTURE_V1.md'
@@ -29,6 +30,8 @@ jobs:
       - name: Run conversational capture regression tests
         run: python -m pytest -q tests/test_conversation_capture.py
       - name: Compile Stage IV composition
-        run: python -m py_compile mcp_server/conversation_capture.py mcp_server/cloud_classifier_v6.py mcp_server/server_v12.py
+        run: python -m py_compile mcp_server/conversation_capture.py mcp_server/cloud_classifier_v6.py mcp_server/server_v12.py scripts/stage4_server_v12_acceptance.py
       - name: Verify production composition import
         run: python -c "from mcp_server.server_v12 import app; print('server_v12 import PASS', bool(app))"
+      - name: Exercise server_v12 production classifier path
+        run: python scripts/stage4_server_v12_acceptance.py
