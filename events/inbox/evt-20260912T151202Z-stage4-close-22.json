@@ -1,0 +1,10 @@
+{
+  "id": "evt-20260912T151202Z-stage4-close-22",
+  "at": "2026-09-12T15:12:02Z",
+  "project_id": "project-item-daed6c",
+  "type": "milestone_status_changed",
+  "summary": "Stage IV acceptance passed: Assistant Provenance Guard completed.",
+  "source": {"kind": "chatgpt", "via": "nextplan-stage4-final-acceptance"},
+  "milestone_id": "assistant-provenance-guard",
+  "status": "completed"
+}
