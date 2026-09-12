@@ -1,0 +1,21 @@
+{
+  "type": "agent_reconciliation_recorded",
+  "project_id": "project-item-daed6c",
+  "agent_reconciliation": {
+    "id": "reconcile-b6839711-8e53-4e23-adcf-a34ec9a81295",
+    "signal_id": null,
+    "action_id": "act-6346ef0d-8e2c-4385-b535-6996d5dd7177",
+    "project_id": "project-item-daed6c",
+    "verified": true,
+    "summary": "Stage III server_v11 acceptance verified external write",
+    "canonical_changes": {},
+    "at": "2026-09-12T14:15:35Z"
+  },
+  "summary": "Stage III server_v11 acceptance verified external write",
+  "id": "evt-20260912T141535Z-agent-reconciliati-a5c5b7fd",
+  "at": "2026-09-12T14:15:35Z",
+  "source": {
+    "kind": "chatgpt",
+    "via": "nextplan-agent-stage3"
+  }
+}
