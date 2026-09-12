@@ -107,6 +107,13 @@ def upsert_named(items, obj, *, id_key="id", name_keys=("title", "name")):
     items.append(obj)
 
 
+def find_named(items, entity_id, label):
+    for item in items:
+        if item.get("id") == entity_id:
+            return item
+    raise ValueError(f"unknown {label}_id: {entity_id}")
+
+
 def auto_advance_project(project, completed_id):
     milestones = project.setdefault("milestones", [])
     if any(m.get("status") == "active" for m in milestones):
@@ -259,9 +266,34 @@ def apply_event(state, event):
         note.setdefault("at", event["at"])
         upsert_named(state.setdefault("notes", []), note)
 
+    elif et == "note_updated":
+        nid = require(event, "note_id", str)
+        note = find_named(state.setdefault("notes", []), nid, "note")
+        changes = deepcopy(require(event, "changes", dict))
+        changes.pop("id", None)
+        note.update(changes)
+        note["updated_at"] = event["at"]
+
+    elif et == "note_removed":
+        nid = require(event, "note_id", str)
+        state["notes"] = [n for n in state.setdefault("notes", []) if n.get("id") != nid]
+
     elif et == "resource_added":
         resource = deepcopy(require(event, "resource", dict))
+        resource.setdefault("at", event["at"])
         upsert_named(state.setdefault("resources", []), resource)
+
+    elif et == "resource_updated":
+        rid = require(event, "resource_id", str)
+        resource = find_named(state.setdefault("resources", []), rid, "resource")
+        changes = deepcopy(require(event, "changes", dict))
+        changes.pop("id", None)
+        resource.update(changes)
+        resource["updated_at"] = event["at"]
+
+    elif et == "resource_removed":
+        rid = require(event, "resource_id", str)
+        state["resources"] = [r for r in state.setdefault("resources", []) if r.get("id") != rid]
 
     else:
         raise ValueError(f"unsupported event type: {et}")
