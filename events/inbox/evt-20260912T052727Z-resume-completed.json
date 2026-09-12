@@ -1,0 +1,27 @@
+{
+  "id": "evt-20260912T052727Z-resume-completed",
+  "at": "2026-09-12T05:27:27Z",
+  "type": "project_updated",
+  "project_id": "project-item-9ef9ef",
+  "changes": {
+    "status": "active",
+    "next_action": "帮宝宝搭建自动投简历工作流",
+    "milestones": [
+      {
+        "id": "resume",
+        "name": "做简历",
+        "status": "completed"
+      },
+      {
+        "id": "auto-apply",
+        "name": "搭建自动投简历工作流",
+        "status": "active"
+      }
+    ]
+  },
+  "summary": "Resume completed; advanced 帮助宝宝找实习 to the automated application workflow step.",
+  "source": {
+    "kind": "chatgpt",
+    "via": "nextplan-command"
+  }
+}
