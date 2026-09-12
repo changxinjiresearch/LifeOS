@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import base64
 from dataclasses import dataclass, asdict
 from typing import Any, Dict, Iterable, Optional
@@ -96,10 +97,13 @@ class GitHubConnector(Connector):
             "User-Agent": "NextPlan-Agent/1.0",
         }
 
-    async def _request(self, method: str, path: str, *, json_body: Any = None, params: Optional[dict[str, Any]] = None) -> httpx.Response:
+    async def _raw_request(self, method: str, path: str, *, json_body: Any = None, params: Optional[dict[str, Any]] = None) -> httpx.Response:
         url = f"{self.api_base}{path}"
         async with httpx.AsyncClient(timeout=30) as client:
-            response = await client.request(method, url, headers=self._headers(), json=json_body, params=params)
+            return await client.request(method, url, headers=self._headers(), json=json_body, params=params)
+
+    async def _request(self, method: str, path: str, *, json_body: Any = None, params: Optional[dict[str, Any]] = None) -> httpx.Response:
+        response = await self._raw_request(method, path, json_body=json_body, params=params)
         if response.status_code >= 400:
             detail = response.text[:500]
             raise ConnectorError(f"GitHub {method} {path} failed ({response.status_code}): {detail}")
@@ -114,6 +118,23 @@ class GitHubConnector(Connector):
         if not isinstance(data, dict):
             raise ConnectorError("Expected a file response from GitHub")
         return data
+
+    async def _delete_path_with_retry(self, path: str, branch: str, message: str, attempts: int = 8) -> dict[str, Any]:
+        last_detail = ""
+        for attempt in range(1, attempts + 1):
+            current = await self._get_content_raw(path, branch)
+            body = {"message": message, "sha": current.get("sha"), "branch": branch}
+            response = await self._raw_request("DELETE", self._repo_path(f"/contents/{path}"), json_body=body)
+            if response.status_code < 400:
+                data = response.json()
+                return {"data": data, "deleted_sha": current.get("sha")}
+            last_detail = response.text[:500]
+            if response.status_code != 409 or attempt == attempts:
+                raise ConnectorError(
+                    f"GitHub DELETE {self._repo_path(f'/contents/{path}')} failed ({response.status_code}): {last_detail}"
+                )
+            await asyncio.sleep(min(0.15 * attempt, 0.8))
+        raise ConnectorError(f"GitHub delete retry exhausted for {path}: {last_detail}")
 
     async def execute(self, capability: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         self.capability(capability)
@@ -176,17 +197,16 @@ class GitHubConnector(Connector):
             path = str(payload.get("path") or "").strip()
             if not path:
                 raise ConnectorError("path is required")
-            current = await self._get_content_raw(path, str(payload.get("branch") or self.branch))
-            body = {
-                "message": str(payload.get("message") or f"NextPlan agent: delete {path}"),
-                "sha": str(payload.get("sha") or current.get("sha") or ""),
-                "branch": str(payload.get("branch") or self.branch),
-            }
-            data = (await self._request("DELETE", self._repo_path(f"/contents/{path}"), json_body=body)).json()
+            branch = str(payload.get("branch") or self.branch)
+            deleted = await self._delete_path_with_retry(
+                path,
+                branch,
+                str(payload.get("message") or f"NextPlan agent: delete {path}"),
+            )
             return {
-                "provider_result_id": str((data.get("commit") or {}).get("sha") or ""),
+                "provider_result_id": str((deleted["data"].get("commit") or {}).get("sha") or ""),
                 "path": path,
-                "deleted_sha": current.get("sha"),
+                "deleted_sha": deleted.get("deleted_sha"),
             }
 
         if capability == "issue.create":
@@ -267,9 +287,7 @@ class GitHubConnector(Connector):
         return {"verified": False, "evidence": {"reason": "no verifier"}}
 
     async def _request_allow_404(self, method: str, path: str, *, json_body: Any = None, params: Optional[dict[str, Any]] = None) -> httpx.Response:
-        url = f"{self.api_base}{path}"
-        async with httpx.AsyncClient(timeout=30) as client:
-            response = await client.request(method, url, headers=self._headers(), json=json_body, params=params)
+        response = await self._raw_request(method, path, json_body=json_body, params=params)
         if response.status_code >= 400 and response.status_code != 404:
             raise ConnectorError(f"GitHub {method} {path} failed ({response.status_code}): {response.text[:500]}")
         return response
@@ -277,17 +295,12 @@ class GitHubConnector(Connector):
     async def rollback(self, capability: str, payload: Dict[str, Any], result: Dict[str, Any]) -> Dict[str, Any]:
         if capability == "file.create":
             path = str(result.get("path") or payload.get("path") or "")
-            current = await self._get_content_raw(path, str(payload.get("branch") or self.branch))
-            body = {
-                "message": f"NextPlan agent rollback: remove {path}",
-                "sha": current.get("sha"),
-                "branch": str(payload.get("branch") or self.branch),
-            }
-            data = (await self._request("DELETE", self._repo_path(f"/contents/{path}"), json_body=body)).json()
-            verify = await self.verify("file.delete", {"path": path, "branch": body["branch"]}, {"path": path})
+            branch = str(payload.get("branch") or self.branch)
+            deleted = await self._delete_path_with_retry(path, branch, f"NextPlan agent rollback: remove {path}")
+            verify = await self.verify("file.delete", {"path": path, "branch": branch}, {"path": path})
             return {
                 "status": "rolled_back" if verify.get("verified") else "rollback_unverified",
-                "provider_result_id": str((data.get("commit") or {}).get("sha") or ""),
+                "provider_result_id": str((deleted["data"].get("commit") or {}).get("sha") or ""),
                 "verified": bool(verify.get("verified")),
                 "path": path,
             }
