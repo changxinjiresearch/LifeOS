@@ -1,0 +1,30 @@
+{
+  "type": "agent_run_recorded",
+  "project_id": "project-item-daed6c",
+  "agent_run": {
+    "id": "stage3-acceptance-34698459801-1",
+    "project_id": "project-item-daed6c",
+    "status": "completed",
+    "verified": true,
+    "signal_ids": [
+      "signal-d8481abb230024ff9757a53b"
+    ],
+    "action_ids": [
+      "act-d905d053-2d16-4e1e-af63-ac9e540f46a9",
+      "act-d63b32ca-f864-4c9d-80ed-3d97fa0dafc6",
+      "rollback-act-d63b32ca-f864-4c9d-80ed-3d97fa0dafc6"
+    ],
+    "reconciliation_ids": [
+      "reconcile-10436156-a20a-42a5-be7b-76ea74c54c25"
+    ],
+    "summary": "Stage III server_v11 acceptance run completed",
+    "at": "2026-09-12T14:13:59Z"
+  },
+  "summary": "Stage III server_v11 acceptance run completed",
+  "id": "evt-20260912T141359Z-agent-run-recorded-35b45fc8",
+  "at": "2026-09-12T14:13:59Z",
+  "source": {
+    "kind": "chatgpt",
+    "via": "nextplan-agent-stage3"
+  }
+}
