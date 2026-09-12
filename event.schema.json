@@ -33,7 +33,13 @@
         "resource_removed",
         "automation_rule_upserted",
         "automation_rule_removed",
-        "automation_snapshot_refreshed"
+        "automation_snapshot_refreshed",
+        "agent_policy_upserted",
+        "agent_policy_removed",
+        "external_signal_recorded",
+        "agent_action_recorded",
+        "agent_reconciliation_recorded",
+        "agent_run_recorded"
       ]
     },
     "project_id": {"type": "string"},
@@ -59,7 +65,13 @@
     "resource_id": {"type": "string"},
     "automation_rule": {"type": "object"},
     "automation_rule_id": {"type": "string"},
-    "automation_snapshot": {"type": "object"}
+    "automation_snapshot": {"type": "object"},
+    "agent_policy": {"type": "object"},
+    "agent_policy_id": {"type": "string"},
+    "external_signal": {"type": "object"},
+    "agent_action": {"type": "object"},
+    "agent_reconciliation": {"type": "object"},
+    "agent_run": {"type": "object"}
   },
   "additionalProperties": true
 }
