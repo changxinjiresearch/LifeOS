@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nextplan.local/command.schema.json",
+  "title": "NextPlan Sync Candidate Command",
+  "type": "object",
+  "required": ["protocol_version", "id", "confidence", "label", "reason"],
+  "properties": {
+    "protocol_version": {"const": "1.0"},
+    "id": {"type": "string", "minLength": 8},
+    "intent": {"type": "string"},
+    "kind": {"type": "string"},
+    "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+    "label": {"type": "string"},
+    "reason": {"type": "string"},
+    "target": {
+      "type": "object",
+      "properties": {
+        "entity_type": {
+          "type": "string",
+          "enum": ["project", "task", "deadline", "calendar_event", "note", "resource", "unknown"]
+        },
+        "entity_id": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "confirmation": {
+      "type": "object",
+      "required": ["required", "destructive"],
+      "properties": {
+        "required": {"type": "boolean"},
+        "destructive": {"type": "boolean"},
+        "reason": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "action": {
+      "type": ["object", "null"],
+      "properties": {
+        "operation_id": {"type": "string"},
+        "action": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "destructive": {"type": "boolean"},
+    "requiresConfirmation": {"type": "boolean"},
+    "informational": {"type": "boolean"},
+    "alreadyApplied": {"type": "boolean"}
+  },
+  "additionalProperties": true
+}
