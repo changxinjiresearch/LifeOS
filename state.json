@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-12T14:20:05Z",
+    "last_updated": "2026-09-12T15:06:50Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -95,14 +95,13 @@
         "evt-20260912T142002Z-stage3-close-15",
         "evt-20260912T142003Z-stage3-close-16",
         "evt-20260912T142004Z-stage3-close-17",
-        "evt-20260912T142005Z-stage3-close-18"
+        "evt-20260912T142005Z-stage3-close-18",
+        "evt-20260912T150650Z-stage4-start"
       ],
-      "processed_count": 63,
-      "last_build_at": "2026-09-12T14:21:06Z",
+      "processed_count": 64,
+      "last_build_at": "2026-09-12T15:05:45Z",
       "last_applied": [
-        "evt-20260912T142003Z-stage3-close-16",
-        "evt-20260912T142004Z-stage3-close-17",
-        "evt-20260912T142005Z-stage3-close-18"
+        "evt-20260912T150650Z-stage4-start"
       ],
       "status": "ready"
     }
@@ -412,9 +411,9 @@
       "id": "project-item-daed6c",
       "name": "NextPlan开发",
       "category": "其他",
-      "status": "completed",
+      "status": "active",
       "priority": 2,
-      "next_action": "项目已完成",
+      "next_action": "Stage IV — Fuzzy Entity Resolution + Fact Extraction",
       "milestones": [
         {
           "id": "core-schema-freeze",
@@ -510,6 +509,17 @@
     }
   ],
   "events": [
+    {
+      "id": "evt-20260912T150650Z-stage4-start",
+      "at": "2026-09-12T15:06:50Z",
+      "project_id": "project-item-daed6c",
+      "type": "project_updated",
+      "summary": "Started NextPlan Stage IV Conversational State Capture.",
+      "source": {
+        "kind": "chatgpt",
+        "via": "nextplan-stage4-development"
+      }
+    },
     {
       "id": "evt-20260912T142005Z-stage3-close-18",
       "at": "2026-09-12T14:20:05Z",
