@@ -12,6 +12,9 @@
     "calendar_events": {"type": "array", "items": {"$ref": "#/$defs/calendarEvent"}, "default": []},
     "notes": {"type": "array", "items": {"$ref": "#/$defs/note"}, "default": []},
     "resources": {"type": "array", "items": {"$ref": "#/$defs/resource"}, "default": []},
+    "automation_rules": {"type": "array", "items": {"$ref": "#/$defs/automationRule"}, "default": []},
+    "automation_feed": {"type": "array", "items": {"$ref": "#/$defs/automationFinding"}, "default": []},
+    "automation_meta": {"type": "object", "additionalProperties": true, "default": {}},
     "events": {"type": "array", "items": {"$ref": "#/$defs/historyEvent"}}
   },
   "additionalProperties": true,
@@ -119,6 +122,31 @@
         "tags": {"$ref": "#/$defs/tags"},
         "at": {"type": "string", "format": "date-time"},
         "updated_at": {"type": "string", "format": "date-time"}
+      },
+      "additionalProperties": true
+    },
+    "automationRule": {
+      "type": "object",
+      "required": ["id"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "name": {"type": "string"},
+        "enabled": {"type": "boolean"},
+        "threshold_days": {"type": "integer", "minimum": 1, "maximum": 365},
+        "weekday": {"type": "integer", "minimum": 0, "maximum": 6}
+      },
+      "additionalProperties": true
+    },
+    "automationFinding": {
+      "type": "object",
+      "required": ["id", "rule_id", "title", "reason"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "rule_id": {"type": "string", "minLength": 1},
+        "severity": {"type": "string", "enum": ["critical", "high", "medium", "normal"]},
+        "title": {"type": "string"},
+        "project_id": {"type": "string"},
+        "reason": {"type": "string"}
       },
       "additionalProperties": true
     },
