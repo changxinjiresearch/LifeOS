@@ -1,0 +1,13 @@
+{
+  "id": "evt-20260912T142004Z-stage3-close-17",
+  "at": "2026-09-12T14:20:04Z",
+  "project_id": "project-item-daed6c",
+  "type": "milestone_status_changed",
+  "summary": "Stage III final acceptance passed: Verification + Reconciliation + Rollback completed.",
+  "source": {
+    "kind": "chatgpt",
+    "via": "nextplan-agent-stage3-final-acceptance"
+  },
+  "milestone_id": "verification-reconciliation-rollback",
+  "status": "completed"
+}
