@@ -1,0 +1,15 @@
+{
+  "id": "evt-20260912T053700Z-core-schema-freeze-completed",
+  "at": "2026-09-12T05:37:00Z",
+  "type": "milestone_status_changed",
+  "project_id": "project-item-daed6c",
+  "milestone_id": "core-schema-freeze",
+  "status": "completed",
+  "next_action": "NextPlan Sync Command Protocol",
+  "project_status": "active",
+  "summary": "Completed Core Schema Freeze v1 and advanced NextPlan development to the sync command protocol.",
+  "source": {
+    "kind": "chatgpt",
+    "via": "nextplan-phase-a"
+  }
+}
