@@ -150,15 +150,14 @@ class LocalExecutionGateway:
             if not name or Path(name).name != name:
                 raise ValueError("destination_name must be a file name")
             destination = Path(str(binding["path"])) / name
-            if destination.exists() and not bool(action.get("allow_overwrite")):
-                raise FileExistsError("destination already exists")
+            if destination.exists():
+                raise FileExistsError("overwrite is not supported in NextPlan Local v0.1")
             if not _is_within(destination, Path(str(binding["path"]))):
                 raise PermissionError("destination escapes authorized workspace")
             target = {
                 "source": str(source.resolve()),
                 "destination": str(destination.resolve()),
                 "destination_project_id": destination_project_id,
-                "allow_overwrite": bool(action.get("allow_overwrite")),
             }
 
         elif capability == "application.open":
@@ -227,7 +226,7 @@ class LocalExecutionGateway:
                 if not verified:
                     receipt["status"] = "failed"
                 if verified and not self.dry_run:
-                    receipt["rollback"] = {"capability": "file.copy.rollback", "path": str(destination)}
+                    receipt["rollback"] = {"capability": "file.copy.rollback", "path": str(destination), "expected_sha256": before_hash}
 
             elif capability == "application.open":
                 path = Path(target["application_path"])
