@@ -31,7 +31,7 @@
       "version": 1,
       "mode": "append-only-event-files",
       "inbox": "events/inbox",
-      "builder": "engine/build_state_v3.py",
+      "builder": "engine/build_state_v2.py",
       "processed_event_ids": [
         "evt-20260910T170426Z-task-created-ad83839a",
         "evt-20260910T172100Z-delete-backend-test-create",
@@ -124,7 +124,7 @@
         "evt-20260912T203117Z-agent-github-head-84bec21c"
       ],
       "processed_count": 89,
-      "last_build_at": "2026-09-12T20:31:17Z",
+      "last_build_at": "2026-09-12T23:13:39Z",
       "last_applied": [],
       "status": "ready"
     }
