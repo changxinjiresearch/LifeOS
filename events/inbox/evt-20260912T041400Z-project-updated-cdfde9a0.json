@@ -1,0 +1,14 @@
+{
+  "type": "project_updated",
+  "project_id": "project-item-daed6c",
+  "changes": {
+    "name": "NextPlan开发"
+  },
+  "summary": "Updated project snapshot: 这个",
+  "id": "evt-20260912T041400Z-project-updated-cdfde9a0",
+  "at": "2026-09-12T04:14:00Z",
+  "source": {
+    "kind": "chatgpt",
+    "via": "nextplan-chrome-bridge"
+  }
+}
