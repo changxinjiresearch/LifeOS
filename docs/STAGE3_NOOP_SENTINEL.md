@@ -1,0 +1,1 @@
+This file marks the transition into Agent Stage III. It has no runtime authority.
