@@ -1,0 +1,11 @@
+{
+  "id": "evt-20260912T061701Z-phase-b5-completed",
+  "at": "2026-09-12T06:17:01Z",
+  "type": "milestone_status_changed",
+  "project_id": "project-item-daed6c",
+  "milestone_id": "today-next-action",
+  "status": "completed",
+  "auto_advance": true,
+  "summary": "Completed Phase B5 Today + Next Action / Decision Engine v1.",
+  "source": {"kind": "chatgpt", "via": "nextplan-phase-b"}
+}
