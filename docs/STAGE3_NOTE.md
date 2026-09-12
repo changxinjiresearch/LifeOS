@@ -1,0 +1,1 @@
+Stage III was initiated from ChatGPT at the user's request. This note is non-authoritative; canonical progress remains in state.json via the append-only event stream.
