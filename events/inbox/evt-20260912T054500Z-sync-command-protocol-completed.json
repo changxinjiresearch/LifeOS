@@ -1,0 +1,15 @@
+{
+  "id": "evt-20260912T054500Z-sync-command-protocol-completed",
+  "at": "2026-09-12T05:45:00Z",
+  "type": "milestone_status_changed",
+  "project_id": "project-item-daed6c",
+  "milestone_id": "sync-command-protocol",
+  "status": "completed",
+  "next_action": "Entity Resolution + Confirmation + Receipt",
+  "project_status": "active",
+  "summary": "Completed NextPlan Sync Command Protocol v1 with cloud candidate envelopes and normalized receipts.",
+  "source": {
+    "kind": "chatgpt",
+    "via": "nextplan-phase-a"
+  }
+}
