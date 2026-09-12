@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-12T07:15:00Z",
+    "last_updated": "2026-09-12T07:15:01Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -68,12 +68,13 @@
         "evt-20260912T063701Z-phase-c8-completed",
         "evt-20260912T063702Z-phase-c9-completed",
         "evt-20260912T063703Z-phase-c10-completed",
-        "evt-20260912T071500Z-phase-d11-completed"
+        "evt-20260912T071500Z-phase-d11-completed",
+        "evt-20260912T071501Z-phase-d12-completed"
       ],
-      "processed_count": 36,
-      "last_build_at": "2026-09-12T07:16:20Z",
+      "processed_count": 37,
+      "last_build_at": "2026-09-12T07:16:31Z",
       "last_applied": [
-        "evt-20260912T071500Z-phase-d11-completed"
+        "evt-20260912T071501Z-phase-d12-completed"
       ],
       "status": "ready"
     }
@@ -383,9 +384,9 @@
       "id": "project-item-daed6c",
       "name": "NextPlan开发",
       "category": "其他",
-      "status": "active",
+      "status": "completed",
       "priority": 2,
-      "next_action": "Automation",
+      "next_action": "项目已完成",
       "milestones": [
         {
           "id": "core-schema-freeze",
@@ -445,12 +446,23 @@
         {
           "id": "automation",
           "name": "Automation",
-          "status": "active"
+          "status": "completed"
         }
       ]
     }
   ],
   "events": [
+    {
+      "id": "evt-20260912T071501Z-phase-d12-completed",
+      "at": "2026-09-12T07:15:01Z",
+      "project_id": "project-item-daed6c",
+      "type": "milestone_status_changed",
+      "summary": "Completed Phase D12 Automation v1.",
+      "source": {
+        "kind": "chatgpt",
+        "via": "nextplan-phase-d"
+      }
+    },
     {
       "id": "evt-20260912T071500Z-phase-d11-completed",
       "at": "2026-09-12T07:15:00Z",
