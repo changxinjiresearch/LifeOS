@@ -4,7 +4,7 @@ const DEFAULTS = {
   autoSync: true,
   autoThreshold: 0.88
 };
-const GENERATION = "local-v0.1-stage4";
+const GENERATION = "local-v0.1-stage6";
 
 async function getConfig() {
   return {...DEFAULTS, ...(await chrome.storage.local.get(DEFAULTS))};
@@ -29,18 +29,23 @@ async function pair(code) {
   }, false);
   if (!result.token) throw new Error("Pairing did not return a local credential");
   await chrome.storage.local.set({token: result.token});
+  await refreshBadge();
   return {status: "paired"};
 }
 
 async function getPending() {
-  return (await chrome.storage.local.get({pendingCandidates: []})).pendingCandidates;
+  const cfg = await getConfig();
+  if (!cfg.token) return [];
+  const result = await api("/pending");
+  return result.pending || [];
 }
 
-async function setPending(items) {
-  const trimmed = items.slice(-50);
-  await chrome.storage.local.set({pendingCandidates: trimmed});
-  await chrome.action.setBadgeText({text: trimmed.length ? String(Math.min(trimmed.length, 99)) : ""});
+async function refreshBadge() {
+  let items = [];
+  try { items = await getPending(); } catch {}
+  await chrome.action.setBadgeText({text: items.length ? String(Math.min(items.length, 99)) : ""});
   await chrome.action.setBadgeBackgroundColor({color: "#3478F6"});
+  return items;
 }
 
 async function seen(fp) {
@@ -54,12 +59,6 @@ async function remember(fp) {
   if (!processedFingerprints.includes(key)) {
     await chrome.storage.local.set({processedFingerprints: [...processedFingerprints, key].slice(-300)});
   }
-}
-
-async function enqueue(candidate, turn) {
-  const items = await getPending();
-  items.push({...candidate, source: {title: turn.title, url: turn.url}});
-  await setPending(items);
 }
 
 function clientContext() {
@@ -104,7 +103,7 @@ async function handleTurn(turn) {
     return {status: "auto_synced", label: candidate.label, receipt: result.receipt};
   }
 
-  await enqueue(candidate, turn);
+  await refreshBadge();
   await remember(turn.fingerprint);
   return {
     status: "queued",
@@ -116,23 +115,27 @@ async function handleTurn(turn) {
 }
 
 async function applyPending(id) {
-  const items = await getPending();
-  const candidate = items.find(x => x.id === id);
-  if (!candidate?.action) throw new Error("Candidate not found");
-  const receipt = await api("/actions/execute", {
+  const receipt = await api("/pending/apply", {
     method: "POST",
-    body: JSON.stringify({action: candidate.action})
+    body: JSON.stringify({id})
   });
-  await setPending(items.filter(x => x.id !== id));
-  await chrome.storage.local.set({lastSync: {at: new Date().toISOString(), label: candidate.label, result: receipt.status}});
+  await refreshBadge();
+  await chrome.storage.local.set({lastSync: {at: new Date().toISOString(), label: receipt.summary || id, result: receipt.status}});
   return receipt;
+}
+
+async function ignorePending(id) {
+  const result = await api("/pending/ignore", {method: "POST", body: JSON.stringify({id})});
+  await refreshBadge();
+  return result;
 }
 
 chrome.runtime.onInstalled.addListener(async () => {
   const current = await chrome.storage.local.get(Object.keys(DEFAULTS));
   await chrome.storage.local.set({...DEFAULTS, ...current});
-  await setPending(await getPending());
+  await refreshBadge();
 });
+chrome.runtime.onStartup.addListener(() => { refreshBadge(); });
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message?.type === "NEXTPLAN_TURN") {
@@ -154,7 +157,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     return true;
   }
   if (message?.type === "NEXTPLAN_IGNORE") {
-    getPending().then(items => setPending(items.filter(x => x.id !== message.id))).then(() => sendResponse({status: "ignored"}));
+    ignorePending(message.id).then(sendResponse).catch(err => sendResponse({status: "error", error: err.message}));
     return true;
   }
   if (message?.type === "NEXTPLAN_TEST") {
