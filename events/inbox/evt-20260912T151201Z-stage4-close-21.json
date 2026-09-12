@@ -1,0 +1,10 @@
+{
+  "id": "evt-20260912T151201Z-stage4-close-21",
+  "at": "2026-09-12T15:12:01Z",
+  "project_id": "project-item-daed6c",
+  "type": "milestone_status_changed",
+  "summary": "Stage IV acceptance passed: Cloud Classifier + Auto-Sync completed.",
+  "source": {"kind": "chatgpt", "via": "nextplan-stage4-final-acceptance"},
+  "milestone_id": "cloud-classifier-auto-sync",
+  "status": "completed"
+}
