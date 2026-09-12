@@ -1,0 +1,191 @@
+const app = {
+  endpoint: "http://127.0.0.1:47123",
+  token: "",
+  view: "today",
+  state: null,
+  status: null,
+};
+
+const $ = (s) => document.querySelector(s);
+const esc = (v) => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+
+function notice(message, bad = false) {
+  const el = $("#notice");
+  el.textContent = message;
+  el.style.background = bad ? "#fff0f0" : "#eef5ff";
+  el.style.color = bad ? "#9b2424" : "#244f86";
+  el.classList.remove("hidden");
+  setTimeout(() => el.classList.add("hidden"), 4500);
+}
+
+async function initCore() {
+  try {
+    if (window.__TAURI__?.core?.invoke) {
+      const cfg = await window.__TAURI__.core.invoke("core_config");
+      app.endpoint = cfg.endpoint;
+      app.token = cfg.token;
+      if (cfg.start_error) notice(`Local Core 启动失败：${cfg.start_error}`, true);
+    } else {
+      app.token = localStorage.getItem("nextplanBootstrapToken") || "";
+    }
+  } catch (err) {
+    notice(`Desktop runtime 初始化失败：${err.message}`, true);
+  }
+}
+
+async function api(path, options = {}, auth = true) {
+  const headers = {"Content-Type":"application/json", ...(options.headers || {})};
+  if (auth && app.token) headers.Authorization = `Bearer ${app.token}`;
+  const res = await fetch(`${app.endpoint}${path}`, {...options, headers});
+  let body = {};
+  try { body = await res.json(); } catch {}
+  if (!res.ok) throw new Error(body.detail || body.error || `HTTP ${res.status}`);
+  return body;
+}
+
+async function waitForCore() {
+  for (let i = 0; i < 25; i++) {
+    try {
+      const health = await api("/healthz", {}, false);
+      $("#coreStatus").textContent = `● Local Core · ${health.project_count} projects`;
+      $("#coreStatus").className = "status ok";
+      return true;
+    } catch {}
+    await new Promise(r => setTimeout(r, 200));
+  }
+  $("#coreStatus").textContent = "● Local Core unavailable";
+  $("#coreStatus").className = "status bad";
+  return false;
+}
+
+function statusTag(status) {
+  return `<span class="tag ${esc(status)}">${esc(status)}</span>`;
+}
+
+async function refreshState() {
+  const [state, status] = await Promise.all([api("/state"), api("/desktop/status")]);
+  app.state = state;
+  app.status = status;
+}
+
+function renderPending(pending) {
+  if (!pending?.length) return "";
+  return `<div class="stack"><h2>Needs confirmation</h2>${pending.map(c => `
+    <div class="card pending">
+      <div class="row"><strong>${esc(c.label || c.kind || "Detected change")}</strong>${c.confidence ? `<span class="tag">${Math.round(c.confidence*100)}%</span>` : ""}</div>
+      <p>${esc(c.reason || "NextPlan detected a change from your ChatGPT conversation.")}</p>
+      <div class="row">
+        <button class="primary" data-apply-pending="${esc(c.id)}">Apply</button>
+        <button class="secondary" data-ignore-pending="${esc(c.id)}">Ignore</button>
+      </div>
+    </div>`).join("")}</div>`;
+}
+
+async function renderToday() {
+  const [today, pending] = await Promise.all([api("/today"), api("/pending")]);
+  const top = today.top_action;
+  $("#content").innerHTML = `
+    ${top ? `<div class="hero"><div class="muted">TOP NEXT ACTION</div><h2>${esc(top.next_action)}</h2><div>${esc(top.project)}</div></div>` : `<div class="hero"><h2>No active next action</h2><div class="muted">Create or activate a project to start.</div></div>`}
+    ${renderPending(pending.pending)}
+    <div class="grid" style="margin-top:16px">
+      <div class="card"><h3>Active</h3><p>${today.active.length} actionable projects</p>${today.active.slice(0,6).map(x => `<div class="activity"><strong>${esc(x.project)}</strong><div class="muted">${esc(x.next_action)}</div></div>`).join("")}</div>
+      <div class="card"><h3>Waiting</h3><p>${today.waiting.length} projects</p></div>
+      <div class="card"><h3>Blocked</h3><p>${today.blocked.length} projects</p></div>
+    </div>`;
+}
+
+async function renderProjects() {
+  const [projects, workspaces] = await Promise.all([api("/projects"), api("/workspaces")]);
+  const binding = Object.fromEntries(workspaces.workspaces.map(x => [x.project_id, x]));
+  $("#content").innerHTML = `<div class="grid">${projects.projects.map(p => `
+    <article class="card">
+      <div class="row"><h3>${esc(p.name)}</h3>${statusTag(p.status)}</div>
+      <p><strong>Next:</strong> ${esc(p.next_action || "—")}</p>
+      ${binding[p.id] ? `<p class="artifact-path">${esc(binding[p.id].path)}</p>` : `<p class="muted">No workspace bound</p>`}
+      <div class="milestones">${(p.milestones || []).map(m => `<div class="milestone"><span>${esc(m.name)}</span>${statusTag(m.status)}</div>`).join("")}</div>
+    </article>`).join("")}</div>`;
+}
+
+async function renderActivity() {
+  const [activity, pending] = await Promise.all([api("/activity"), api("/pending")]);
+  $("#content").innerHTML = `${renderPending(pending.pending)}<div class="card" style="margin-top:16px"><h2>Activity</h2>${activity.activity.map(x => `<div class="activity"><div class="row"><strong>${esc(x.summary)}</strong><span class="tag">${esc(x.type)}</span></div><div class="muted">${esc(x.at)}</div></div>`).join("") || `<p class="muted">No activity yet.</p>`}</div>`;
+}
+
+function projectOptions(projects) {
+  return projects.map(p => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join("");
+}
+
+async function renderArtifacts() {
+  const [artifacts, projects] = await Promise.all([api("/artifacts"), api("/projects")]);
+  $("#content").innerHTML = `
+    <div class="grid">
+      <div class="card"><h3>Bind workspace</h3><div class="form"><select id="workspaceProject">${projectOptions(projects.projects)}</select><input id="workspacePath" placeholder="C:\\Users\\Alice\\Documents\\Project"><button class="primary" id="bindWorkspace">Bind authorized workspace</button></div></div>
+      <div class="card"><h3>Attach artifact</h3><div class="form"><select id="artifactProject">${projectOptions(projects.projects)}</select><input id="artifactMilestone" placeholder="Milestone ID (optional)"><input id="artifactPath" placeholder="Absolute file path"><button class="primary" id="attachArtifact">Attach & verify</button></div></div>
+    </div>
+    <div class="card" style="margin-top:16px"><h2>Artifacts</h2>${artifacts.artifacts.map(a => `<div class="activity"><div class="row"><strong>${esc(a.display_name)}</strong>${statusTag(a.availability)}<span class="tag">${esc(a.verification_status)}</span></div><div class="artifact-path">${esc(a.path)}</div><div class="row" style="margin-top:8px"><button class="secondary" data-open-artifact="${esc(a.id)}">Open</button><button class="secondary" data-verify-artifact="${esc(a.id)}">Verify</button></div></div>`).join("") || `<p class="muted">No artifacts attached.</p>`}</div>`;
+}
+
+async function renderSettings() {
+  const [desktop, pairing, permissions, workspaces] = await Promise.all([api("/desktop/status"), api("/pairing/status", {}, false), api("/permissions"), api("/workspaces")]);
+  $("#content").innerHTML = `
+    <div class="grid">
+      <div class="card"><h3>ChatGPT Bridge</h3><p>${pairing.paired ? "Extension paired ✓" : "Not paired"}</p><button class="primary" id="newPairingCode">Generate pairing code</button><div id="pairingCode" class="hero hidden" style="margin-top:12px"></div></div>
+      <div class="card"><h3>Local data</h3><p class="artifact-path">${esc(desktop.db_path)}</p><p>${workspaces.workspaces.length} authorized workspaces</p></div>
+      <div class="card"><h3>Permission mode</h3><p>Current: <strong>${esc(permissions.permissions.mode || "balanced")}</strong></p><div class="row"><button class="secondary" data-mode="conservative">Conservative</button><button class="secondary" data-mode="balanced">Balanced</button><button class="secondary" data-mode="autonomous">Autonomous</button></div></div>
+    </div>`;
+}
+
+async function render() {
+  const titles = {today:["Today","Your next meaningful actions."],projects:["Projects","Canonical project state."],activity:["Activity","Capture, confirmation and execution receipts."],artifacts:["Artifacts","Local workspaces and task outcomes."],settings:["Settings","Local connection, permissions and data."]};
+  $("#title").textContent = titles[app.view][0];
+  $("#subtitle").textContent = titles[app.view][1];
+  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("active", b.dataset.view === app.view));
+  try {
+    await refreshState();
+    if (app.view === "today") await renderToday();
+    if (app.view === "projects") await renderProjects();
+    if (app.view === "activity") await renderActivity();
+    if (app.view === "artifacts") await renderArtifacts();
+    if (app.view === "settings") await renderSettings();
+  } catch (err) {
+    $("#content").innerHTML = `<div class="card"><h3>Unable to load NextPlan</h3><p>${esc(err.message)}</p></div>`;
+  }
+}
+
+async function localAction(action, confirmed = false) {
+  const result = await api("/local-actions/execute", {method:"POST", body:JSON.stringify({action, confirmed})});
+  if (result.status === "confirmation_required") {
+    if (window.confirm(`${result.capability} is ${result.risk}. Continue?`)) return localAction(action, true);
+  }
+  return result;
+}
+
+document.addEventListener("click", async (event) => {
+  const button = event.target.closest("button");
+  if (!button) return;
+  try {
+    if (button.dataset.view) { app.view = button.dataset.view; return render(); }
+    if (button.id === "refresh") return render();
+    if (button.dataset.applyPending) { await api("/pending/apply", {method:"POST", body:JSON.stringify({id:button.dataset.applyPending})}); notice("Change applied."); return render(); }
+    if (button.dataset.ignorePending) { await api("/pending/ignore", {method:"POST", body:JSON.stringify({id:button.dataset.ignorePending})}); return render(); }
+    if (button.id === "bindWorkspace") {
+      await api("/workspaces/bind", {method:"POST", body:JSON.stringify({project_id:$("#workspaceProject").value,path:$("#workspacePath").value})}); notice("Workspace bound."); return render();
+    }
+    if (button.id === "attachArtifact") {
+      await api("/artifacts/attach", {method:"POST", body:JSON.stringify({project_id:$("#artifactProject").value,milestone_id:$("#artifactMilestone").value,path:$("#artifactPath").value})}); notice("Artifact attached and verified."); return render();
+    }
+    if (button.dataset.openArtifact) { await localAction({capability:"artifact.open",artifact_id:button.dataset.openArtifact}); return render(); }
+    if (button.dataset.verifyArtifact) { await api("/artifacts/verify", {method:"POST",body:JSON.stringify({artifact_id:button.dataset.verifyArtifact})}); notice("Artifact verified."); return render(); }
+    if (button.id === "newPairingCode") {
+      const r = await api("/pairing/code", {method:"POST",body:"{}"});
+      const el = $("#pairingCode"); el.innerHTML = `<div class="muted">PAIRING CODE</div><h2>${esc(r.code)}</h2><div>Expires in ${esc(r.expires_in_seconds)} seconds</div>`; el.classList.remove("hidden"); return;
+    }
+    if (button.dataset.mode) { await api("/permissions/update", {method:"POST",body:JSON.stringify({mode:button.dataset.mode})}); notice("Permission mode updated."); return render(); }
+  } catch (err) { notice(err.message, true); }
+});
+
+(async () => {
+  await initCore();
+  await waitForCore();
+  await render();
+})();

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NextPlan</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="shell">
+    <aside>
+      <div class="brand">NextPlan <span>Local</span></div>
+      <nav>
+        <button data-view="today" class="active">Today</button>
+        <button data-view="projects">Projects</button>
+        <button data-view="activity">Activity</button>
+        <button data-view="artifacts">Artifacts</button>
+        <button data-view="settings">Settings</button>
+      </nav>
+      <div id="coreStatus" class="status">Connecting…</div>
+    </aside>
+    <main>
+      <header>
+        <div><h1 id="title">Today</h1><p id="subtitle">Your next meaningful actions.</p></div>
+        <button id="refresh">Refresh</button>
+      </header>
+      <section id="notice" class="notice hidden"></section>
+      <section id="content"></section>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
