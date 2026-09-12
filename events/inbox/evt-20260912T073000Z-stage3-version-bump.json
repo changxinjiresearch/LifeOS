@@ -1,0 +1,11 @@
+{
+  "id": "evt-20260912T073000Z-stage3-version-bump",
+  "at": "2026-09-12T07:30:00Z",
+  "project_id": "project-item-daed6c",
+  "type": "project_updated",
+  "summary": "NextPlan Agent Stage III started; cloud version advanced to 1.3.0 and Action Gateway + Permission Model became the active milestone.",
+  "source": {
+    "kind": "chatgpt",
+    "via": "nextplan-agent-stage3"
+  }
+}
