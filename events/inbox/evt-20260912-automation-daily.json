@@ -1,0 +1,98 @@
+{
+  "id": "evt-20260912-automation-daily",
+  "at": "2026-09-12T07:14:35Z",
+  "type": "automation_snapshot_refreshed",
+  "project_id": "project-item-daed6c",
+  "summary": "Daily automation evaluation: 4 finding(s).",
+  "automation_snapshot": {
+    "automation_version": "1.0",
+    "generated_at": "2026-09-12T07:14:35+00:00",
+    "rules": [
+      {
+        "id": "overdue-deadline",
+        "name": "Overdue deadlines",
+        "enabled": true,
+        "kind": "overdue_deadline"
+      },
+      {
+        "id": "preparation-window",
+        "name": "Preparation windows",
+        "enabled": true,
+        "kind": "preparation_window",
+        "threshold_days": 5
+      },
+      {
+        "id": "stale-active",
+        "name": "Stale active projects",
+        "enabled": true,
+        "kind": "stale_active",
+        "threshold_days": 7
+      },
+      {
+        "id": "waiting-followup",
+        "name": "Waiting follow-up",
+        "enabled": true,
+        "kind": "waiting_followup",
+        "threshold_days": 7
+      },
+      {
+        "id": "blocked-project",
+        "name": "Blocked projects",
+        "enabled": true,
+        "kind": "blocked_project"
+      },
+      {
+        "id": "missing-next-action",
+        "name": "Missing next action",
+        "enabled": true,
+        "kind": "missing_next_action"
+      },
+      {
+        "id": "weekly-review",
+        "name": "Weekly review prompt",
+        "enabled": true,
+        "kind": "weekly_review",
+        "weekday": 6
+      }
+    ],
+    "finding_count": 4,
+    "findings": [
+      {
+        "rule_id": "preparation-window",
+        "severity": "medium",
+        "title": "与导师 Meeting",
+        "project_id": "flinders-presentation",
+        "reason": "Confirmed commitment enters preparation window: 4 day(s) remaining.",
+        "id": "automation-preparation-window-1"
+      },
+      {
+        "rule_id": "stale-active",
+        "severity": "medium",
+        "title": "USYD 转学与入学",
+        "project_id": "usyd",
+        "reason": "No recorded movement for 7 day(s).",
+        "id": "automation-stale-active-2"
+      },
+      {
+        "rule_id": "waiting-followup",
+        "severity": "medium",
+        "title": "Neuroscience Informatics 论文",
+        "project_id": "research-neuri",
+        "reason": "Waiting project has no recorded movement for 7 day(s).",
+        "id": "automation-waiting-followup-3"
+      },
+      {
+        "rule_id": "waiting-followup",
+        "severity": "medium",
+        "title": "PCC 第一篇论文",
+        "project_id": "research-pcc-v1",
+        "reason": "Waiting project has no recorded movement for 7 day(s).",
+        "id": "automation-waiting-followup-4"
+      }
+    ]
+  },
+  "source": {
+    "kind": "automation",
+    "via": "github-actions-daily"
+  }
+}
