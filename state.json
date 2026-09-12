@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-12T04:14:00Z",
+    "last_updated": "2026-09-12T04:21:10Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -47,12 +47,13 @@
         "evt-20260911T144345Z-r1-completed-r2-authorized",
         "evt-20260911T144743Z-internship-project-update",
         "evt-20260911T174608Z-project-created-7fbfe24f",
-        "evt-20260912T041400Z-project-updated-cdfde9a0"
+        "evt-20260912T041400Z-project-updated-cdfde9a0",
+        "evt-20260912T042110Z-nextplan-development-workflow"
       ],
-      "processed_count": 15,
-      "last_build_at": "2026-09-12T04:14:09Z",
+      "processed_count": 16,
+      "last_build_at": "2026-09-12T04:22:32Z",
       "last_applied": [
-        "evt-20260912T041400Z-project-updated-cdfde9a0"
+        "evt-20260912T042110Z-nextplan-development-workflow"
       ],
       "status": "ready"
     }
@@ -364,11 +365,83 @@
       "category": "其他",
       "status": "active",
       "priority": 2,
-      "next_action": "",
-      "milestones": []
+      "next_action": "Core Schema Freeze",
+      "milestones": [
+        {
+          "id": "core-schema-freeze",
+          "name": "Core Schema Freeze",
+          "status": "active"
+        },
+        {
+          "id": "sync-command-protocol",
+          "name": "NextPlan Sync Command Protocol",
+          "status": "planned"
+        },
+        {
+          "id": "entity-resolution-confirmation-receipt",
+          "name": "Entity Resolution + Confirmation + Receipt",
+          "status": "planned"
+        },
+        {
+          "id": "project-task-workflow",
+          "name": "Project / Task Workflow",
+          "status": "planned"
+        },
+        {
+          "id": "today-next-action",
+          "name": "Today + Next Action",
+          "status": "planned"
+        },
+        {
+          "id": "calendar-deadline",
+          "name": "Calendar + Deadline",
+          "status": "planned"
+        },
+        {
+          "id": "weekly-review",
+          "name": "Weekly Review",
+          "status": "planned"
+        },
+        {
+          "id": "notes-resources-integration",
+          "name": "Notes / Resources Integration",
+          "status": "planned"
+        },
+        {
+          "id": "search-command-palette",
+          "name": "Search / Command Palette",
+          "status": "planned"
+        },
+        {
+          "id": "analytics",
+          "name": "Analytics",
+          "status": "planned"
+        },
+        {
+          "id": "ai-planning",
+          "name": "AI Planning",
+          "status": "planned"
+        },
+        {
+          "id": "automation",
+          "name": "Automation",
+          "status": "planned"
+        }
+      ]
     }
   ],
   "events": [
+    {
+      "id": "evt-20260912T042110Z-nextplan-development-workflow",
+      "at": "2026-09-12T04:21:10Z",
+      "project_id": "project-item-daed6c",
+      "type": "project_updated",
+      "summary": "Added the 12-step NextPlan development workflow and set Core Schema Freeze as the active step.",
+      "source": {
+        "kind": "chatgpt",
+        "conversation_hint": "User requested the development steps be written into NextPlan after renaming the project to NextPlan开发"
+      }
+    },
     {
       "id": "evt-20260912T041400Z-project-updated-cdfde9a0",
       "at": "2026-09-12T04:14:00Z",
