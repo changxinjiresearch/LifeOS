@@ -1,0 +1,10 @@
+{
+  "id": "evt-20260912T150653Z-stage4-m21",
+  "at": "2026-09-12T15:06:53Z",
+  "project_id": "project-item-daed6c",
+  "type": "milestone_added",
+  "summary": "Added Stage IV milestone 21: Cloud Classifier + Auto-Sync.",
+  "source": {"kind": "chatgpt", "via": "nextplan-stage4-development"},
+  "milestone": {"id": "cloud-classifier-auto-sync", "name": "Cloud Classifier + Auto-Sync", "status": "planned"},
+  "activate_project": true
+}
