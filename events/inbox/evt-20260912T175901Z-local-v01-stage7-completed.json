@@ -1,0 +1,15 @@
+{
+  "id": "evt-20260912T175901Z-local-v01-stage7-completed",
+  "at": "2026-09-12T17:59:01Z",
+  "type": "milestone_status_changed",
+  "project_id": "project-item-daed6c",
+  "milestone_id": "local-v01-stage7-workspace-artifact",
+  "status": "completed",
+  "auto_advance": false,
+  "summary": "Completed Local v0.1 Stage 7 — Workspace & Artifact Layer",
+  "source": {
+    "kind": "chatgpt",
+    "via": "stage5-local-v01-stage6-8-release-closure",
+    "evidence": "Authorized workspace boundaries, artifact registration, metadata, SHA-256 verification and missing-file reconciliation accepted in Stage 6–8 acceptance"
+  }
+}
