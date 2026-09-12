@@ -1,0 +1,13 @@
+{
+  "id": "evt-20260912T142001Z-stage3-close-14",
+  "at": "2026-09-12T14:20:01Z",
+  "project_id": "project-item-daed6c",
+  "type": "milestone_status_changed",
+  "summary": "Stage III final acceptance passed: External Connectors completed.",
+  "source": {
+    "kind": "chatgpt",
+    "via": "nextplan-agent-stage3-final-acceptance"
+  },
+  "milestone_id": "external-connectors",
+  "status": "completed"
+}
