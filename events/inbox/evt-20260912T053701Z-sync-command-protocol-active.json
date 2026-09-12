@@ -1,0 +1,15 @@
+{
+  "id": "evt-20260912T053701Z-sync-command-protocol-active",
+  "at": "2026-09-12T05:37:01Z",
+  "type": "milestone_status_changed",
+  "project_id": "project-item-daed6c",
+  "milestone_id": "sync-command-protocol",
+  "status": "active",
+  "next_action": "NextPlan Sync Command Protocol",
+  "project_status": "active",
+  "summary": "Started NextPlan Sync Command Protocol after Core Schema Freeze v1.",
+  "source": {
+    "kind": "chatgpt",
+    "via": "nextplan-phase-a"
+  }
+}
