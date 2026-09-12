@@ -8,10 +8,7 @@
     "kind": "chatgpt",
     "via": "nextplan-agent-stage3"
   },
-  "project": {
-    "id": "project-item-daed6c",
-    "name": "NextPlan开发",
-    "category": "其他",
+  "changes": {
     "status": "active",
     "priority": 2,
     "next_action": "Action Gateway + Permission Model",
