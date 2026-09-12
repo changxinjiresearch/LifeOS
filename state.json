@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-12T15:14:00Z",
+    "last_updated": "2026-09-12T15:29:22Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -109,14 +109,12 @@
         "evt-20260912T151203Z-stage4-close-23",
         "evt-20260912T151204Z-stage4-close-24",
         "evt-20260912T151205Z-stage4-close-project",
-        "evt-20260912T151400Z-stage4-finalize-canonical"
+        "evt-20260912T151400Z-stage4-finalize-canonical",
+        "evt-20260912T152922Z-agent-github-head-f03ec6b3"
       ],
-      "processed_count": 77,
-      "last_build_at": "2026-09-12T15:14:34Z",
-      "last_applied": [
-        "evt-20260912T151205Z-stage4-close-project",
-        "evt-20260912T151400Z-stage4-finalize-canonical"
-      ],
+      "processed_count": 78,
+      "last_build_at": "2026-09-12T15:29:23Z",
+      "last_applied": [],
       "status": "ready"
     }
   },
@@ -553,6 +551,17 @@
     }
   ],
   "events": [
+    {
+      "id": "evt-20260912T152922Z-agent-github-head-f03ec6b3",
+      "at": "2026-09-12T15:29:22Z",
+      "project_id": "project-item-daed6c",
+      "type": "external_signal_recorded",
+      "summary": "Observed verified GitHub repository head change: f03ec6b3fbb7",
+      "source": {
+        "kind": "automation",
+        "via": "nextplan-agent-github-poll"
+      }
+    },
     {
       "id": "evt-20260912T151400Z-stage4-finalize-canonical",
       "at": "2026-09-12T15:14:00Z",
@@ -1560,6 +1569,24 @@
         "purpose": "server_v11 canonical production acceptance evidence"
       },
       "status": "observed"
+    },
+    {
+      "id": "signal-github-head-f03ec6b3fbb7abbfceea73f2",
+      "provider": "github",
+      "event_type": "repo_head_changed",
+      "provider_event_id": "f03ec6b3fbb7abbfceea73f2be0df7bae8b86312",
+      "verified_source": true,
+      "received_at": "2026-09-12T15:29:22Z",
+      "project_id": "project-item-daed6c",
+      "status": "observed",
+      "payload": {
+        "repository": "changxinjiresearch/LifeOS",
+        "head_sha": "f03ec6b3fbb7abbfceea73f2be0df7bae8b86312",
+        "branch": "main",
+        "message": "Finalize Stage IV canonical closure",
+        "author_name": "Changxin Ji",
+        "committed_at": "2026-09-12T15:14:27Z"
+      }
     }
   ],
   "agent_actions": [
@@ -1846,8 +1873,10 @@
   ],
   "agent_meta": {
     "agent_version": "1.0",
-    "provider_cursors": {},
-    "last_signal_at": "2026-09-12T14:15:30Z",
+    "provider_cursors": {
+      "github:changxinjiresearch/LifeOS:head": "f03ec6b3fbb7abbfceea73f2be0df7bae8b86312"
+    },
+    "last_signal_at": "2026-09-12T15:29:22Z",
     "last_action_at": "2026-09-12T14:15:40Z",
     "last_reconciliation_at": "2026-09-12T14:15:35Z",
     "last_run_at": "2026-09-12T14:15:42Z"

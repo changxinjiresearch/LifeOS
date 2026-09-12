@@ -1,0 +1,29 @@
+{
+  "id": "evt-20260912T152922Z-agent-github-head-f03ec6b3",
+  "at": "2026-09-12T15:29:22Z",
+  "project_id": "project-item-daed6c",
+  "type": "external_signal_recorded",
+  "summary": "Observed verified GitHub repository head change: f03ec6b3fbb7",
+  "source": {
+    "kind": "automation",
+    "via": "nextplan-agent-github-poll"
+  },
+  "external_signal": {
+    "id": "signal-github-head-f03ec6b3fbb7abbfceea73f2",
+    "provider": "github",
+    "event_type": "repo_head_changed",
+    "provider_event_id": "f03ec6b3fbb7abbfceea73f2be0df7bae8b86312",
+    "verified_source": true,
+    "received_at": "2026-09-12T15:29:22Z",
+    "project_id": "project-item-daed6c",
+    "status": "observed",
+    "payload": {
+      "repository": "changxinjiresearch/LifeOS",
+      "head_sha": "f03ec6b3fbb7abbfceea73f2be0df7bae8b86312",
+      "branch": "main",
+      "message": "Finalize Stage IV canonical closure",
+      "author_name": "Changxin Ji",
+      "committed_at": "2026-09-12T15:14:27Z"
+    }
+  }
+}
