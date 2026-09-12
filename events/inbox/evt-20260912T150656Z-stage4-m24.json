@@ -1,0 +1,10 @@
+{
+  "id": "evt-20260912T150656Z-stage4-m24",
+  "at": "2026-09-12T15:06:56Z",
+  "project_id": "project-item-daed6c",
+  "type": "milestone_added",
+  "summary": "Added Stage IV milestone 24: Production Rollout + Health Acceptance.",
+  "source": {"kind": "chatgpt", "via": "nextplan-stage4-development"},
+  "milestone": {"id": "production-rollout-health-acceptance", "name": "Production Rollout + Health Acceptance", "status": "planned"},
+  "activate_project": true
+}
