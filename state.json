@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-12T07:15:01Z",
+    "last_updated": "2026-09-12T07:31:00Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -31,7 +31,7 @@
       "version": 1,
       "mode": "append-only-event-files",
       "inbox": "events/inbox",
-      "builder": "engine/build_state_v2.py",
+      "builder": "engine/build_state_v3.py",
       "processed_event_ids": [
         "evt-20260910T170426Z-task-created-ad83839a",
         "evt-20260910T172100Z-delete-backend-test-create",
@@ -69,12 +69,17 @@
         "evt-20260912T063702Z-phase-c9-completed",
         "evt-20260912T063703Z-phase-c10-completed",
         "evt-20260912T071500Z-phase-d11-completed",
-        "evt-20260912T071501Z-phase-d12-completed"
+        "evt-20260912T071501Z-phase-d12-completed",
+        "evt-20260912T072900Z-nextplan-stage3-started",
+        "evt-20260912T073000Z-stage3-version-bump",
+        "evt-20260912T073100Z-stage3-gate-a-start"
       ],
-      "processed_count": 37,
-      "last_build_at": "2026-09-12T07:16:31Z",
+      "processed_count": 40,
+      "last_build_at": "2026-09-12T10:40:07Z",
       "last_applied": [
-        "evt-20260912T071501Z-phase-d12-completed"
+        "evt-20260912T072900Z-nextplan-stage3-started",
+        "evt-20260912T073000Z-stage3-version-bump",
+        "evt-20260912T073100Z-stage3-gate-a-start"
       ],
       "status": "ready"
     }
@@ -384,9 +389,9 @@
       "id": "project-item-daed6c",
       "name": "NextPlan开发",
       "category": "其他",
-      "status": "completed",
+      "status": "active",
       "priority": 2,
-      "next_action": "项目已完成",
+      "next_action": "Action Gateway + Permission Model",
       "milestones": [
         {
           "id": "core-schema-freeze",
@@ -447,11 +452,74 @@
           "id": "automation",
           "name": "Automation",
           "status": "completed"
+        },
+        {
+          "id": "action-gateway-permission-model",
+          "name": "Action Gateway + Permission Model",
+          "status": "active"
+        },
+        {
+          "id": "external-connectors",
+          "name": "External Connectors",
+          "status": "planned"
+        },
+        {
+          "id": "trigger-event-intake",
+          "name": "Trigger + Event Intake",
+          "status": "planned"
+        },
+        {
+          "id": "agent-execution-loop",
+          "name": "Agent Execution Loop",
+          "status": "planned"
+        },
+        {
+          "id": "verification-reconciliation-rollback",
+          "name": "Verification + Reconciliation + Rollback",
+          "status": "planned"
+        },
+        {
+          "id": "proactive-agent-policies",
+          "name": "Proactive Agent Policies",
+          "status": "planned"
         }
       ]
     }
   ],
   "events": [
+    {
+      "id": "evt-20260912T073100Z-stage3-gate-a-start",
+      "at": "2026-09-12T07:31:00Z",
+      "project_id": "project-item-daed6c",
+      "type": "milestone_status_changed",
+      "summary": "Stage III Gate A started: Action Gateway + Permission Model is now the active development step.",
+      "source": {
+        "kind": "chatgpt",
+        "via": "nextplan-agent-stage3"
+      }
+    },
+    {
+      "id": "evt-20260912T073000Z-stage3-version-bump",
+      "at": "2026-09-12T07:30:00Z",
+      "project_id": "project-item-daed6c",
+      "type": "project_updated",
+      "summary": "NextPlan Agent Stage III started; cloud version advanced to 1.3.0 and Action Gateway + Permission Model became the active milestone.",
+      "source": {
+        "kind": "chatgpt",
+        "via": "nextplan-agent-stage3"
+      }
+    },
+    {
+      "id": "evt-20260912T072900Z-nextplan-stage3-started",
+      "at": "2026-09-12T07:29:00Z",
+      "project_id": "project-item-daed6c",
+      "type": "project_updated",
+      "summary": "Started NextPlan Agent Stage III and reopened NextPlan development for the agentic execution roadmap.",
+      "source": {
+        "kind": "chatgpt",
+        "via": "nextplan-agent-stage3"
+      }
+    },
     {
       "id": "evt-20260912T071501Z-phase-d12-completed",
       "at": "2026-09-12T07:15:01Z",
@@ -961,5 +1029,14 @@
     "last_run_at": "2026-09-12T07:14:35+00:00",
     "finding_count": 4,
     "automation_version": "1.0"
+  },
+  "agent_policies": [],
+  "external_signals": [],
+  "agent_actions": [],
+  "agent_reconciliations": [],
+  "agent_runs": [],
+  "agent_meta": {
+    "agent_version": "1.0",
+    "provider_cursors": {}
   }
 }
