@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-12T07:14:35Z",
+    "last_updated": "2026-09-12T07:15:00Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -67,11 +67,14 @@
         "evt-20260912T063700Z-phase-c7-completed",
         "evt-20260912T063701Z-phase-c8-completed",
         "evt-20260912T063702Z-phase-c9-completed",
-        "evt-20260912T063703Z-phase-c10-completed"
+        "evt-20260912T063703Z-phase-c10-completed",
+        "evt-20260912T071500Z-phase-d11-completed"
       ],
-      "processed_count": 35,
-      "last_build_at": "2026-09-12T07:14:35Z",
-      "last_applied": [],
+      "processed_count": 36,
+      "last_build_at": "2026-09-12T07:16:20Z",
+      "last_applied": [
+        "evt-20260912T071500Z-phase-d11-completed"
+      ],
       "status": "ready"
     }
   },
@@ -382,7 +385,7 @@
       "category": "其他",
       "status": "active",
       "priority": 2,
-      "next_action": "AI Planning",
+      "next_action": "Automation",
       "milestones": [
         {
           "id": "core-schema-freeze",
@@ -437,17 +440,28 @@
         {
           "id": "ai-planning",
           "name": "AI Planning",
-          "status": "active"
+          "status": "completed"
         },
         {
           "id": "automation",
           "name": "Automation",
-          "status": "planned"
+          "status": "active"
         }
       ]
     }
   ],
   "events": [
+    {
+      "id": "evt-20260912T071500Z-phase-d11-completed",
+      "at": "2026-09-12T07:15:00Z",
+      "project_id": "project-item-daed6c",
+      "type": "milestone_status_changed",
+      "summary": "Completed Phase D11 AI Planning v1.",
+      "source": {
+        "kind": "chatgpt",
+        "via": "nextplan-phase-d"
+      }
+    },
     {
       "id": "evt-20260912-automation-daily",
       "at": "2026-09-12T07:14:35Z",
