@@ -1,0 +1,15 @@
+{
+  "id": "evt-20260912T054501Z-entity-resolution-active",
+  "at": "2026-09-12T05:45:01Z",
+  "type": "milestone_status_changed",
+  "project_id": "project-item-daed6c",
+  "milestone_id": "entity-resolution-confirmation-receipt",
+  "status": "active",
+  "next_action": "Entity Resolution + Confirmation + Receipt",
+  "project_status": "active",
+  "summary": "Started Entity Resolution + Confirmation + Receipt for NextPlan Phase A.",
+  "source": {
+    "kind": "chatgpt",
+    "via": "nextplan-phase-a"
+  }
+}
