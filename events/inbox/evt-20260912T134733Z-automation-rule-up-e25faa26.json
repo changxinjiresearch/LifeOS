@@ -1,0 +1,15 @@
+{
+  "type": "automation_rule_upserted",
+  "project_id": "project-item-daed6c",
+  "automation_rule": {
+    "id": "preparation-window",
+    "enabled": false
+  },
+  "summary": "Updated automation rule: preparation-window",
+  "id": "evt-20260912T134733Z-automation-rule-up-e25faa26",
+  "at": "2026-09-12T13:47:33Z",
+  "source": {
+    "kind": "chatgpt",
+    "via": "nextplan-phase-d"
+  }
+}
