@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-12T05:45:01Z",
+    "last_updated": "2026-09-12T05:50:00Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -55,12 +55,13 @@
         "evt-20260912T053700Z-core-schema-freeze-completed",
         "evt-20260912T053701Z-sync-command-protocol-active",
         "evt-20260912T054500Z-sync-command-protocol-completed",
-        "evt-20260912T054501Z-entity-resolution-active"
+        "evt-20260912T054501Z-entity-resolution-active",
+        "evt-20260912T055000Z-entity-resolution-completed"
       ],
-      "processed_count": 23,
-      "last_build_at": "2026-09-12T05:45:48Z",
+      "processed_count": 24,
+      "last_build_at": "2026-09-12T05:49:13Z",
       "last_applied": [
-        "evt-20260912T054501Z-entity-resolution-active"
+        "evt-20260912T055000Z-entity-resolution-completed"
       ],
       "status": "ready"
     }
@@ -372,7 +373,7 @@
       "category": "其他",
       "status": "active",
       "priority": 2,
-      "next_action": "Entity Resolution + Confirmation + Receipt",
+      "next_action": "Project / Task Workflow",
       "milestones": [
         {
           "id": "core-schema-freeze",
@@ -387,7 +388,7 @@
         {
           "id": "entity-resolution-confirmation-receipt",
           "name": "Entity Resolution + Confirmation + Receipt",
-          "status": "active"
+          "status": "completed"
         },
         {
           "id": "project-task-workflow",
@@ -438,6 +439,17 @@
     }
   ],
   "events": [
+    {
+      "id": "evt-20260912T055000Z-entity-resolution-completed",
+      "at": "2026-09-12T05:50:00Z",
+      "project_id": "project-item-daed6c",
+      "type": "milestone_status_changed",
+      "summary": "Completed Phase A entity resolution, confirmation policy, and normalized receipt layer for NextPlan.",
+      "source": {
+        "kind": "chatgpt",
+        "via": "nextplan-phase-a"
+      }
+    },
     {
       "id": "evt-20260912T054501Z-entity-resolution-active",
       "at": "2026-09-12T05:45:01Z",
