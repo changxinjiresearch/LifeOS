@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-12T17:25:02Z",
+    "last_updated": "2026-09-12T17:59:03Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -114,13 +114,19 @@
         "evt-20260912T171300Z-local-v01-stage1-3-close",
         "evt-20260912T172500Z-local-v01-stage4-completed",
         "evt-20260912T172501Z-local-v01-stage5-completed",
-        "evt-20260912T172502Z-local-v01-stage6-active"
+        "evt-20260912T172502Z-local-v01-stage6-active",
+        "evt-20260912T175900Z-local-v01-stage6-completed",
+        "evt-20260912T175901Z-local-v01-stage7-completed",
+        "evt-20260912T175902Z-local-v01-stage8-completed",
+        "evt-20260912T175903Z-local-v01-stage9-active"
       ],
-      "processed_count": 82,
-      "last_build_at": "2026-09-12T17:25:10Z",
+      "processed_count": 86,
+      "last_build_at": "2026-09-12T18:01:22Z",
       "last_applied": [
-        "evt-20260912T172501Z-local-v01-stage5-completed",
-        "evt-20260912T172502Z-local-v01-stage6-active"
+        "evt-20260912T175900Z-local-v01-stage6-completed",
+        "evt-20260912T175901Z-local-v01-stage7-completed",
+        "evt-20260912T175902Z-local-v01-stage8-completed",
+        "evt-20260912T175903Z-local-v01-stage9-active"
       ],
       "status": "ready"
     }
@@ -432,7 +438,7 @@
       "category": "其他",
       "status": "active",
       "priority": 2,
-      "next_action": "Local v0.1 Stage 6 — NextPlan Desktop App",
+      "next_action": "Local v0.1 Stage 9 — Security / Recovery / Release Hardening",
       "milestones": [
         {
           "id": "core-schema-freeze",
@@ -582,22 +588,22 @@
         {
           "id": "local-v01-stage6-desktop-app",
           "name": "Local v0.1 Stage 6 — NextPlan Desktop App",
-          "status": "active"
+          "status": "completed"
         },
         {
           "id": "local-v01-stage7-workspace-artifact",
           "name": "Local v0.1 Stage 7 — Workspace & Artifact Layer",
-          "status": "planned"
+          "status": "completed"
         },
         {
           "id": "local-v01-stage8-local-execution-verification",
           "name": "Local v0.1 Stage 8 — Local Execution & Verification",
-          "status": "planned"
+          "status": "completed"
         },
         {
           "id": "local-v01-stage9-release-hardening",
           "name": "Local v0.1 Stage 9 — Security / Recovery / Release Hardening",
-          "status": "planned"
+          "status": "active"
         },
         {
           "id": "local-v01-stage10-packaging-clean-machine",
@@ -608,6 +614,53 @@
     }
   ],
   "events": [
+    {
+      "id": "evt-20260912T175903Z-local-v01-stage9-active",
+      "at": "2026-09-12T17:59:03Z",
+      "project_id": "project-item-daed6c",
+      "type": "milestone_status_changed",
+      "summary": "Activated Local v0.1 Stage 9 — Security / Recovery / Release Hardening",
+      "source": {
+        "kind": "chatgpt",
+        "via": "stage5-local-v01-stage6-8-release-closure"
+      }
+    },
+    {
+      "id": "evt-20260912T175902Z-local-v01-stage8-completed",
+      "at": "2026-09-12T17:59:02Z",
+      "project_id": "project-item-daed6c",
+      "type": "milestone_status_changed",
+      "summary": "Completed Local v0.1 Stage 8 — Local Execution & Verification",
+      "source": {
+        "kind": "chatgpt",
+        "via": "stage5-local-v01-stage6-8-release-closure",
+        "evidence": "Structured artifact.open, folder.open, file.copy and application.open actions accepted through the Action Gateway with permission, confirmation, execution receipts and verification; no arbitrary shell execution"
+      }
+    },
+    {
+      "id": "evt-20260912T175901Z-local-v01-stage7-completed",
+      "at": "2026-09-12T17:59:01Z",
+      "project_id": "project-item-daed6c",
+      "type": "milestone_status_changed",
+      "summary": "Completed Local v0.1 Stage 7 — Workspace & Artifact Layer",
+      "source": {
+        "kind": "chatgpt",
+        "via": "stage5-local-v01-stage6-8-release-closure",
+        "evidence": "Authorized workspace boundaries, artifact registration, metadata, SHA-256 verification and missing-file reconciliation accepted in Stage 6–8 acceptance"
+      }
+    },
+    {
+      "id": "evt-20260912T175900Z-local-v01-stage6-completed",
+      "at": "2026-09-12T17:59:00Z",
+      "project_id": "project-item-daed6c",
+      "type": "milestone_status_changed",
+      "summary": "Completed Local v0.1 Stage 6 — NextPlan Desktop App",
+      "source": {
+        "kind": "chatgpt",
+        "via": "stage5-local-v01-stage6-8-release-closure",
+        "evidence": "Tauri desktop shell, Local Core process management, desktop views, Rust cargo check and mainline release gates accepted"
+      }
+    },
     {
       "id": "evt-20260912T172502Z-local-v01-stage6-active",
       "at": "2026-09-12T17:25:02Z",
