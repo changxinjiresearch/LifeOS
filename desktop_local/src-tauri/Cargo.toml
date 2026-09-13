@@ -1,6 +1,6 @@
 [package]
 name = "nextplan-local-desktop"
-version = "0.1.0"
+version = "0.1.1"
 description = "NextPlan Local desktop shell"
 authors = ["NextPlan"]
 edition = "2021"

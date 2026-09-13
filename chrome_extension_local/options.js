@@ -1,45 +1,58 @@
-const endpoint = document.getElementById("endpoint");
-const code = document.getElementById("code");
-const result = document.getElementById("result");
+const statusEl = document.getElementById("status");
+const detailEl = document.getElementById("detail");
+const resultEl = document.getElementById("result");
 
-async function load() {
-  const cfg = await chrome.storage.local.get({endpoint: "http://127.0.0.1:47123"});
-  endpoint.value = cfg.endpoint;
+function showStatus(status) {
+  if (status?.connected) {
+    statusEl.textContent = "Connected to NextPlan Desktop";
+    statusEl.className = "status ok";
+    detailEl.textContent = `${status.runtime || "NextPlan Local Core"} · ${status.endpoint || "http://127.0.0.1:47123"}`;
+  } else {
+    statusEl.textContent = "NextPlan Desktop is not connected";
+    statusEl.className = "status bad";
+    detailEl.textContent = status?.connectionError || "Open NextPlan Desktop, then click Connect to NextPlan.";
+  }
 }
 
-async function setEndpoint() {
-  const value = endpoint.value.trim().replace(/\/$/, "") || "http://127.0.0.1:47123";
-  await chrome.storage.local.set({endpoint: value});
-  endpoint.value = value;
+async function refresh() {
+  const status = await chrome.runtime.sendMessage({type: "NEXTPLAN_GET_STATUS"});
+  showStatus(status);
+  return status;
 }
 
-document.getElementById("pair").onclick = async () => {
-  try {
-    await setEndpoint();
-    result.className = "muted";
-    result.textContent = "Pairing…";
-    const response = await chrome.runtime.sendMessage({type: "NEXTPLAN_PAIR", code: code.value.trim()});
-    if (response?.status !== "paired") throw new Error(response?.error || "Pairing failed");
-    result.className = "muted ok";
-    result.textContent = "Paired successfully.";
-    code.value = "";
-  } catch (err) {
-    result.className = "muted bad";
-    result.textContent = err.message;
+async function connect() {
+  resultEl.className = "muted";
+  resultEl.textContent = "Connecting…";
+  const response = await chrome.runtime.sendMessage({type: "NEXTPLAN_CONNECT"});
+  if (response?.status !== "connected") throw new Error(response?.error || "Could not connect to NextPlan Desktop");
+  resultEl.className = "muted ok";
+  resultEl.textContent = "Connected successfully. You can now use NextPlan from ChatGPT.";
+  await refresh();
+}
+
+document.getElementById("connect").onclick = async () => {
+  try { await connect(); }
+  catch (err) {
+    resultEl.className = "muted bad";
+    resultEl.textContent = err.message;
+    await refresh().catch(() => {});
   }
 };
 
 document.getElementById("test").onclick = async () => {
   try {
-    await setEndpoint();
     const response = await chrome.runtime.sendMessage({type: "NEXTPLAN_TEST"});
-    if (response?.status !== "ok") throw new Error(response?.error || "Local Core unavailable");
-    result.className = "muted ok";
-    result.textContent = `Local Core healthy · ${response.runtime || "local"}`;
+    if (response?.status !== "connected") throw new Error(response?.error || "NextPlan Desktop unavailable");
+    resultEl.className = "muted ok";
+    resultEl.textContent = `Connection healthy · ${response.runtime || "NextPlan Local Core"}`;
+    await refresh();
   } catch (err) {
-    result.className = "muted bad";
-    result.textContent = err.message;
+    resultEl.className = "muted bad";
+    resultEl.textContent = err.message;
+    await refresh().catch(() => {});
   }
 };
 
-load();
+refresh().catch(err => {
+  showStatus({connected: false, connectionError: err.message});
+});
