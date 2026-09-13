@@ -43,6 +43,8 @@ jobs:
           if ($source.source_repository -ne 'changxinjiresearch/LifeOS-App') { throw 'wrong Web UI source' }
           if (-not (Test-Path 'desktop_local/ui/web-runtime.js')) { throw 'web-runtime.js missing' }
           if (-not (Test-Path 'desktop_local/ui/apple-web-v1.css')) { throw 'Apple Web stylesheet missing' }
+          if (Test-Path 'desktop_local/ui/app.js') { throw 'legacy desktop app.js must not exist' }
+          if (Test-Path 'desktop_local/ui/styles.css') { throw 'legacy desktop styles.css must not exist' }
 
       - name: Install Python release dependencies
         shell: pwsh
@@ -74,18 +76,28 @@ jobs:
           node --check chrome_extension_local/options.js
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-      - name: Verify release security and Web parity contract
+      - name: Verify release security and single UI authority contract
         shell: pwsh
         run: |
           @'
           from pathlib import Path
+          import hashlib
           import json
+          import subprocess
+
           storage = Path('mcp_server/storage_v3.py').read_text()
           core = Path('mcp_server/local_core_v4.py').read_text()
           rust = Path('desktop_local/src-tauri/src/main.rs').read_text()
           conf = json.loads(Path('desktop_local/src-tauri/tauri.conf.json').read_text())
           index = Path('desktop_local/ui/index.html').read_text(encoding='utf-8')
           source = json.loads(Path('desktop_local/ui/web-ui-source.json').read_text(encoding='utf-8'))
+          tracked_ui = set(subprocess.run(
+              ['git', 'ls-files', 'desktop_local/ui'],
+              check=True,
+              capture_output=True,
+              text=True,
+          ).stdout.splitlines())
+
           assert "paired_extension_token','paired_extension_id" in storage
           assert '127.0.0.1' in core
           assert 'shell.execute' not in core
@@ -94,10 +106,23 @@ jobs:
           assert conf['bundle']['active'] is True
           assert conf['bundle']['targets'] == ['nsis']
           assert conf['bundle']['windows']['nsis']['installMode'] == 'currentUser'
+          window = conf['app']['windows'][0]
+          assert (window['width'], window['height']) == (1180, 780)
+          assert (window['minWidth'], window['minHeight']) == (900, 620)
           assert source['source_repository'] == 'changxinjiresearch/LifeOS-App'
+          assert source['contract'] == 'LifeOS-App is the only UI authority; desktop injects only the local data adapter'
           assert 'desktop-adapter.js' in index and 'web-runtime.js' in index
           assert 'Good morning' in Path('desktop_local/ui/web-runtime.js').read_text(encoding='utf-8')
-          print('release security + exact Web UI source contract PASS')
+          assert tracked_ui == {
+              'desktop_local/ui/.gitignore',
+              'desktop_local/ui/desktop-adapter.js',
+          }
+          assert not Path('desktop_local/ui/app.js').exists()
+          assert not Path('desktop_local/ui/styles.css').exists()
+          for name, expected in source['asset_sha256'].items():
+              actual = hashlib.sha256((Path('desktop_local/ui') / name).read_bytes()).hexdigest()
+              assert actual == expected, name
+          print('release security + single Web UI authority contract PASS')
           '@ | python -
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
