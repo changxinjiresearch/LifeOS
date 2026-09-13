@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 import uuid
+from datetime import datetime, timezone
 from typing import Any
 
 from .local_actions_v1 import ALLOWED_CATEGORIES, ALLOWED_STATUS, execute_action as execute_action_v1
@@ -13,13 +14,57 @@ def _slug(text: str, max_len: int = 32) -> str:
     return value[:max_len] or "item"
 
 
+def _now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+
+
+def _execute_calendar_event(store: CanonicalStore, action: dict[str, Any]) -> dict[str, Any]:
+    title = str(action.get("title") or "").strip()
+    date = str(action.get("date") or "").strip()
+    if not title or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", date):
+        raise ValueError("calendar event requires title and date YYYY-MM-DD")
+    event_id = str(action.get("calendar_event_id") or action.get("id") or "").strip()
+    if not event_id:
+        event_id = f"calendar-{_slug(title)}-{date}-{uuid.uuid4().hex[:6]}"
+    calendar_event: dict[str, Any] = {
+        "id": event_id,
+        "title": title,
+        "date": date,
+        "kind": str(action.get("kind") or "event").strip() or "event",
+    }
+    for key in ("time", "timezone", "category", "project_id", "notes"):
+        value = action.get(key)
+        if value not in (None, ""):
+            calendar_event[key] = value
+    event = {
+        "id": f"evt-local-calendar-{uuid.uuid4().hex}",
+        "at": _now_iso(),
+        "type": "calendar_event_upserted",
+        "project_id": str(action.get("project_id") or "calendar"),
+        "calendar_event": calendar_event,
+        "summary": f"Calendar event: {title} · {date}" + (f" {calendar_event['time']}" if calendar_event.get("time") else ""),
+        "source": {"kind": "conversation", "via": "nextplan-local-core-v2"},
+    }
+    result = store.append_event(event)
+    return {
+        "status": result["status"],
+        "event_id": result["event_id"],
+        "calendar_event_id": event_id,
+        "title": title,
+        "date": date,
+        "summary": event["summary"],
+    }
+
+
 def execute_action(store: CanonicalStore, action: dict[str, Any]) -> dict[str, Any]:
     """Stage V local action composition.
 
-    Adds atomic project-blueprint creation while preserving the Stage 1-3 action
-    implementation for every existing operation.
+    Adds atomic project-blueprint creation and calendar event persistence while
+    preserving the Stage 1-3 action implementation for every existing operation.
     """
     op = str(action.get("action") or "").strip()
+    if op == "upsert_calendar_event":
+        return _execute_calendar_event(store, action)
     if op != "create_project_blueprint":
         return execute_action_v1(store, action)
 
@@ -70,7 +115,7 @@ def execute_action(store: CanonicalStore, action: dict[str, Any]) -> dict[str, A
     }
     event = {
         "id": f"evt-local-blueprint-{uuid.uuid4().hex}",
-        "at": __import__("datetime").datetime.now(__import__("datetime").timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z"),
+        "at": _now_iso(),
         "type": "project_created",
         "project_id": project_id,
         "project": project,
