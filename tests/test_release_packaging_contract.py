@@ -1,7 +1,10 @@
 from pathlib import Path
+import base64
+import hashlib
 import json
 
 ROOT = Path(__file__).resolve().parents[1]
+EXPECTED_EXTENSION_ID = 'gbdcbnbdmkgjffjioohjfidjmchiggpc'
 
 
 def test_desktop_release_uses_bundled_core_and_external_app_data():
@@ -60,14 +63,20 @@ def test_browser_bridge_auto_bootstraps_without_pairing_code():
 
     assert '127.0.0.1' in rust and '47124' in rust
     assert 'POST /bridge/bootstrap' in rust
-    assert 'chrome-extension://' in rust
     assert 'X-NextPlan-Extension-Id' in rust
     assert '/pairing/reset' in rust
+    assert EXPECTED_EXTENSION_ID in rust
     assert 'bridgeEndpoint: "http://127.0.0.1:47124"' in bg
     assert 'bootstrapSession' in bg
     assert 'NEXTPLAN_CONNECT' in bg
-    assert 'Pairing code' not in options
+    assert 'id="code"' not in options
     assert 'Connect to NextPlan' in options
     assert manifest['version'] == '0.1.1'
     assert 'http://127.0.0.1/*' in manifest['host_permissions']
+    assert manifest.get('key')
+
+    der = base64.b64decode(manifest['key'])
+    digest = hashlib.sha256(der).digest()[:16]
+    derived_id = ''.join(chr(ord('a') + (b >> 4)) + chr(ord('a') + (b & 15)) for b in digest)
+    assert derived_id == EXPECTED_EXTENSION_ID
     assert 'End users must not copy tokens or enter a pairing code.' in contract
