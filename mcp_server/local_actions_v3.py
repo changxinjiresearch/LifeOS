@@ -45,43 +45,10 @@ def _sha256(path: Path) -> str:
 
 def execute_action(store: CanonicalStore, action: dict[str, Any]) -> dict[str, Any]:
     op = str(action.get("action") or "").strip()
-    handled = {
-        "bind_workspace", "unbind_workspace", "attach_artifact", "verify_artifact",
-        "remove_artifact", "update_local_permissions", "upsert_calendar_event",
-    }
-    if op not in handled:
+    if op not in {"bind_workspace", "unbind_workspace", "attach_artifact", "verify_artifact", "remove_artifact", "update_local_permissions"}:
         return execute_action_v2(store, action)
 
     state = store.get_state()
-
-    if op == "upsert_calendar_event":
-        title = str(action.get("title") or "").strip()
-        date = str(action.get("date") or "").strip()
-        if not title or not date:
-            raise ValueError("calendar event requires title and date")
-        cid = str(action.get("calendar_event_id") or action.get("event_id") or "").strip() or f"calendar-{uuid.uuid4().hex[:12]}"
-        calendar_event = {
-            "id": cid,
-            "title": title,
-            "date": date,
-            "time": str(action.get("time") or "").strip(),
-            "timezone": str(action.get("timezone") or "").strip(),
-            "kind": str(action.get("kind") or "event").strip() or "event",
-            "category": str(action.get("category") or "其他").strip() or "其他",
-        }
-        project_id = str(action.get("project_id") or "").strip()
-        task_id = str(action.get("task_id") or action.get("milestone_id") or "").strip()
-        if project_id:
-            calendar_event["project_id"] = project_id
-        if task_id:
-            calendar_event["task_id"] = task_id
-        result = store.append_event(_event(
-            "calendar_event_upserted",
-            f"Calendar event: {title} on {date}",
-            project_id=project_id or "calendar",
-            calendar_event=calendar_event,
-        ))
-        return {"status": result["status"], "calendar_event_id": cid, "calendar_event": calendar_event, "event_id": result["event_id"]}
 
     if op == "bind_workspace":
         pid = str(action.get("project_id") or "").strip()
@@ -178,7 +145,7 @@ def execute_action(store: CanonicalStore, action: dict[str, Any]) -> dict[str, A
         mode = str(action.get("mode") or "").strip()
         if mode not in {"conservative", "balanced", "autonomous"}:
             raise ValueError("mode must be conservative, balanced or autonomous")
-        result = store.append_event(_event("local_permission_updated", f"Local permission mode -> {mode}", changes={"mode": mode))
+        result = store.append_event(_event("local_permission_updated", f"Local permission mode -> {mode}", changes={"mode": mode}))
         return {"status": result["status"], "mode": mode, "event_id": result["event_id"]}
 
     raise ValueError(f"unsupported local action: {op}")
