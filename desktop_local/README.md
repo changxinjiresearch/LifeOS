@@ -17,12 +17,17 @@ HTML, CSS, icons, fonts/references, navigation, layout, system copy, cards, sear
 
 ## Data boundary
 
-The presentation layer is shared; the data adapter differs by runtime:
+The presentation layer is shared; only the state adapter differs by runtime:
 
 ```text
-Web      -> cloud/state adapter
-Desktop  -> desktop-adapter.js -> Local Core -> SQLite
+Web      -> canonical Web cloud/state read
+Desktop  -> __NEXTPLAN_STATE_ADAPTER__.readState()
+             -> desktop-adapter.js
+             -> Local Core
+             -> SQLite
 ```
+
+`desktop-adapter.js` exposes a formal `readState()` adapter. It does **not** replace or monkeypatch `window.fetch`. The generated Desktop runtime replaces only the canonical Web `sync()` state-read boundary with `adapter.readState(...)`; rendering, navigation, search, planning logic, copy, and styling remain canonical Web code.
 
 The desktop adapter never writes SQLite directly. It talks only to the authenticated Local Core at `http://127.0.0.1:47123`.
 
@@ -52,4 +57,4 @@ Windows release acceptance is defined in `.github/workflows/stage5-local-stage9-
 
 macOS dual-architecture release acceptance is defined in `.github/workflows/nextplan-local-macos-release.yml`.
 
-Both workflows synchronize the canonical Web UI before build and fail if a legacy second Desktop UI is tracked or generated.
+Both workflows synchronize the canonical Web UI before build and fail if a legacy second Desktop UI is tracked or generated, if the Desktop adapter monkeypatches `window.fetch`, or if the generated runtime bypasses the formal local state adapter.
