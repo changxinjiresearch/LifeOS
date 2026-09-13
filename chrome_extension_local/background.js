@@ -5,7 +5,7 @@ const DEFAULTS = {
   autoSync: true,
   autoThreshold: 0.88
 };
-const GENERATION = "local-v0.1.1-auto-bootstrap";
+const GENERATION = "local-v0.1.3-auto-bootstrap";
 
 async function getConfig() {
   return {...DEFAULTS, ...(await chrome.storage.local.get(DEFAULTS))};
@@ -110,7 +110,7 @@ function clientContext() {
   try { timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch {}
   return {
     source: "nextplan-local-extension",
-    bridgeVersion: "0.1.1",
+    bridgeVersion: "0.1.3",
     now: new Date().toISOString(),
     timezone,
     utcOffsetMinutes: -new Date().getTimezoneOffset()
@@ -193,7 +193,7 @@ async function statusSnapshot() {
     pending,
     lastSync,
     mode: "desktop-auto-bootstrap",
-    version: "0.1.1"
+    version: "0.1.3"
   };
 }
 
