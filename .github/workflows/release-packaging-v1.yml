@@ -18,97 +18,102 @@ on:
 permissions:
   contents: write
 
+env:
+  VERSION: '0.1.1'
+  EXTENSION_ID: 'gbdcbnbdmkgjffjioohjfidjmchiggpc'
+
 jobs:
   windows-distributable:
     runs-on: windows-latest
-    timeout-minutes: 55
+    timeout-minutes: 65
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - uses: dtolnay/rust-toolchain@stable
 
-      - name: Sync canonical Web UI
+      - name: Sync canonical Web UI and install build dependencies
         shell: pwsh
         run: |
-          $ErrorActionPreference = 'Stop'
+          $ErrorActionPreference='Stop'
           python scripts/sync_web_ui_to_desktop.py
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-      - name: Install build dependencies
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = 'Stop'
           python -m pip install --upgrade pip
           pip install -r mcp_server/requirements.txt pytest pytest-asyncio pyinstaller
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Verify release contracts
         shell: pwsh
         run: |
-          $ErrorActionPreference = 'Stop'
+          $ErrorActionPreference='Stop'
           python -m pytest -q tests/test_release_packaging_contract.py tests/test_shared_ui_adapter_contract.py tests/test_local_stage9_10.py tests/test_local_stage6_8.py tests/test_local_stage4_5.py tests/test_local_stage1_3.py tests/test_conversation_capture.py
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node --check desktop_local/ui/desktop-adapter.js
           node --check desktop_local/ui/web-runtime.js
           node --check chrome_extension_local/background.js
           node --check chrome_extension_local/content.js
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node --check chrome_extension_local/popup.js
+          node --check chrome_extension_local/options.js
 
-      - name: Build standalone bundled Local Core
+      - name: Build standalone Local Core and Windows installer
         shell: pwsh
         run: |
-          $ErrorActionPreference = 'Stop'
+          $ErrorActionPreference='Stop'
           pyinstaller --noconfirm --clean --onefile --name nextplan-core --paths . --hidden-import uvicorn.logging --hidden-import uvicorn.loops.auto --hidden-import uvicorn.protocols.http.auto --hidden-import uvicorn.protocols.websockets.auto --hidden-import uvicorn.lifespan.on scripts/local_core_entry.py
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          if (-not (Test-Path 'dist/nextplan-core.exe')) { throw 'nextplan-core.exe missing' }
-          Copy-Item 'dist/nextplan-core.exe' 'desktop_local/src-tauri/resources/nextplan-core.exe' -Force
-
-      - uses: dtolnay/rust-toolchain@stable
-
-      - name: Build Windows installer
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = 'Stop'
+          if(-not (Test-Path dist/nextplan-core.exe)){throw 'nextplan-core.exe missing'}
+          Copy-Item dist/nextplan-core.exe desktop_local/src-tauri/resources/nextplan-core.exe -Force
           npx --yes @tauri-apps/cli@2 icon desktop_local/src-tauri/icons/icon.png --output desktop_local/src-tauri/icons
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           cargo check --manifest-path desktop_local/src-tauri/Cargo.toml
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           npx --yes @tauri-apps/cli@2 build --bundles nsis --config desktop_local/src-tauri/tauri.conf.json
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          New-Item -ItemType Directory release-artifacts -Force | Out-Null
+          $installer=Get-ChildItem desktop_local/src-tauri/target/release/bundle/nsis -Filter '*.exe' | Select-Object -First 1
+          if(-not $installer){throw 'NSIS installer missing'}
+          Copy-Item $installer.FullName "release-artifacts/NextPlan-Setup-v$env:VERSION.exe" -Force
+          Compress-Archive -Path 'chrome_extension_local/*' -DestinationPath "release-artifacts/NextPlan-Local-Bridge-v$env:VERSION.zip" -Force
 
-      - name: Prepare Windows distributable
+      - name: Clean-machine and secure browser bootstrap acceptance
         shell: pwsh
         run: |
-          $ErrorActionPreference = 'Stop'
-          New-Item -ItemType Directory -Path release-artifacts -Force | Out-Null
-          $installer = Get-ChildItem 'desktop_local/src-tauri/target/release/bundle/nsis' -Filter '*.exe' | Select-Object -First 1
-          if (-not $installer) { throw 'NSIS installer missing' }
-          Copy-Item $installer.FullName 'release-artifacts/NextPlan-Setup-v0.1.0.exe' -Force
+          $ErrorActionPreference='Stop'
+          $core=(Resolve-Path dist/nextplan-core.exe).Path
+          $installer=(Resolve-Path "release-artifacts/NextPlan-Setup-v$env:VERSION.exe").Path
+          & scripts/clean_machine_acceptance.ps1 -CoreExe $core -Installer $installer
+          if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}
 
-      - name: Zero-dependency Windows acceptance
+          $desktop=Get-ChildItem $env:LOCALAPPDATA -Filter 'nextplan-local-desktop.exe' -File -Recurse -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+          if(-not $desktop){throw 'installed desktop missing'}
+          $app=Start-Process $desktop.FullName -PassThru
+          try {
+            $health=$null
+            for($i=0;$i -lt 75;$i++){try{$health=Invoke-RestMethod http://127.0.0.1:47123/healthz -TimeoutSec 2;if($health.status -eq 'ok'){break}}catch{};Start-Sleep 1}
+            if(-not $health -or $health.runtime -ne 'nextplan-local-core-v4'){throw 'Local Core failed'}
+            $ext=$env:EXTENSION_ID;$origin="chrome-extension://$ext"
+            $pre=Invoke-WebRequest -Method Options -Uri http://127.0.0.1:47124/bridge/bootstrap -Headers @{Origin=$origin;'Access-Control-Request-Method'='POST';'Access-Control-Request-Headers'='content-type,x-nextplan-extension-id'}
+            if($pre.StatusCode -ne 204){throw 'preflight failed'}
+            $boot=Invoke-RestMethod -Method Post -Uri http://127.0.0.1:47124/bridge/bootstrap -Headers @{Origin=$origin;'X-NextPlan-Extension-Id'=$ext} -ContentType application/json -Body '{}'
+            if(-not $boot.token){throw 'bootstrap token missing'}
+            $state=Invoke-RestMethod http://127.0.0.1:47123/state -Headers @{Origin=$origin;Authorization="Bearer $($boot.token)"}
+            if($null -eq $state.projects){throw 'authorized state read failed'}
+            $badWeb=& curl.exe -s -o NUL -w '%{http_code}' -X POST http://127.0.0.1:47124/bridge/bootstrap -H 'Origin: https://example.com' -H "X-NextPlan-Extension-Id: $ext" -H 'Content-Type: application/json' -d '{}'
+            if($badWeb -ne '403'){throw "bad web origin accepted: $badWeb"}
+            $badId='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+            $badExt=& curl.exe -s -o NUL -w '%{http_code}' -X POST http://127.0.0.1:47124/bridge/bootstrap -H "Origin: chrome-extension://$badId" -H "X-NextPlan-Extension-Id: $badId" -H 'Content-Type: application/json' -d '{}'
+            if($badExt -ne '403'){throw "unofficial extension accepted: $badExt"}
+            Write-Host SECURE_AUTO_BROWSER_BOOTSTRAP_ACCEPTANCE_PASS
+          } finally {
+            Stop-Process -Id $app.Id -Force -ErrorAction SilentlyContinue
+            Get-NetTCPConnection -LocalPort 47123,47124 -State Listen -ErrorAction SilentlyContinue | ForEach-Object {Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue}
+          }
+
+      - name: Checksums
         shell: pwsh
         run: |
-          $ErrorActionPreference = 'Stop'
-          $core = (Resolve-Path 'dist/nextplan-core.exe').Path
-          $installer = (Resolve-Path 'release-artifacts/NextPlan-Setup-v0.1.0.exe').Path
-          & 'scripts/clean_machine_acceptance.ps1' -CoreExe $core -Installer $installer
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-      - name: Write Windows checksum
-        shell: pwsh
-        run: |
-          $hash = (Get-FileHash 'release-artifacts/NextPlan-Setup-v0.1.0.exe' -Algorithm SHA256).Hash.ToLower()
-          "$hash  NextPlan-Setup-v0.1.0.exe" | Set-Content 'release-artifacts/SHA256SUMS-windows.txt'
+          Get-FileHash release-artifacts/* -Algorithm SHA256 | ForEach-Object {"$($_.Hash.ToLower())  $([IO.Path]::GetFileName($_.Path))"} | Set-Content release-artifacts/SHA256SUMS-windows.txt
 
       - uses: actions/upload-artifact@v4
         with:
-          name: NextPlan-Windows-v0.1.0
+          name: NextPlan-Windows-v0.1.1
           path: release-artifacts/*
           if-no-files-found: error
           retention-days: 30
@@ -125,95 +130,86 @@ jobs:
             arch: intel
             expected_uname: x86_64
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 65
+    timeout-minutes: 75
     steps:
       - uses: actions/checkout@v4
-
       - name: Verify native architecture
         shell: bash
         run: test "$(uname -m)" = "${{ matrix.expected_uname }}"
-
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - uses: dtolnay/rust-toolchain@stable
 
-      - name: Sync canonical Web UI
+      - name: Prepare source release
         shell: bash
         run: |
           set -euo pipefail
           python scripts/sync_web_ui_to_desktop.py
-
-      - name: Install build dependencies
-        shell: bash
-        run: |
-          set -euo pipefail
           python -m pip install --upgrade pip
           pip install -r mcp_server/requirements.txt pytest pytest-asyncio pyinstaller
-
-      - name: Verify release contracts
-        shell: bash
-        run: |
-          set -euo pipefail
           python -m pytest -q tests/test_release_packaging_contract.py tests/test_shared_ui_adapter_contract.py tests/test_local_stage9_10.py tests/test_local_stage6_8.py tests/test_local_stage4_5.py tests/test_local_stage1_3.py tests/test_conversation_capture.py
           node --check desktop_local/ui/desktop-adapter.js
           node --check desktop_local/ui/web-runtime.js
           node --check chrome_extension_local/background.js
           node --check chrome_extension_local/content.js
-
-      - name: Build standalone bundled Local Core
-        shell: bash
-        run: |
-          set -euo pipefail
-          pyinstaller --noconfirm --clean --onefile --name nextplan-core --paths . \
-            --hidden-import uvicorn.logging \
-            --hidden-import uvicorn.loops.auto \
-            --hidden-import uvicorn.protocols.http.auto \
-            --hidden-import uvicorn.protocols.websockets.auto \
-            --hidden-import uvicorn.lifespan.on \
-            scripts/local_core_entry.py
+          node --check chrome_extension_local/popup.js
+          node --check chrome_extension_local/options.js
+          pyinstaller --noconfirm --clean --onefile --name nextplan-core --paths . --hidden-import uvicorn.logging --hidden-import uvicorn.loops.auto --hidden-import uvicorn.protocols.http.auto --hidden-import uvicorn.protocols.websockets.auto --hidden-import uvicorn.lifespan.on scripts/local_core_entry.py
           test -x dist/nextplan-core
           cp dist/nextplan-core desktop_local/src-tauri/resources/nextplan-core
           chmod +x desktop_local/src-tauri/resources/nextplan-core
-
-      - uses: dtolnay/rust-toolchain@stable
-
-      - name: Build macOS DMG
-        shell: bash
-        run: |
-          set -euo pipefail
           npx --yes @tauri-apps/cli@2 icon desktop_local/src-tauri/icons/icon.png --output desktop_local/src-tauri/icons
           cargo check --manifest-path desktop_local/src-tauri/Cargo.toml
           npx --yes @tauri-apps/cli@2 build --bundles app,dmg --config desktop_local/src-tauri/tauri.conf.json
           APP="$(find desktop_local/src-tauri/target/release/bundle/macos -maxdepth 1 -name '*.app' -print -quit)"
           DMG="$(find desktop_local/src-tauri/target/release/bundle/dmg -maxdepth 1 -name '*.dmg' -print -quit)"
-          test -n "$APP" && test -d "$APP"
-          test -n "$DMG" && test -f "$DMG"
+          test -d "$APP" && test -f "$DMG"
           echo "APP_PATH=$APP" >> "$GITHUB_ENV"
           echo "DMG_PATH=$DMG" >> "$GITHUB_ENV"
 
-      - name: Zero-dependency macOS acceptance
+      - name: Clean-machine and secure browser bootstrap acceptance
         shell: bash
         run: |
           set -euo pipefail
           chmod +x scripts/clean_macos_acceptance.sh
           scripts/clean_macos_acceptance.sh "$APP_PATH"
+          TMP="$(mktemp -d)"
+          cleanup(){ pkill -f "$APP_PATH/Contents/MacOS/nextplan-local-desktop" 2>/dev/null || true; pkill -f nextplan-core 2>/dev/null || true; rm -rf "$TMP"; }
+          trap cleanup EXIT
+          HOME="$TMP/home"; mkdir -p "$HOME"
+          /usr/bin/env -i HOME="$HOME" TMPDIR="$TMP" PATH='/usr/bin:/bin:/usr/sbin:/sbin' NEXTPLAN_LOCAL_PYTHON=/definitely/missing/python3 PYTHONHOME=/definitely/missing/python PYTHONPATH=/definitely/missing/python NODE_PATH=/definitely/missing/node "$APP_PATH/Contents/MacOS/nextplan-local-desktop" >"$TMP/desktop.log" 2>&1 &
+          for i in {1..75}; do /usr/bin/curl -fsS http://127.0.0.1:47123/healthz > "$TMP/health.json" 2>/dev/null && break; /bin/sleep 1; done
+          grep -q nextplan-local-core-v4 "$TMP/health.json"
+          ORIGIN="chrome-extension://$EXTENSION_ID"
+          /usr/bin/curl -sS -D "$TMP/preflight.h" -o /dev/null -X OPTIONS http://127.0.0.1:47124/bridge/bootstrap -H "Origin: $ORIGIN" -H 'Access-Control-Request-Method: POST' -H 'Access-Control-Request-Headers: content-type,x-nextplan-extension-id'
+          grep -q '204 No Content' "$TMP/preflight.h"
+          /usr/bin/curl -fsS -X POST http://127.0.0.1:47124/bridge/bootstrap -H "Origin: $ORIGIN" -H "X-NextPlan-Extension-Id: $EXTENSION_ID" -H 'Content-Type: application/json' -d '{}' > "$TMP/bootstrap.json"
+          TOKEN="$(python -c 'import json;print(json.load(open("'"$TMP/bootstrap.json"'"))["token"])')"
+          /usr/bin/curl -fsS http://127.0.0.1:47123/state -H "Origin: $ORIGIN" -H "Authorization: Bearer $TOKEN" > "$TMP/state.json"
+          BADWEB=$(/usr/bin/curl -s -o /dev/null -w '%{http_code}' -X POST http://127.0.0.1:47124/bridge/bootstrap -H 'Origin: https://example.com' -H "X-NextPlan-Extension-Id: $EXTENSION_ID" -H 'Content-Type: application/json' -d '{}')
+          test "$BADWEB" = 403
+          BADID=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+          BADEXT=$(/usr/bin/curl -s -o /dev/null -w '%{http_code}' -X POST http://127.0.0.1:47124/bridge/bootstrap -H "Origin: chrome-extension://$BADID" -H "X-NextPlan-Extension-Id: $BADID" -H 'Content-Type: application/json' -d '{}')
+          test "$BADEXT" = 403
+          echo SECURE_AUTO_BROWSER_BOOTSTRAP_ACCEPTANCE_PASS
 
-      - name: Prepare macOS distributable
+      - name: Package macOS release
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p release-artifacts
-          NAME="NextPlan-v0.1.0-macOS-${{ matrix.arch }}.dmg"
-          cp "$DMG_PATH" "release-artifacts/$NAME"
-          shasum -a 256 "release-artifacts/$NAME" | sed 's#release-artifacts/##' > "release-artifacts/SHA256SUMS-${{ matrix.arch }}.txt"
+          mkdir -p release-artifacts bridge-package
+          cp "$DMG_PATH" "release-artifacts/NextPlan-v${VERSION}-macOS-${{ matrix.arch }}.dmg"
+          cp -R chrome_extension_local/. bridge-package/
+          (cd bridge-package && /usr/bin/zip -qr "../release-artifacts/NextPlan-Local-Bridge-v${VERSION}.zip" .)
+          shasum -a 256 release-artifacts/* | sed 's#release-artifacts/##' > "release-artifacts/SHA256SUMS-${{ matrix.arch }}.txt"
 
       - uses: actions/upload-artifact@v4
         with:
-          name: NextPlan-macOS-${{ matrix.arch }}-v0.1.0
+          name: NextPlan-macOS-${{ matrix.arch }}-v0.1.1
           path: release-artifacts/*
           if-no-files-found: error
           retention-days: 30
@@ -227,7 +223,6 @@ jobs:
         with:
           path: release-download
           merge-multiple: true
-
       - name: Publish GitHub release assets
         uses: softprops/action-gh-release@v2
         with:
