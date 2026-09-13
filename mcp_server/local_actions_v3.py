@@ -112,7 +112,7 @@ def execute_action(store: CanonicalStore, action: dict[str, Any]) -> dict[str, A
 
     if op == "verify_artifact":
         aid = str(action.get("artifact_id") or "").strip()
-        artifact = next((a for a in state.get("artifacts", []) if str(a.get("id")) == aid), None)
+        artifact = next((a for a in state.get("artifacts", []) if str(a.get("id") or "") == aid), None)
         if not artifact:
             raise ValueError(f"Unknown artifact_id: {aid}")
         path = Path(str(artifact.get("path") or ""))
@@ -135,7 +135,7 @@ def execute_action(store: CanonicalStore, action: dict[str, Any]) -> dict[str, A
 
     if op == "remove_artifact":
         aid = str(action.get("artifact_id") or "").strip()
-        artifact = next((a for a in state.get("artifacts", []) if str(a.get("id")) == aid), None)
+        artifact = next((a for a in state.get("artifacts", []) if str(a.get("id") or "") == aid), None)
         if not artifact:
             return {"status": "already_absent", "artifact_id": aid}
         result = store.append_event(_event("artifact_removed", f"Removed artifact registration: {aid}", project_id=str(artifact.get("project_id") or ""), artifact_id=aid))

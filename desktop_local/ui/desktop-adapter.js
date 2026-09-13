@@ -1,5 +1,6 @@
 (() => {
   const CFG_KEY = 'clo-v3-cfg';
+  const CAL_COMPAT_PREFIX = '__NP_CAL_V1__:';
   const WEB_DEFAULTS = {
     repo: 'changxinjiresearch/LifeOS',
     branch: 'main',
@@ -12,9 +13,6 @@
   function ensureDesktopConfig() {
     let cfg = {};
     try { cfg = JSON.parse(localStorage.getItem(CFG_KEY) || '{}') || {}; } catch (_) {}
-    // Keep Settings visually identical to Web while making the token a local sentinel.
-    // The desktop state adapter below ignores repo/branch/path for data transport and
-    // reads the canonical state from Local Core -> SQLite instead.
     cfg.repo = cfg.repo || WEB_DEFAULTS.repo;
     cfg.branch = cfg.branch || WEB_DEFAULTS.branch;
     cfg.path = cfg.path || WEB_DEFAULTS.path;
@@ -37,6 +35,50 @@
   };
 
   function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
+  function decodeCompatCalendar(deadline) {
+    const raw = String(deadline?.title || '');
+    if (!raw.startsWith(CAL_COMPAT_PREFIX)) return null;
+    try {
+      const meta = JSON.parse(decodeURIComponent(raw.slice(CAL_COMPAT_PREFIX.length)));
+      const projectId = String(deadline.project_id || '') === 'calendar' ? null : (deadline.project_id || null);
+      return {
+        id: deadline.id || `calendar-compat-${String(deadline.date || '')}-${String(meta.title || 'event')}`,
+        title: String(meta.title || 'Event'),
+        date: deadline.date || deadline.due || '',
+        time: String(meta.time || ''),
+        timezone: String(meta.timezone || ''),
+        kind: String(meta.kind || 'event'),
+        category: String(meta.category || '其他'),
+        project_id: projectId,
+        task_id: deadline.task_id || null,
+        compatibility_source: 'deadline-v1'
+      };
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function adaptCompatibilityState(state) {
+    const nativeEvents = Array.isArray(state.calendar_events) ? state.calendar_events.slice() : [];
+    const deadlines = [];
+    const compatEvents = [];
+    for (const deadline of (Array.isArray(state.deadlines) ? state.deadlines : [])) {
+      const event = decodeCompatCalendar(deadline);
+      if (event) compatEvents.push(event);
+      else deadlines.push(deadline);
+    }
+    const ids = new Set(nativeEvents.map(event => String(event?.id || '')).filter(Boolean));
+    for (const event of compatEvents) {
+      const id = String(event.id || '');
+      if (id && ids.has(id)) continue;
+      nativeEvents.push(event);
+      if (id) ids.add(id);
+    }
+    state.deadlines = deadlines;
+    state.calendar_events = nativeEvents;
+    return state;
+  }
 
   async function coreConfig() {
     if (corePromise) return corePromise;
@@ -75,7 +117,7 @@
     if (!state || !Array.isArray(state.projects)) {
       throw new Error('Invalid local state');
     }
-    return state;
+    return adaptCompatibilityState(state);
   }
 
   ensureDesktopConfig();

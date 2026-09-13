@@ -1,6 +1,6 @@
 (() => {
-  if (window.__NEXTPLAN_LOCAL_V012__) return;
-  window.__NEXTPLAN_LOCAL_V012__ = true;
+  if (window.__NEXTPLAN_LOCAL_V013__) return;
+  window.__NEXTPLAN_LOCAL_V013__ = true;
 
   const seen = new Set();
   let timer = null;
@@ -11,7 +11,9 @@
   }
 
   function normalizeCommandText(text) {
-    return String(text || "").replace(/next\s*plan\s*[：:]\s*/gi, "NextPlan ");
+    return String(text || "")
+      .replace(/next\s*plan\s*[：:]\s*/gi, "NextPlan ")
+      .replace(/((?:新增|新建|创建|添加)\s*(?:一个)?\s*(?:新)?项目)(?=[^\s：:，。])/gi, "$1 ");
   }
 
   function stableKey(user, ordinal) {
