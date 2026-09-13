@@ -20,7 +20,7 @@ TEXT_SUFFIXES = {".html", ".css", ".js", ".json", ".webmanifest", ".svg", ".txt"
 def fetch_bytes(name: str) -> bytes:
     req = urllib.request.Request(
         f"{BASE}/{name}",
-        headers={"User-Agent": "NextPlan-Desktop-Web-Parity-Sync/2.0"},
+        headers={"User-Agent": "NextPlan-Desktop-Web-Parity-Sync/3.0"},
     )
     with urllib.request.urlopen(req, timeout=30) as response:
         return response.read()
@@ -95,20 +95,45 @@ def clear_generated_ui() -> None:
             path.unlink()
 
 
+def adapt_runtime_for_desktop(canonical_runtime: str) -> str:
+    """Replace only the cloud state-read boundary; never alter rendered UI logic."""
+    start = canonical_runtime.find("async function sync(){")
+    end = canonical_runtime.find("\nfunction openSearch()", start)
+    if start < 0 or end < 0:
+        raise SystemExit("Could not locate canonical Web sync function")
+
+    desktop_sync = (
+        "async function sync(){if(busy)return;const c=getCfg(),adapter=window.__NEXTPLAN_STATE_ADAPTER__;"
+        "if(!c.token){$('syncPill').className='sync-pill';$('syncText').textContent='Local';return}"
+        "if(!adapter||typeof adapter.readState!=='function'){console.warn('NextPlan state adapter unavailable');"
+        "$('syncPill').className='sync-pill error';$('syncText').textContent='Offline';return}"
+        "busy=true;$('syncPill').className='sync-pill syncing';$('syncText').textContent='Syncing';"
+        "try{const x=await adapter.readState(c);if(!Array.isArray(x.projects))throw new Error('Invalid state file');"
+        "state=x;saveCache();renderAll();$('syncPill').className='sync-pill synced';$('syncText').textContent='Synced'}"
+        "catch(e){console.warn('NextPlan sync failed:',e);$('syncPill').className='sync-pill error';"
+        "$('syncText').textContent='Offline'}finally{busy=false}}"
+    )
+    runtime = canonical_runtime[:start] + desktop_sync + canonical_runtime[end:]
+    if "await adapter.readState(c)" not in runtime:
+        raise SystemExit("Desktop state adapter seam was not installed")
+    return runtime
+
+
 def main() -> None:
     source_index_bytes = fetch_bytes("index.html")
     source_index = source_index_bytes.decode("utf-8")
     assets = fetch_asset_graph(source_index)
 
-    # The production Web page keeps its runtime inline. Tauri's bundled desktop
-    # page externalizes only that script so the native adapter can run first.
-    # This changes no DOM, copy, styling, layout, icons, fonts, or user-visible text.
+    # The production Web page remains the sole source of DOM, copy, styling,
+    # layout, icons and interaction logic. Tauri externalizes the inline runtime
+    # only so the local state adapter can be loaded first.
     pattern = re.compile(r"<script>\s*(\(\(\)=>\{.*\}\)\(\);)\s*</script>(\s*</body>)", re.S)
     match = pattern.search(source_index)
     if not match:
         raise SystemExit("Could not locate the canonical Web runtime script")
 
-    runtime = match.group(1).strip() + "\n"
+    canonical_runtime = match.group(1).strip() + "\n"
+    runtime = adapt_runtime_for_desktop(canonical_runtime)
     desktop_scripts = (
         '<script src="./desktop-adapter.js"></script>\n'
         '<script src="./web-runtime.js"></script>'
@@ -130,8 +155,11 @@ def main() -> None:
         "source_ref": WEB_REF,
         "source_index_sha256": sha256(source_index_bytes),
         "generated_index_sha256": sha256(desktop_index.encode("utf-8")),
+        "canonical_web_runtime_sha256": sha256(canonical_runtime.encode("utf-8")),
         "web_runtime_sha256": sha256(runtime.encode("utf-8")),
         "asset_sha256": {name: sha256(data) for name, data in sorted(assets.items())},
+        "ui_contract": "LifeOS-App is the only UI authority",
+        "data_contract": "Web uses cloud state access; Desktop replaces only the state-read boundary with Local Core -> SQLite",
         "contract": "LifeOS-App is the only UI authority; desktop injects only the local data adapter",
     }
     (UI_DIR / "web-ui-source.json").write_text(
@@ -140,16 +168,22 @@ def main() -> None:
         newline="\n",
     )
 
-    # Hard parity guards. Any mismatch here is a release failure.
+    # Hard parity / architecture guards. Any mismatch here is a release failure.
     for name, data in assets.items():
         assert (UI_DIR / name).read_bytes() == data
+    adapter_text = (UI_DIR / "desktop-adapter.js").read_text(encoding="utf-8")
     assert desktop_index.count('src="./desktop-adapter.js"') == 1
     assert desktop_index.count('src="./web-runtime.js"') == 1
+    assert "window.__NEXTPLAN_STATE_ADAPTER__" in adapter_text
+    assert "window.fetch =" not in adapter_text
+    assert "await adapter.readState(c)" in runtime
+    assert "fetch(apiPath(c)" not in runtime
     assert not (UI_DIR / "app.js").exists()
     assert not (UI_DIR / "styles.css").exists()
     print(f"NextPlan desktop UI synced 1:1 from {WEB_REPO}@{WEB_REF}")
     print(f"source index sha256={manifest['source_index_sha256']}")
     print(f"canonical asset count={len(assets)}")
+    print("state adapter boundary=Local Core -> SQLite")
 
 
 if __name__ == "__main__":
