@@ -33,17 +33,14 @@ async function bootstrapSession() {
   }
   const body = await readJson(res);
   if (!res.ok) {
-    if (res.status === 409) throw new Error("Another browser extension is already connected. Restart NextPlan Desktop and try again.");
+    if (res.status === 403) throw new Error("This is not the official NextPlan Local Bridge build");
     if (res.status === 503) throw new Error("NextPlan Desktop is starting. Try again in a moment.");
     throw new Error(body.error || `Desktop bridge HTTP ${res.status}`);
   }
   if (!body.token || !body.endpoint) throw new Error("Desktop bridge returned an incomplete session");
-  await chrome.storage.local.set({
-    token: body.token,
-    endpoint: String(body.endpoint).replace(/\/$/, ""),
-    lastBootstrap: new Date().toISOString()
-  });
-  return {...cfg, token: body.token, endpoint: String(body.endpoint).replace(/\/$/, "")};
+  const endpoint = String(body.endpoint).replace(/\/$/, "");
+  await chrome.storage.local.set({token: body.token, endpoint, lastBootstrap: new Date().toISOString()});
+  return {...cfg, token: body.token, endpoint};
 }
 
 async function api(path, options = {}, requireAuth = true, allowRetry = true) {
@@ -56,6 +53,7 @@ async function api(path, options = {}, requireAuth = true, allowRetry = true) {
     res = await fetch(`${cfg.endpoint}${path}`, {...options, headers, cache: "no-store"});
   } catch {
     if (requireAuth && allowRetry) {
+      await chrome.storage.local.set({token: ""});
       await bootstrapSession();
       return api(path, options, requireAuth, false);
     }
@@ -72,10 +70,13 @@ async function api(path, options = {}, requireAuth = true, allowRetry = true) {
 }
 
 async function connectDesktop() {
-  const cfg = await bootstrapSession();
-  const health = await api("/healthz", {}, true, false);
+  const cfg = await getConfig();
+  if (!cfg.token) await bootstrapSession();
+  await api("/state");
+  const health = await api("/healthz", {}, false);
   await refreshBadge();
-  return {status: "connected", endpoint: cfg.endpoint, runtime: health.runtime || "nextplan-local-core"};
+  const current = await getConfig();
+  return {status: "connected", endpoint: current.endpoint, runtime: health.runtime || "nextplan-local-core"};
 }
 
 async function getPending() {
@@ -118,12 +119,6 @@ function clientContext() {
 
 async function handleTurn(turn) {
   if (await seen(turn.fingerprint)) return {status: "duplicate"};
-  try {
-    await bootstrapSession();
-  } catch (err) {
-    return {status: "needs_desktop", error: err.message};
-  }
-
   let result;
   try {
     result = await api("/conversation/capture", {
@@ -131,7 +126,8 @@ async function handleTurn(turn) {
       body: JSON.stringify({turn, client: clientContext(), apply: true})
     });
   } catch (err) {
-    return {status: "error", error: err.message};
+    const message = String(err?.message || "Connection failed");
+    return {status: message.includes("Open NextPlan Desktop") || message.includes("not reachable") ? "needs_desktop" : "error", error: message};
   }
 
   const candidate = result?.candidate || null;
@@ -161,10 +157,7 @@ async function handleTurn(turn) {
 }
 
 async function applyPending(id) {
-  const receipt = await api("/pending/apply", {
-    method: "POST",
-    body: JSON.stringify({id})
-  });
+  const receipt = await api("/pending/apply", {method: "POST", body: JSON.stringify({id})});
   await refreshBadge();
   await chrome.storage.local.set({lastSync: {at: new Date().toISOString(), label: receipt.summary || id, result: receipt.status}});
   return receipt;
