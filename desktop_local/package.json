@@ -3,9 +3,10 @@
   "private": true,
   "version": "0.1.0",
   "scripts": {
+    "sync:web-ui": "python ../scripts/sync_web_ui_to_desktop.py",
     "tauri": "tauri",
-    "dev": "tauri dev",
-    "check:ui": "node --check ui/app.js"
+    "dev": "npm run sync:web-ui && tauri dev",
+    "check:ui": "node --check ui/desktop-adapter.js && node --check ui/web-runtime.js"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.8.0"
