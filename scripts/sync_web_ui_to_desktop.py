@@ -20,7 +20,7 @@ TEXT_SUFFIXES = {".html", ".css", ".js", ".json", ".webmanifest", ".svg", ".txt"
 def fetch_bytes(name: str) -> bytes:
     req = urllib.request.Request(
         f"{BASE}/{name}",
-        headers={"User-Agent": "NextPlan-Desktop-Web-Parity-Sync/3.0"},
+        headers={"User-Agent": "NextPlan-Desktop-Web-Parity-Sync/3.1"},
     )
     with urllib.request.urlopen(req, timeout=30) as response:
         return response.read()
@@ -43,11 +43,11 @@ def normalise_local_ref(raw: str) -> str | None:
 
 
 def discover_local_refs(text: str) -> set[str]:
+    """Discover actual static-resource references, not arbitrary JS route strings."""
     refs: set[str] = set()
     patterns = (
         r'''(?:src|href)=["']([^"']+)["']''',
         r'''url\(\s*["']?([^"')]+)["']?\s*\)''',
-        r'''["'](\.?\.?/[^"']+)["']''',
     )
     for pattern in patterns:
         for raw in re.findall(pattern, text, flags=re.I):
@@ -69,7 +69,9 @@ def decode_text(name: str, data: bytes) -> str | None:
 
 def fetch_asset_graph(source_index: str) -> dict[str, bytes]:
     # sw.js is part of the Web runtime even when registration is expressed from
-    # inline JavaScript rather than an HTML src/href attribute.
+    # inline JavaScript rather than an HTML src/href attribute. Other assets are
+    # followed only through actual HTML src/href or CSS url() references so that
+    # runtime route strings cannot be mistaken for static files.
     pending = discover_local_refs(source_index) | {"sw.js"}
     fetched: dict[str, bytes] = {}
     while pending:
