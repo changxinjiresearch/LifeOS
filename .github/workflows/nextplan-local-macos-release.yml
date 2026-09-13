@@ -14,6 +14,7 @@ on:
       - 'chrome_extension_local/**'
       - 'tests/test_local_stage9_10.py'
       - 'tests/test_local_stage6_8.py'
+      - 'tests/test_shared_ui_adapter_contract.py'
       - '.github/workflows/nextplan-local-macos-release.yml'
   workflow_dispatch:
 
@@ -82,7 +83,7 @@ jobs:
         run: |
           set -euo pipefail
           python -m py_compile mcp_server/storage_v3.py mcp_server/local_core_v4.py mcp_server/local_execution_v1.py scripts/local_core_entry.py scripts/sync_web_ui_to_desktop.py
-          python -m pytest -q tests/test_local_stage9_10.py tests/test_local_stage6_8.py tests/test_local_stage4_5.py tests/test_local_stage1_3.py tests/test_conversation_capture.py
+          python -m pytest -q tests/test_shared_ui_adapter_contract.py tests/test_local_stage9_10.py tests/test_local_stage6_8.py tests/test_local_stage4_5.py tests/test_local_stage1_3.py tests/test_conversation_capture.py
           node --check desktop_local/ui/desktop-adapter.js
           node --check desktop_local/ui/web-runtime.js
           node --check chrome_extension_local/background.js
@@ -90,7 +91,7 @@ jobs:
           node --check chrome_extension_local/popup.js
           node --check chrome_extension_local/options.js
 
-      - name: Verify macOS release security and single UI authority contract
+      - name: Verify macOS release security, UI authority, and state adapter contract
         shell: bash
         run: |
           set -euo pipefail
@@ -105,6 +106,8 @@ jobs:
           rust = Path('desktop_local/src-tauri/src/main.rs').read_text()
           conf = json.loads(Path('desktop_local/src-tauri/tauri.conf.json').read_text())
           index = Path('desktop_local/ui/index.html').read_text(encoding='utf-8')
+          runtime = Path('desktop_local/ui/web-runtime.js').read_text(encoding='utf-8')
+          adapter = Path('desktop_local/ui/desktop-adapter.js').read_text(encoding='utf-8')
           source = json.loads(Path('desktop_local/ui/web-ui-source.json').read_text(encoding='utf-8'))
           tracked_ui = set(subprocess.run(
               ['git', 'ls-files', 'desktop_local/ui'],
@@ -126,9 +129,16 @@ jobs:
           assert (window['width'], window['height']) == (1180, 780)
           assert (window['minWidth'], window['minHeight']) == (900, 620)
           assert source['source_repository'] == 'changxinjiresearch/LifeOS-App'
+          assert source['ui_contract'] == 'LifeOS-App is the only UI authority'
+          assert source['data_contract'] == 'Web uses cloud state access; Desktop replaces only the state-read boundary with Local Core -> SQLite'
           assert source['contract'] == 'LifeOS-App is the only UI authority; desktop injects only the local data adapter'
           assert 'desktop-adapter.js' in index and 'web-runtime.js' in index
-          assert 'Good morning' in Path('desktop_local/ui/web-runtime.js').read_text(encoding='utf-8')
+          assert 'Good morning' in runtime
+          assert 'window.__NEXTPLAN_STATE_ADAPTER__' in adapter
+          assert "kind: 'local'" in adapter
+          assert 'window.fetch =' not in adapter
+          assert 'await adapter.readState(c)' in runtime
+          assert 'fetch(apiPath(c)' not in runtime
           assert tracked_ui == {
               'desktop_local/ui/.gitignore',
               'desktop_local/ui/desktop-adapter.js',
@@ -138,7 +148,7 @@ jobs:
           for name, expected in source['asset_sha256'].items():
               actual = hashlib.sha256((Path('desktop_local/ui') / name).read_bytes()).hexdigest()
               assert actual == expected, name
-          print('macOS release security + single Web UI authority contract PASS')
+          print('macOS release security + single Web UI authority + state adapter contract PASS')
           PY
 
       - name: Build standalone Local Core

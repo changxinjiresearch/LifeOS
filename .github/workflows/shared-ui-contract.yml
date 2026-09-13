@@ -6,12 +6,14 @@ on:
     paths:
       - 'scripts/sync_web_ui_to_desktop.py'
       - 'desktop_local/**'
+      - 'tests/test_shared_ui_adapter_contract.py'
       - '.github/workflows/shared-ui-contract.yml'
   push:
     branches: [main]
     paths:
       - 'scripts/sync_web_ui_to_desktop.py'
       - 'desktop_local/**'
+      - 'tests/test_shared_ui_adapter_contract.py'
       - '.github/workflows/shared-ui-contract.yml'
   workflow_dispatch:
 
@@ -36,13 +38,14 @@ jobs:
       - name: Generate desktop bundle from canonical Web UI
         run: python scripts/sync_web_ui_to_desktop.py
 
-      - name: Syntax checks
+      - name: Syntax and adapter unit checks
         run: |
           python -m py_compile scripts/sync_web_ui_to_desktop.py
+          python -m pytest -q tests/test_shared_ui_adapter_contract.py
           node --check desktop_local/ui/desktop-adapter.js
           node --check desktop_local/ui/web-runtime.js
 
-      - name: Verify single UI authority
+      - name: Verify single UI authority and adapter seam
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -54,6 +57,8 @@ jobs:
           conf = json.loads(Path('desktop_local/src-tauri/tauri.conf.json').read_text())
           source = json.loads((ui / 'web-ui-source.json').read_text(encoding='utf-8'))
           index = (ui / 'index.html').read_text(encoding='utf-8')
+          runtime = (ui / 'web-runtime.js').read_text(encoding='utf-8')
+          adapter = (ui / 'desktop-adapter.js').read_text(encoding='utf-8')
           package = json.loads(Path('desktop_local/package.json').read_text())
           tracked_ui = set(subprocess.run(
               ['git', 'ls-files', 'desktop_local/ui'],
@@ -69,9 +74,16 @@ jobs:
           assert not (ui / 'app.js').exists()
           assert not (ui / 'styles.css').exists()
           assert source['source_repository'] == 'changxinjiresearch/LifeOS-App'
+          assert source['ui_contract'] == 'LifeOS-App is the only UI authority'
+          assert source['data_contract'] == 'Web uses cloud state access; Desktop replaces only the state-read boundary with Local Core -> SQLite'
           assert source['contract'] == 'LifeOS-App is the only UI authority; desktop injects only the local data adapter'
           assert index.count('src="./desktop-adapter.js"') == 1
           assert index.count('src="./web-runtime.js"') == 1
+          assert 'window.__NEXTPLAN_STATE_ADAPTER__' in adapter
+          assert "kind: 'local'" in adapter
+          assert 'window.fetch =' not in adapter
+          assert 'await adapter.readState(c)' in runtime
+          assert 'fetch(apiPath(c)' not in runtime
           for name, expected in source['asset_sha256'].items():
               actual = hashlib.sha256((ui / name).read_bytes()).hexdigest()
               assert actual == expected, name
@@ -82,5 +94,5 @@ jobs:
           assert conf['build']['frontendDist'] == '../ui'
           assert 'sync:web-ui' in package['scripts']['tauri']
           assert 'sync:web-ui' in package['scripts']['check:ui']
-          print('single UI authority contract PASS')
+          print('single UI authority + formal state adapter contract PASS')
           PY

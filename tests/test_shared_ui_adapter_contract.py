@@ -1,0 +1,39 @@
+from pathlib import Path
+
+from scripts.sync_web_ui_to_desktop import adapt_runtime_for_desktop
+
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_desktop_runtime_replaces_only_sync_state_boundary():
+    canonical = """(()=>{\nconst before='keep-before';\nasync function sync(){const canonicalCloudCall=fetch(apiPath(c));return canonicalCloudCall}\nfunction openSearch(){return 'keep-after'}\n})();\n"""
+    adapted = adapt_runtime_for_desktop(canonical)
+
+    assert "const before='keep-before'" in adapted
+    assert "function openSearch(){return 'keep-after'}" in adapted
+    assert "await adapter.readState(c)" in adapted
+    assert "fetch(apiPath(c)" not in adapted
+    assert adapted.startswith("(()=>{\nconst before='keep-before';\n")
+    assert adapted.endswith("\nfunction openSearch(){return 'keep-after'}\n})();\n")
+
+
+def test_desktop_adapter_is_explicit_and_does_not_monkeypatch_fetch():
+    adapter = (ROOT / "desktop_local" / "ui" / "desktop-adapter.js").read_text(encoding="utf-8")
+
+    assert "window.__NEXTPLAN_STATE_ADAPTER__" in adapter
+    assert "kind: 'local'" in adapter
+    assert "async function readState()" in adapter
+    assert "`${cfg.endpoint}/state`" in adapter
+    assert "window.fetch =" not in adapter
+
+
+def test_no_legacy_hand_maintained_desktop_ui_files():
+    ui = ROOT / "desktop_local" / "ui"
+    assert not (ui / "app.js").exists()
+    assert not (ui / "styles.css").exists()
+    # index.html and web-runtime.js are generated and ignored; they must not be
+    # checked in as a second UI authority.
+    ignore = (ui / ".gitignore").read_text(encoding="utf-8")
+    assert "*" in ignore
+    assert "!desktop-adapter.js" in ignore
