@@ -1,8 +1,12 @@
 use serde::Serialize;
 use std::fs::OpenOptions;
+use std::io::{Read, Write};
+use std::net::{TcpListener, TcpStream};
 use std::path::PathBuf;
 use std::process::{Child, Command, Stdio};
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
+use std::thread;
+use std::time::Duration;
 use tauri::{Manager, RunEvent, State};
 use uuid::Uuid;
 
@@ -32,9 +36,163 @@ fn core_config(state: State<'_, CoreRuntime>) -> CoreConfig {
     }
 }
 
+fn header_value(request: &str, name: &str) -> Option<String> {
+    request.lines().skip(1).find_map(|line| {
+        let (key, value) = line.split_once(':')?;
+        if key.trim().eq_ignore_ascii_case(name) {
+            Some(value.trim().to_string())
+        } else {
+            None
+        }
+    })
+}
+
+fn extension_identity(request: &str) -> Option<(String, String)> {
+    let origin = header_value(request, "Origin")?;
+    let extension_id = header_value(request, "X-NextPlan-Extension-Id")?;
+    if !origin.starts_with("chrome-extension://") {
+        return None;
+    }
+    let origin_id = origin.trim_start_matches("chrome-extension://").trim_end_matches('/');
+    let valid_id = !extension_id.is_empty()
+        && extension_id.len() <= 128
+        && extension_id.chars().all(|c| c.is_ascii_alphanumeric());
+    if valid_id && origin_id == extension_id {
+        Some((origin, extension_id))
+    } else {
+        None
+    }
+}
+
+fn write_http_response(stream: &mut TcpStream, status: &str, origin: Option<&str>, body: &str) {
+    let mut headers = format!(
+        "HTTP/1.1 {status}\r\nContent-Type: application/json; charset=utf-8\r\nContent-Length: {}\r\nCache-Control: no-store\r\nConnection: close\r\n",
+        body.as_bytes().len()
+    );
+    if let Some(origin) = origin {
+        headers.push_str(&format!(
+            "Access-Control-Allow-Origin: {origin}\r\nAccess-Control-Allow-Methods: POST, OPTIONS\r\nAccess-Control-Allow-Headers: Content-Type, X-NextPlan-Extension-Id\r\nVary: Origin\r\n"
+        ));
+    }
+    headers.push_str("\r\n");
+    let _ = stream.write_all(headers.as_bytes());
+    let _ = stream.write_all(body.as_bytes());
+    let _ = stream.flush();
+}
+
+fn reset_persistent_pairing(core_port: u16, token: &str) -> bool {
+    for _ in 0..50 {
+        if let Ok(mut stream) = TcpStream::connect(("127.0.0.1", core_port)) {
+            let _ = stream.set_read_timeout(Some(Duration::from_millis(500)));
+            let request = format!(
+                "POST /pairing/reset HTTP/1.1\r\nHost: 127.0.0.1:{core_port}\r\nAuthorization: Bearer {token}\r\nContent-Type: application/json\r\nContent-Length: 2\r\nConnection: close\r\n\r\n{{}}"
+            );
+            if stream.write_all(request.as_bytes()).is_ok() {
+                let mut response = [0u8; 512];
+                if let Ok(n) = stream.read(&mut response) {
+                    let first = String::from_utf8_lossy(&response[..n]);
+                    if first.starts_with("HTTP/1.1 200") || first.starts_with("HTTP/1.0 200") {
+                        return true;
+                    }
+                }
+            }
+        }
+        thread::sleep(Duration::from_millis(100));
+    }
+    false
+}
+
+fn handle_bridge_connection(
+    mut stream: TcpStream,
+    core_port: u16,
+    token: &str,
+    claimed_extension_id: &Arc<Mutex<Option<String>>>,
+) {
+    let _ = stream.set_read_timeout(Some(Duration::from_secs(2)));
+    let mut buffer = [0u8; 8192];
+    let n = match stream.read(&mut buffer) {
+        Ok(n) if n > 0 => n,
+        _ => return,
+    };
+    let request = String::from_utf8_lossy(&buffer[..n]).to_string();
+    let first_line = request.lines().next().unwrap_or("");
+    let identity = extension_identity(&request);
+
+    if first_line.starts_with("OPTIONS ") {
+        if let Some((origin, _)) = identity {
+            write_http_response(&mut stream, "204 No Content", Some(&origin), "");
+        } else {
+            write_http_response(&mut stream, "403 Forbidden", None, "{\"error\":\"extension_origin_required\"}");
+        }
+        return;
+    }
+
+    if !first_line.starts_with("POST /bridge/bootstrap ") {
+        write_http_response(&mut stream, "404 Not Found", None, "{\"error\":\"not_found\"}");
+        return;
+    }
+
+    let Some((origin, extension_id)) = identity else {
+        write_http_response(&mut stream, "403 Forbidden", None, "{\"error\":\"extension_origin_required\"}");
+        return;
+    };
+
+    let allowed = match claimed_extension_id.lock() {
+        Ok(mut claimed) => match claimed.as_ref() {
+            Some(existing) => existing == &extension_id,
+            None => {
+                *claimed = Some(extension_id.clone());
+                true
+            }
+        },
+        Err(_) => false,
+    };
+    if !allowed {
+        write_http_response(
+            &mut stream,
+            "409 Conflict",
+            Some(&origin),
+            "{\"error\":\"different_extension_already_connected\"}",
+        );
+        return;
+    }
+
+    if !reset_persistent_pairing(core_port, token) {
+        write_http_response(
+            &mut stream,
+            "503 Service Unavailable",
+            Some(&origin),
+            "{\"error\":\"local_core_not_ready\"}",
+        );
+        return;
+    }
+
+    let body = format!(
+        "{{\"status\":\"connected\",\"endpoint\":\"http://127.0.0.1:{core_port}\",\"token\":\"{token}\",\"session\":\"desktop-bootstrap\"}}"
+    );
+    write_http_response(&mut stream, "200 OK", Some(&origin), &body);
+}
+
+fn start_browser_bootstrap_bridge(core_port: u16, bridge_port: u16, token: String) {
+    thread::spawn(move || {
+        let listener = match TcpListener::bind(("127.0.0.1", bridge_port)) {
+            Ok(listener) => listener,
+            Err(_) => return,
+        };
+        let claimed_extension_id = Arc::new(Mutex::new(None::<String>));
+        for connection in listener.incoming() {
+            if let Ok(stream) = connection {
+                handle_bridge_connection(stream, core_port, &token, &claimed_extension_id);
+            }
+        }
+    });
+}
+
 fn main() {
     let port = 47123u16;
+    let bridge_port = 47124u16;
     let bootstrap_token = Uuid::new_v4().simple().to_string();
+    let bridge_token = bootstrap_token.clone();
     let runtime = CoreRuntime {
         endpoint: format!("http://127.0.0.1:{port}"),
         token: bootstrap_token,
@@ -100,6 +258,7 @@ fn main() {
                     if let Ok(mut slot) = state.child.lock() {
                         *slot = Some(child);
                     }
+                    start_browser_bootstrap_bridge(port, bridge_port, bridge_token.clone());
                 }
                 Err(err) => {
                     if let Ok(mut slot) = state.start_error.lock() {
