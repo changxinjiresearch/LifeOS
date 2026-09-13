@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from .cloud_classifier_v6 import classify_turn as classify_existing_state
@@ -23,6 +24,25 @@ def _attach_action_provenance(candidate: dict[str, Any] | None) -> dict[str, Any
     return value
 
 
+def _normalize_nextplan_command_turn(turn: dict[str, Any]) -> dict[str, Any]:
+    """Accept natural command punctuation without changing command semantics.
+
+    ChatGPT users naturally type both `NextPlan：...` and `NextPlan: ...`.  The
+    legacy explicit-command grammar historically expected whitespace after the
+    product name.  Normalize only that boundary so all downstream classifiers
+    keep their existing deterministic behavior.
+    """
+    normalized = dict(turn)
+    user_text = str(turn.get("userText") or "")
+    normalized["userText"] = re.sub(
+        r"next\s*plan\s*[：:]\s*",
+        "NextPlan ",
+        user_text,
+        flags=re.I,
+    )
+    return normalized
+
+
 def classify_local_turn(turn: dict[str, Any], state: dict[str, Any], client: dict[str, Any] | None = None) -> dict[str, Any] | None:
     """Local v0.1 conversational intelligence composition.
 
@@ -32,7 +52,8 @@ def classify_local_turn(turn: dict[str, Any], state: dict[str, Any], client: dic
     actions so the canonical event can retain provenance without trusting the
     assistant as factual authority.
     """
-    existing = classify_existing_state(turn, state, client or {})
+    normalized_turn = _normalize_nextplan_command_turn(turn)
+    existing = classify_existing_state(normalized_turn, state, client or {})
     if existing is not None:
         return _attach_action_provenance(existing)
-    return _attach_action_provenance(discover_project_change(turn, state))
+    return _attach_action_provenance(discover_project_change(normalized_turn, state))

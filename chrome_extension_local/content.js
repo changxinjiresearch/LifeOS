@@ -1,6 +1,6 @@
 (() => {
-  if (window.__NEXTPLAN_LOCAL_V011__) return;
-  window.__NEXTPLAN_LOCAL_V011__ = true;
+  if (window.__NEXTPLAN_LOCAL_V012__) return;
+  window.__NEXTPLAN_LOCAL_V012__ = true;
 
   const seen = new Set();
   let timer = null;
@@ -8,6 +8,10 @@
 
   function textOf(el) {
     return (el?.innerText || el?.textContent || "").trim();
+  }
+
+  function normalizeCommandText(text) {
+    return String(text || "").replace(/next\s*plan\s*[：:]\s*/gi, "NextPlan ");
   }
 
   function stableKey(user, ordinal) {
@@ -54,6 +58,7 @@
     if (result.status === "auto_synced") toast(`NextPlan · Synced${result.label ? `: ${result.label}` : ""}`, "ok");
     else if (result.status === "queued") toast(`NextPlan · Change detected${result.label ? `: ${result.label}` : ""}. Open the extension to confirm.`, "info", 5600);
     else if (result.status === "informational") toast(`NextPlan · ${result.label || "No change needed"}`, "info");
+    else if (result.status === "no_change") toast("NextPlan · No executable change detected", "warn", 5200);
     else if (result.status === "needs_desktop") toast(result.error || "Open NextPlan Desktop to connect.", "warn", 6000);
     else if (result.status === "error") toast(`NextPlan Local: ${result.error || "Connection failed"}`, "bad", 6500);
   }
@@ -62,10 +67,10 @@
     const users = [...document.querySelectorAll('[data-message-author-role="user"]')];
     const assistants = [...document.querySelectorAll('[data-message-author-role="assistant"]')];
     if (!users.length || !assistants.length) return;
-    const userText = textOf(users[users.length - 1]);
+    const originalUserText = textOf(users[users.length - 1]);
     const assistantText = textOf(assistants[assistants.length - 1]);
-    if (!userText || !assistantText) return;
-    const fingerprint = stableKey(userText, users.length);
+    if (!originalUserText || !assistantText) return;
+    const fingerprint = stableKey(originalUserText, users.length);
     if (seen.has(fingerprint)) return;
     seen.add(fingerprint);
     if (seen.size > 100) seen.delete(seen.values().next().value);
@@ -73,7 +78,7 @@
       type: "NEXTPLAN_TURN",
       turn: {
         fingerprint,
-        userText: userText.slice(0, 4000),
+        userText: normalizeCommandText(originalUserText).slice(0, 4000),
         assistantText: assistantText.slice(-4000),
         title: document.title || "ChatGPT",
         url: location.href
