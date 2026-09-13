@@ -1,19 +1,55 @@
 # NextPlan Local Desktop
 
-This directory is the Stage 6 Tauri desktop shell for NextPlan Local v0.1.
+`desktop_local/` is the shared Tauri shell used by both Windows and macOS.
 
-## Development runtime
+## UI authority
 
-The desktop process generates a private bootstrap credential and launches:
+The desktop app does **not** maintain its own UI.
+
+`changxinjiresearch/LifeOS-App` is the single UI authority for Web, Windows, and macOS. Before local development or a desktop build, `scripts/sync_web_ui_to_desktop.py` fetches the canonical Web UI, copies its assets into the generated `desktop_local/ui/` bundle, externalizes the canonical Web runtime, and injects only `desktop-adapter.js` ahead of it.
+
+The only hand-maintained files allowed inside `desktop_local/ui/` are:
+
+- `.gitignore`
+- `desktop-adapter.js`
+
+HTML, CSS, icons, fonts/references, navigation, layout, system copy, cards, search UI, and all other presentation code come from `LifeOS-App`. Legacy desktop `index.html`, `app.js`, and `styles.css` are intentionally not retained.
+
+## Data boundary
+
+The presentation layer is shared; the data adapter differs by runtime:
 
 ```text
-python -m mcp_server.local_core_v3
+Web      -> cloud/state adapter
+Desktop  -> desktop-adapter.js -> Local Core -> SQLite
 ```
 
-with `NEXTPLAN_LOCAL_DB`, `NEXTPLAN_LOCAL_PORT` and `NEXTPLAN_LOCAL_BOOTSTRAP_TOKEN` set by the trusted desktop process. Set `NEXTPLAN_LOCAL_REPO_ROOT` when the desktop process is launched outside the LifeOS repository, and `NEXTPLAN_LOCAL_PYTHON` to override the Python executable.
+The desktop adapter never writes SQLite directly. It talks only to the authenticated Local Core at `http://127.0.0.1:47123`.
 
-The webview never writes SQLite directly. It calls the authenticated Local Core at `127.0.0.1:47123`.
+## Tauri shell contract
 
-## Release boundary
+The shared Windows/macOS window defaults are:
 
-Stage 10 will replace the development Python launch assumption with a bundled Local Core sidecar and produce the signed Windows installer. `bundle.active` therefore remains false in Stage 6–8.
+- 1180 × 780
+- minimum 900 × 620
+
+The shell is resizable. Desktop adaptation must not change the approved Web UI.
+
+## Development
+
+From `desktop_local/`:
+
+```text
+npm install
+npm run dev
+```
+
+`npm run dev`, `npm run build`, and `npm run check:ui` all synchronize the canonical Web UI first, so a local Tauri build cannot intentionally rely on a stale manually maintained Desktop UI.
+
+## Release
+
+Windows release acceptance is defined in `.github/workflows/stage5-local-stage9-10.yml`.
+
+macOS dual-architecture release acceptance is defined in `.github/workflows/nextplan-local-macos-release.yml`.
+
+Both workflows synchronize the canonical Web UI before build and fail if a legacy second Desktop UI is tracked or generated.
