@@ -4,11 +4,13 @@ use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
 use std::path::PathBuf;
 use std::process::{Child, Command, Stdio};
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
 use std::thread;
 use std::time::Duration;
 use tauri::{Manager, RunEvent, State};
 use uuid::Uuid;
+
+const EXPECTED_EXTENSION_ID: &str = "gbdcbnbdmkgjffjioohjfidjmchiggpc";
 
 struct CoreRuntime {
     endpoint: String,
@@ -39,35 +41,24 @@ fn core_config(state: State<'_, CoreRuntime>) -> CoreConfig {
 fn header_value(request: &str, name: &str) -> Option<String> {
     request.lines().skip(1).find_map(|line| {
         let (key, value) = line.split_once(':')?;
-        if key.trim().eq_ignore_ascii_case(name) {
-            Some(value.trim().to_string())
-        } else {
-            None
-        }
+        key.trim().eq_ignore_ascii_case(name).then(|| value.trim().to_string())
     })
+}
+
+fn expected_extension_origin() -> String {
+    format!("chrome-extension://{EXPECTED_EXTENSION_ID}")
 }
 
 fn extension_origin(request: &str) -> Option<String> {
     let origin = header_value(request, "Origin")?;
-    if !origin.starts_with("chrome-extension://") {
-        return None;
-    }
-    let origin_id = origin.trim_start_matches("chrome-extension://").trim_end_matches('/');
-    let valid_id = !origin_id.is_empty()
-        && origin_id.len() <= 128
-        && origin_id.chars().all(|c| c.is_ascii_alphanumeric());
-    if valid_id { Some(origin) } else { None }
+    (origin == expected_extension_origin()).then_some(origin)
 }
 
-fn extension_identity(request: &str) -> Option<(String, String)> {
+fn extension_identity(request: &str) -> Option<String> {
     let origin = extension_origin(request)?;
     let extension_id = header_value(request, "X-NextPlan-Extension-Id")?;
-    let origin_id = origin.trim_start_matches("chrome-extension://").trim_end_matches('/');
-    let valid_id = !extension_id.is_empty()
-        && extension_id.len() <= 128
-        && extension_id.chars().all(|c| c.is_ascii_alphanumeric());
-    if valid_id && origin_id == extension_id {
-        Some((origin, extension_id))
+    if extension_id == EXPECTED_EXTENSION_ID {
+        Some(origin)
     } else {
         None
     }
@@ -76,7 +67,7 @@ fn extension_identity(request: &str) -> Option<(String, String)> {
 fn write_http_response(stream: &mut TcpStream, status: &str, origin: Option<&str>, body: &str) {
     let mut headers = format!(
         "HTTP/1.1 {status}\r\nContent-Type: application/json; charset=utf-8\r\nContent-Length: {}\r\nCache-Control: no-store\r\nConnection: close\r\n",
-        body.as_bytes().len()
+        body.len()
     );
     if let Some(origin) = origin {
         headers.push_str(&format!(
@@ -111,12 +102,7 @@ fn reset_persistent_pairing(core_port: u16, token: &str) -> bool {
     false
 }
 
-fn handle_bridge_connection(
-    mut stream: TcpStream,
-    core_port: u16,
-    token: &str,
-    claimed_extension_id: &Arc<Mutex<Option<String>>>,
-) {
+fn handle_bridge_connection(mut stream: TcpStream, core_port: u16, token: &str) {
     let _ = stream.set_read_timeout(Some(Duration::from_secs(2)));
     let mut buffer = [0u8; 8192];
     let n = match stream.read(&mut buffer) {
@@ -130,7 +116,7 @@ fn handle_bridge_connection(
         if let Some(origin) = extension_origin(&request) {
             write_http_response(&mut stream, "204 No Content", Some(&origin), "");
         } else {
-            write_http_response(&mut stream, "403 Forbidden", None, "{\"error\":\"extension_origin_required\"}");
+            write_http_response(&mut stream, "403 Forbidden", None, "{\"error\":\"official_extension_required\"}");
         }
         return;
     }
@@ -140,30 +126,10 @@ fn handle_bridge_connection(
         return;
     }
 
-    let Some((origin, extension_id)) = extension_identity(&request) else {
-        write_http_response(&mut stream, "403 Forbidden", None, "{\"error\":\"extension_origin_required\"}");
+    let Some(origin) = extension_identity(&request) else {
+        write_http_response(&mut stream, "403 Forbidden", None, "{\"error\":\"official_extension_required\"}");
         return;
     };
-
-    let allowed = match claimed_extension_id.lock() {
-        Ok(mut claimed) => match claimed.as_ref() {
-            Some(existing) => existing == &extension_id,
-            None => {
-                *claimed = Some(extension_id.clone());
-                true
-            }
-        },
-        Err(_) => false,
-    };
-    if !allowed {
-        write_http_response(
-            &mut stream,
-            "409 Conflict",
-            Some(&origin),
-            "{\"error\":\"different_extension_already_connected\"}",
-        );
-        return;
-    }
 
     if !reset_persistent_pairing(core_port, token) {
         write_http_response(
@@ -187,11 +153,8 @@ fn start_browser_bootstrap_bridge(core_port: u16, bridge_port: u16, token: Strin
             Ok(listener) => listener,
             Err(_) => return,
         };
-        let claimed_extension_id = Arc::new(Mutex::new(None::<String>));
-        for connection in listener.incoming() {
-            if let Ok(stream) = connection {
-                handle_bridge_connection(stream, core_port, &token, &claimed_extension_id);
-            }
+        for stream in listener.incoming().flatten() {
+            handle_bridge_connection(stream, core_port, &token);
         }
     });
 }
@@ -232,8 +195,6 @@ fn main() {
                     *mode = "bundled-sidecar".into();
                 }
             } else {
-                // Development-only fallback. Release acceptance requires the
-                // bundled sidecar path, so end users never need Python.
                 let python = std::env::var("NEXTPLAN_LOCAL_PYTHON").unwrap_or_else(|_| {
                     if cfg!(target_os = "windows") { "python".into() } else { "python3".into() }
                 });
