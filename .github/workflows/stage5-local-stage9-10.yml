@@ -7,6 +7,7 @@ on:
       - 'mcp_server/storage_v3.py'
       - 'mcp_server/local_core_v4.py'
       - 'scripts/local_core_entry.py'
+      - 'scripts/sync_web_ui_to_desktop.py'
       - 'scripts/clean_machine_acceptance.ps1'
       - 'desktop_local/**'
       - 'chrome_extension_local/**'
@@ -28,6 +29,21 @@ jobs:
         with:
           python-version: '3.12'
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Sync canonical Web UI into desktop bundle
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          python scripts/sync_web_ui_to_desktop.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $source = Get-Content 'desktop_local/ui/web-ui-source.json' -Raw | ConvertFrom-Json
+          if ($source.source_repository -ne 'changxinjiresearch/LifeOS-App') { throw 'wrong Web UI source' }
+          if (-not (Test-Path 'desktop_local/ui/web-runtime.js')) { throw 'web-runtime.js missing' }
+          if (-not (Test-Path 'desktop_local/ui/apple-web-v1.css')) { throw 'Apple Web stylesheet missing' }
+
       - name: Install Python release dependencies
         shell: pwsh
         run: |
@@ -41,11 +57,13 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          python -m py_compile mcp_server/storage_v3.py mcp_server/local_core_v4.py scripts/local_core_entry.py
+          python -m py_compile mcp_server/storage_v3.py mcp_server/local_core_v4.py scripts/local_core_entry.py scripts/sync_web_ui_to_desktop.py
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           python -m pytest -q tests/test_local_stage9_10.py tests/test_local_stage6_8.py tests/test_local_stage4_5.py tests/test_local_stage1_3.py tests/test_conversation_capture.py
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          node --check desktop_local/ui/app.js
+          node --check desktop_local/ui/desktop-adapter.js
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node --check desktop_local/ui/web-runtime.js
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node --check chrome_extension_local/background.js
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -56,7 +74,7 @@ jobs:
           node --check chrome_extension_local/options.js
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-      - name: Verify release security contract
+      - name: Verify release security and Web parity contract
         shell: pwsh
         run: |
           @'
@@ -66,6 +84,8 @@ jobs:
           core = Path('mcp_server/local_core_v4.py').read_text()
           rust = Path('desktop_local/src-tauri/src/main.rs').read_text()
           conf = json.loads(Path('desktop_local/src-tauri/tauri.conf.json').read_text())
+          index = Path('desktop_local/ui/index.html').read_text(encoding='utf-8')
+          source = json.loads(Path('desktop_local/ui/web-ui-source.json').read_text(encoding='utf-8'))
           assert "paired_extension_token','paired_extension_id" in storage
           assert '127.0.0.1' in core
           assert 'shell.execute' not in core
@@ -74,7 +94,10 @@ jobs:
           assert conf['bundle']['active'] is True
           assert conf['bundle']['targets'] == ['nsis']
           assert conf['bundle']['windows']['nsis']['installMode'] == 'currentUser'
-          print('release security contract PASS')
+          assert source['source_repository'] == 'changxinjiresearch/LifeOS-App'
+          assert 'desktop-adapter.js' in index and 'web-runtime.js' in index
+          assert 'Good morning' in Path('desktop_local/ui/web-runtime.js').read_text(encoding='utf-8')
+          print('release security + exact Web UI source contract PASS')
           '@ | python -
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
