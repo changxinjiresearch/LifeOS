@@ -10,6 +10,7 @@ New-Item -ItemType Directory -Path $root | Out-Null
 $db = Join-Path $root 'nextplan.db'
 $desktopToken = 'clean-machine-desktop-token'
 $base = 'http://127.0.0.1:47123'
+$originalPath = $env:PATH
 
 function Wait-Health {
   param([int]$Seconds = 30)
@@ -67,7 +68,8 @@ $headers = @{ Authorization = "Bearer $desktopToken" }
 $core = $null
 $app = $null
 try {
-  # Standalone packaged Core: no Python process is involved.
+  # Gate A: the packaged Local Core itself must run as a standalone executable.
+  # Python is not involved in this process.
   $core = Start-Core
   $health = Wait-Health
   if ($health.runtime -ne 'nextplan-local-core-v4' -or $health.schema_version -ne 3) { throw 'Unexpected packaged Core runtime' }
@@ -92,8 +94,8 @@ try {
   if (-not ($state.projects | Where-Object { $_.id -eq 'clean-machine-project' })) { throw 'Canonical state did not persist across restart' }
   Stop-Tree $core; $core = $null
 
-  # Install the real NSIS bundle. Force an invalid Python path: if the desktop
-  # accidentally falls back to Python, this test cannot reach /healthz.
+  # Gate B: install the real NSIS bundle and launch the installed application in
+  # a runtime environment that deliberately exposes no developer toolchain.
   $install = Start-Process -FilePath $Installer -ArgumentList '/S' -Wait -PassThru
   if ($install.ExitCode -ne 0) { throw "NSIS installer exited with code $($install.ExitCode)" }
 
@@ -103,19 +105,25 @@ try {
   }
 
   $env:NEXTPLAN_LOCAL_PYTHON = 'C:\definitely-not-python\python.exe'
+  $env:PYTHONHOME = 'C:\definitely-not-python'
+  $env:PYTHONPATH = 'C:\definitely-not-python'
+  $env:NODE_PATH = 'C:\definitely-not-node'
+  $env:PATH = "$env:SystemRoot\System32;$env:SystemRoot"
   Remove-Item Env:NEXTPLAN_LOCAL_DB -ErrorAction SilentlyContinue
   Remove-Item Env:NEXTPLAN_LOCAL_BOOTSTRAP_TOKEN -ErrorAction SilentlyContinue
+
   $app = Start-Process -FilePath $desktopExe -PassThru
   $installedHealth = Wait-Health 45
   if ($installedHealth.runtime -ne 'nextplan-local-core-v4') { throw 'Installed desktop did not launch bundled Local Core v4' }
   if (-not $installedHealth.integrity.ok) { throw 'Installed desktop database integrity failed' }
 
-  Write-Host "CLEAN_MACHINE_ACCEPTANCE_PASS"
+  Write-Host "ZERO_DEPENDENCY_WINDOWS_ACCEPTANCE_PASS"
   Write-Host "Installer=$Installer"
   Write-Host "InstalledExe=$desktopExe"
   Write-Host "Runtime=$($installedHealth.runtime)"
   Write-Host "Schema=$($installedHealth.schema_version)"
 } finally {
+  $env:PATH = $originalPath
   Stop-Tree $core
   Stop-Tree $app
   Get-NetTCPConnection -LocalPort 47123 -State Listen -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }
