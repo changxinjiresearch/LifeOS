@@ -10,6 +10,7 @@ on:
       - 'mcp_server/local_execution_v1.py'
       - 'mcp_server/local_core_v3.py'
       - 'mcp_server/local_classifier_v1.py'
+      - 'scripts/sync_web_ui_to_desktop.py'
       - 'desktop_local/**'
       - 'chrome_extension_local/**'
       - 'tests/test_local_stage6_8.py'
@@ -28,10 +29,19 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Sync canonical Web UI into desktop bundle
+        run: |
+          python scripts/sync_web_ui_to_desktop.py
+          test -f desktop_local/ui/web-runtime.js
+          test -f desktop_local/ui/desktop-adapter.js
+          test -f desktop_local/ui/apple-web-v1.css
       - name: Install Python dependencies
         run: pip install -r mcp_server/requirements.txt pytest pytest-asyncio
       - name: Compile Stage 6-8 Python
-        run: python -m py_compile mcp_server/storage_v2.py mcp_server/local_actions_v3.py mcp_server/local_execution_v1.py mcp_server/local_core_v3.py mcp_server/local_classifier_v1.py mcp_server/local_projector.py
+        run: python -m py_compile mcp_server/storage_v2.py mcp_server/local_actions_v3.py mcp_server/local_execution_v1.py mcp_server/local_core_v3.py mcp_server/local_classifier_v1.py mcp_server/local_projector.py scripts/sync_web_ui_to_desktop.py
       - name: Run Stage 6-8 acceptance tests
         run: python -m pytest -q tests/test_local_stage6_8.py
       - name: Preserve Stage 4-5 regression
@@ -42,29 +52,36 @@ jobs:
         run: python -m pytest -q tests/test_conversation_capture.py
       - name: Validate desktop and local extension JavaScript
         run: |
-          node --check desktop_local/ui/app.js
+          node --check desktop_local/ui/desktop-adapter.js
+          node --check desktop_local/ui/web-runtime.js
           node --check chrome_extension_local/background.js
           node --check chrome_extension_local/content.js
           node --check chrome_extension_local/popup.js
           node --check chrome_extension_local/options.js
-      - name: Validate desktop contract and no cloud dependency
+      - name: Validate desktop Web parity and local canonical state contract
         run: |
           python - <<'PY'
           import json
           from pathlib import Path
           conf = json.loads(Path('desktop_local/src-tauri/tauri.conf.json').read_text())
           assert conf['identifier'] == 'com.nextplan.local'
-          assert conf['bundle']['active'] is False
-          ui = Path('desktop_local/ui/app.js').read_text()
-          assert 'http://127.0.0.1:47123' in ui
-          assert 'railway' not in ui.lower()
+          assert conf['bundle']['active'] is True
+          source = json.loads(Path('desktop_local/ui/web-ui-source.json').read_text(encoding='utf-8'))
+          index = Path('desktop_local/ui/index.html').read_text(encoding='utf-8')
+          adapter = Path('desktop_local/ui/desktop-adapter.js').read_text(encoding='utf-8')
+          assert source['source_repository'] == 'changxinjiresearch/LifeOS-App'
+          assert 'desktop-adapter.js' in index and 'web-runtime.js' in index
+          assert 'http://127.0.0.1:47123' not in index
+          assert "`${cfg.endpoint}/state`" in adapter
+          assert "window.__TAURI__?.core?.invoke" in adapter
+          assert 'railway' not in adapter.lower()
           local_bg = Path('chrome_extension_local/background.js').read_text()
           assert '/pending/apply' in local_bg and '/pending/ignore' in local_bg
           cloud_bg = Path('chrome_extension/background_v041.js').read_text()
           assert 'lifeos-production-89ce.up.railway.app' in cloud_bg
           exec_py = Path('mcp_server/local_execution_v1.py').read_text()
           assert 'shell.execute' not in exec_py
-          print('desktop/local/cloud separation PASS')
+          print('desktop Web parity + local/cloud separation PASS')
           PY
       - name: Install Tauri Linux check dependencies
         run: |
