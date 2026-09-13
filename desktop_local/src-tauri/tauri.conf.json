@@ -11,8 +11,8 @@
     "windows": [
       {
         "title": "NextPlan",
-        "width": 1440,
-        "height": 900,
+        "width": 1180,
+        "height": 780,
         "minWidth": 900,
         "minHeight": 620,
         "resizable": true
