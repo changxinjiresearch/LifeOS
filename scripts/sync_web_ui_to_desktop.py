@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import urllib.request
 from pathlib import Path, PurePosixPath
 
@@ -86,7 +87,11 @@ def fetch_asset_graph(source_index: str) -> dict[str, bytes]:
 def clear_generated_ui() -> None:
     UI_DIR.mkdir(parents=True, exist_ok=True)
     for path in UI_DIR.iterdir():
-        if path.is_file() and path.name not in PRESERVE_LOCAL:
+        if path.name in PRESERVE_LOCAL:
+            continue
+        if path.is_dir():
+            shutil.rmtree(path)
+        else:
             path.unlink()
 
 
