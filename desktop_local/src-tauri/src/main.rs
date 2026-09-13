@@ -47,12 +47,21 @@ fn header_value(request: &str, name: &str) -> Option<String> {
     })
 }
 
-fn extension_identity(request: &str) -> Option<(String, String)> {
+fn extension_origin(request: &str) -> Option<String> {
     let origin = header_value(request, "Origin")?;
-    let extension_id = header_value(request, "X-NextPlan-Extension-Id")?;
     if !origin.starts_with("chrome-extension://") {
         return None;
     }
+    let origin_id = origin.trim_start_matches("chrome-extension://").trim_end_matches('/');
+    let valid_id = !origin_id.is_empty()
+        && origin_id.len() <= 128
+        && origin_id.chars().all(|c| c.is_ascii_alphanumeric());
+    if valid_id { Some(origin) } else { None }
+}
+
+fn extension_identity(request: &str) -> Option<(String, String)> {
+    let origin = extension_origin(request)?;
+    let extension_id = header_value(request, "X-NextPlan-Extension-Id")?;
     let origin_id = origin.trim_start_matches("chrome-extension://").trim_end_matches('/');
     let valid_id = !extension_id.is_empty()
         && extension_id.len() <= 128
@@ -116,10 +125,9 @@ fn handle_bridge_connection(
     };
     let request = String::from_utf8_lossy(&buffer[..n]).to_string();
     let first_line = request.lines().next().unwrap_or("");
-    let identity = extension_identity(&request);
 
     if first_line.starts_with("OPTIONS ") {
-        if let Some((origin, _)) = identity {
+        if let Some(origin) = extension_origin(&request) {
             write_http_response(&mut stream, "204 No Content", Some(&origin), "");
         } else {
             write_http_response(&mut stream, "403 Forbidden", None, "{\"error\":\"extension_origin_required\"}");
@@ -132,7 +140,7 @@ fn handle_bridge_connection(
         return;
     }
 
-    let Some((origin, extension_id)) = identity else {
+    let Some((origin, extension_id)) = extension_identity(&request) else {
         write_http_response(&mut stream, "403 Forbidden", None, "{\"error\":\"extension_origin_required\"}");
         return;
     };
