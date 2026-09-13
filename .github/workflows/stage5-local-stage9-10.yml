@@ -12,6 +12,7 @@ on:
       - 'desktop_local/**'
       - 'chrome_extension_local/**'
       - 'tests/test_local_stage9_10.py'
+      - 'tests/test_shared_ui_adapter_contract.py'
       - '.github/workflows/stage5-local-stage9-10.yml'
   workflow_dispatch:
 
@@ -61,7 +62,7 @@ jobs:
           $ErrorActionPreference = 'Stop'
           python -m py_compile mcp_server/storage_v3.py mcp_server/local_core_v4.py scripts/local_core_entry.py scripts/sync_web_ui_to_desktop.py
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          python -m pytest -q tests/test_local_stage9_10.py tests/test_local_stage6_8.py tests/test_local_stage4_5.py tests/test_local_stage1_3.py tests/test_conversation_capture.py
+          python -m pytest -q tests/test_shared_ui_adapter_contract.py tests/test_local_stage9_10.py tests/test_local_stage6_8.py tests/test_local_stage4_5.py tests/test_local_stage1_3.py tests/test_conversation_capture.py
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node --check desktop_local/ui/desktop-adapter.js
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
