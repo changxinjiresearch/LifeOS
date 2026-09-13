@@ -8,6 +8,7 @@ on:
       - 'mcp_server/local_core_v4.py'
       - 'mcp_server/local_execution_v1.py'
       - 'scripts/local_core_entry.py'
+      - 'scripts/sync_web_ui_to_desktop.py'
       - 'scripts/clean_macos_acceptance.sh'
       - 'desktop_local/**'
       - 'chrome_extension_local/**'
@@ -52,6 +53,21 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Sync canonical Web UI into desktop bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/sync_web_ui_to_desktop.py
+          test -f desktop_local/ui/web-runtime.js
+          test -f desktop_local/ui/apple-web-v1.css
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          source=json.loads(Path('desktop_local/ui/web-ui-source.json').read_text(encoding='utf-8'))
+          assert source['source_repository']=='changxinjiresearch/LifeOS-App'
+          print('macOS desktop Web UI source PASS')
+          PY
+
       - name: Install release dependencies
         shell: bash
         run: |
@@ -63,15 +79,16 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python -m py_compile mcp_server/storage_v3.py mcp_server/local_core_v4.py mcp_server/local_execution_v1.py scripts/local_core_entry.py
+          python -m py_compile mcp_server/storage_v3.py mcp_server/local_core_v4.py mcp_server/local_execution_v1.py scripts/local_core_entry.py scripts/sync_web_ui_to_desktop.py
           python -m pytest -q tests/test_local_stage9_10.py tests/test_local_stage6_8.py tests/test_local_stage4_5.py tests/test_local_stage1_3.py tests/test_conversation_capture.py
-          node --check desktop_local/ui/app.js
+          node --check desktop_local/ui/desktop-adapter.js
+          node --check desktop_local/ui/web-runtime.js
           node --check chrome_extension_local/background.js
           node --check chrome_extension_local/content.js
           node --check chrome_extension_local/popup.js
           node --check chrome_extension_local/options.js
 
-      - name: Verify macOS release security contract
+      - name: Verify macOS release security and Web parity contract
         shell: bash
         run: |
           set -euo pipefail
@@ -82,6 +99,8 @@ jobs:
           core = Path('mcp_server/local_core_v4.py').read_text()
           rust = Path('desktop_local/src-tauri/src/main.rs').read_text()
           conf = json.loads(Path('desktop_local/src-tauri/tauri.conf.json').read_text())
+          index = Path('desktop_local/ui/index.html').read_text(encoding='utf-8')
+          source = json.loads(Path('desktop_local/ui/web-ui-source.json').read_text(encoding='utf-8'))
           assert 'platform.system().lower()' in execution
           assert 'system == "darwin"' in execution
           assert 'subprocess.Popen(["open", str(path)]' in execution
@@ -91,7 +110,10 @@ jobs:
           assert 'bundled-sidecar' in rust
           assert 'nextplan-core.exe' in rust and 'nextplan-core' in rust
           assert conf['bundle']['active'] is True
-          print('macOS release security contract PASS')
+          assert source['source_repository'] == 'changxinjiresearch/LifeOS-App'
+          assert 'desktop-adapter.js' in index and 'web-runtime.js' in index
+          assert 'Good morning' in Path('desktop_local/ui/web-runtime.js').read_text(encoding='utf-8')
+          print('macOS release security + exact Web UI source contract PASS')
           PY
 
       - name: Build standalone Local Core
