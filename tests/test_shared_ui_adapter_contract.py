@@ -18,7 +18,7 @@ def test_desktop_runtime_replaces_only_sync_state_boundary():
     assert adapted.endswith("\nfunction openSearch(){return 'keep-after'}\n})();\n")
 
 
-def test_static_asset_discovery_ignores_runtime_relative_route_strings():
+def test_static_asset_discovery_ignores_runtime_generated_urls_and_routes():
     source = """
     <link rel="stylesheet" href="./apple-web-v1.css?v=1">
     <script src="./current-action.js"></script>
@@ -26,6 +26,8 @@ def test_static_asset_discovery_ignores_runtime_relative_route_strings():
     <script>
       const apiRoute='./api/state';
       const internalView='./projects/today';
+      const parsed=new URL(request.url);
+      const markup=`<a href="${esc(loc)}">Open</a>`;
     </script>
     """
     refs = discover_local_refs(source)
@@ -35,6 +37,8 @@ def test_static_asset_discovery_ignores_runtime_relative_route_strings():
     assert "icon.svg" in refs
     assert "api/state" not in refs
     assert "projects/today" not in refs
+    assert "request.url" not in refs
+    assert "${esc(loc)}" not in refs
 
 
 def test_desktop_adapter_is_explicit_and_does_not_monkeypatch_fetch():
@@ -51,8 +55,6 @@ def test_no_legacy_hand_maintained_desktop_ui_files():
     ui = ROOT / "desktop_local" / "ui"
     assert not (ui / "app.js").exists()
     assert not (ui / "styles.css").exists()
-    # index.html and web-runtime.js are generated and ignored; they must not be
-    # checked in as a second UI authority.
     ignore = (ui / ".gitignore").read_text(encoding="utf-8")
     assert "*" in ignore
     assert "!desktop-adapter.js" in ignore
