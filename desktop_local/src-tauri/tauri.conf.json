@@ -11,15 +11,15 @@
     "windows": [
       {
         "title": "NextPlan",
-        "width": 1180,
-        "height": 780,
+        "width": 1440,
+        "height": 900,
         "minWidth": 900,
         "minHeight": 620,
         "resizable": true
       }
     ],
     "security": {
-      "csp": "default-src 'self'; connect-src 'self' http://127.0.0.1:47123; style-src 'self' 'unsafe-inline'; script-src 'self'"
+      "csp": "default-src 'self'; connect-src 'self' http://127.0.0.1:47123; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; script-src 'self'; img-src 'self' data:; manifest-src 'self'"
     }
   },
   "bundle": {
