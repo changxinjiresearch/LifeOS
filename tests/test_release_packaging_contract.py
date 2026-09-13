@@ -47,3 +47,23 @@ def test_release_contract_declares_no_end_user_dev_dependencies():
     assert 'NextPlan-Setup-v0.1.0.exe' in contract
     assert 'NextPlan-v0.1.0-macOS-apple-silicon.dmg' in contract
     assert 'NextPlan-v0.1.0-macOS-intel.dmg' in contract
+
+
+def test_browser_bridge_auto_bootstraps_without_pairing_code():
+    rust = (ROOT / 'desktop_local/src-tauri/src/main.rs').read_text(encoding='utf-8')
+    bg = (ROOT / 'chrome_extension_local/background.js').read_text(encoding='utf-8')
+    options = (ROOT / 'chrome_extension_local/options.html').read_text(encoding='utf-8')
+    manifest = json.loads((ROOT / 'chrome_extension_local/manifest.json').read_text(encoding='utf-8'))
+
+    assert '127.0.0.1' in rust and '47124' in rust
+    assert 'POST /bridge/bootstrap' in rust
+    assert 'chrome-extension://' in rust
+    assert 'X-NextPlan-Extension-Id' in rust
+    assert '/pairing/reset' in rust
+    assert 'bridgeEndpoint: "http://127.0.0.1:47124"' in bg
+    assert 'bootstrapSession' in bg
+    assert 'NEXTPLAN_CONNECT' in bg
+    assert 'Pairing code' not in options
+    assert 'Connect to NextPlan' in options
+    assert manifest['version'] == '0.1.1'
+    assert 'http://127.0.0.1/*' in manifest['host_permissions']
