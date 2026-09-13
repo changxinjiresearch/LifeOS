@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-12T23:15:22Z",
+    "last_updated": "2026-09-13T00:49:38Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -122,13 +122,12 @@
         "evt-20260912T185700Z-local-v01-stage9-completed",
         "evt-20260912T185701Z-local-v01-stage10-completed",
         "evt-20260912T203117Z-agent-github-head-84bec21c",
-        "evt-20260912T231522Z-nextplan-local-platform-testing-note"
+        "evt-20260912T231522Z-nextplan-local-platform-testing-note",
+        "evt-20260913T004938Z-preparation-window-on"
       ],
-      "processed_count": 90,
-      "last_build_at": "2026-09-12T23:17:03Z",
-      "last_applied": [
-        "evt-20260912T231522Z-nextplan-local-platform-testing-note"
-      ],
+      "processed_count": 91,
+      "last_build_at": "2026-09-13T00:53:32Z",
+      "last_applied": [],
       "status": "ready"
     }
   },
@@ -615,6 +614,17 @@
     }
   ],
   "events": [
+    {
+      "id": "evt-20260913T004938Z-preparation-window-on",
+      "at": "2026-09-13T00:49:38Z",
+      "project_id": "project-item-daed6c",
+      "type": "automation_rule_upserted",
+      "summary": "Restored automation rule: preparation-window enabled",
+      "source": {
+        "kind": "chatgpt",
+        "via": "nextplan-user-request"
+      }
+    },
     {
       "id": "evt-20260912T231522Z-nextplan-local-platform-testing-note",
       "at": "2026-09-12T23:15:22Z",
@@ -1713,7 +1723,7 @@
   "automation_rules": [
     {
       "id": "preparation-window",
-      "enabled": false
+      "enabled": true
     }
   ],
   "automation_feed": [
