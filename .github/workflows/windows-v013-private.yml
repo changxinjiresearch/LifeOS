@@ -1,0 +1,150 @@
+name: NextPlan Windows v0.1.3 Fresh Core Acceptance
+
+on:
+  push:
+    branches: ['fix/windows-v013-core-actions']
+    paths:
+      - 'mcp_server/**'
+      - 'chrome_extension_local/**'
+      - 'desktop_local/**'
+      - 'tests/test_windows_v013_acceptance_regressions.py'
+      - '.github/workflows/windows-v013-private.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  VERSION: '0.1.3'
+  EXTENSION_ID: 'gbdcbnbdmkgjffjioohjfidjmchiggpc'
+
+jobs:
+  windows-v013-fresh-core:
+    runs-on: windows-latest
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Prepare UI and dependencies
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          python scripts/sync_web_ui_to_desktop.py
+          python -m pip install --upgrade pip
+          pip install -r mcp_server/requirements.txt pytest pytest-asyncio pyinstaller
+
+      - name: Run v0.1.3 regressions
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          python -m pytest -q tests/test_windows_v013_acceptance_regressions.py tests/test_local_stage9_10.py tests/test_local_stage6_8.py tests/test_local_stage4_5.py tests/test_local_stage1_3.py tests/test_conversation_capture.py
+          node --check chrome_extension_local/background.js
+          node --check chrome_extension_local/content.js
+          $manifest=Get-Content chrome_extension_local/manifest.json -Raw | ConvertFrom-Json
+          if($manifest.version -ne '0.1.3'){throw "Bridge version mismatch: $($manifest.version)"}
+
+      - name: Build fresh Local Core and NSIS
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          pyinstaller --noconfirm --clean --onefile --name nextplan-core --paths . --hidden-import uvicorn.logging --hidden-import uvicorn.loops.auto --hidden-import uvicorn.protocols.http.auto --hidden-import uvicorn.protocols.websockets.auto --hidden-import uvicorn.lifespan.on scripts/local_core_entry.py
+          if(-not (Test-Path dist/nextplan-core.exe)){throw 'fresh nextplan-core.exe missing'}
+          Copy-Item dist/nextplan-core.exe desktop_local/src-tauri/resources/nextplan-core.exe -Force
+          npx --yes @tauri-apps/cli@2 icon desktop_local/src-tauri/icons/icon.png --output desktop_local/src-tauri/icons
+          cargo check --manifest-path desktop_local/src-tauri/Cargo.toml
+          npx --yes @tauri-apps/cli@2 build --bundles nsis --config desktop_local/src-tauri/tauri.conf.json
+          New-Item -ItemType Directory release-artifacts -Force | Out-Null
+          $installer=Get-ChildItem desktop_local/src-tauri/target/release/bundle/nsis -Filter '*.exe' | Select-Object -First 1
+          if(-not $installer){throw 'NSIS installer missing'}
+          Copy-Item $installer.FullName "release-artifacts/NextPlan-Setup-v$env:VERSION.exe" -Force
+          Compress-Archive -Path 'chrome_extension_local/*' -DestinationPath "release-artifacts/NextPlan-Local-Bridge-v$env:VERSION-Windows.zip" -Force
+
+      - name: Install and prove real failed cases plus restart persistence
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $installer=(Resolve-Path "release-artifacts/NextPlan-Setup-v$env:VERSION.exe").Path
+          Start-Process $installer -ArgumentList '/S' -Wait
+          $desktop=Get-ChildItem $env:LOCALAPPDATA -Filter 'nextplan-local-desktop.exe' -File -Recurse -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+          if(-not $desktop){throw 'installed desktop missing'}
+
+          function Start-NextPlanAndBootstrap {
+            param([string]$DesktopPath)
+            $proc=Start-Process $DesktopPath -PassThru
+            $health=$null
+            for($i=0;$i -lt 75;$i++){try{$health=Invoke-RestMethod http://127.0.0.1:47123/healthz -TimeoutSec 2;if($health.status -eq 'ok'){break}}catch{};Start-Sleep 1}
+            if(-not $health -or $health.runtime -ne 'nextplan-local-core-v4'){throw 'Local Core failed'}
+            $origin="chrome-extension://$env:EXTENSION_ID"
+            $boot=Invoke-RestMethod -Method Post -Uri http://127.0.0.1:47124/bridge/bootstrap -Headers @{Origin=$origin;'X-NextPlan-Extension-Id'=$env:EXTENSION_ID} -ContentType application/json -Body '{}'
+            if(-not $boot.token){throw 'bootstrap token missing'}
+            return @{proc=$proc;origin=$origin;token=$boot.token}
+          }
+
+          function Capture-Turn {
+            param([hashtable]$Session,[string]$UserText,[string]$Fingerprint)
+            $payload=@{
+              turn=@{fingerprint=$Fingerprint;userText=$UserText;assistantText='收到，NextPlan Sync 会处理这项变更。';title='Windows acceptance';url='https://chatgpt.com/c/test'}
+              client=@{source='nextplan-local-extension';bridgeVersion='0.1.3';now='2026-09-13T06:00:00Z';timezone='Australia/Sydney'}
+              apply=$true
+            } | ConvertTo-Json -Depth 8
+            return Invoke-RestMethod -Method Post -Uri http://127.0.0.1:47123/conversation/capture -Headers @{Origin=$Session.origin;Authorization="Bearer $($Session.token)"} -ContentType application/json -Body $payload
+          }
+
+          $session=Start-NextPlanAndBootstrap $desktop.FullName
+          try {
+            $create=Capture-Turn $session 'NextPlan：新建项目 持久化测试' 'v013-create-persist'
+            if(-not $create.receipt -or $create.receipt.status -notin @('applied','already_exists')){throw "persistent project create failed: $($create | ConvertTo-Json -Compress -Depth 8)"}
+
+            $create2=Capture-Turn $session 'NextPlan：新建项目 Windows验收测试V2' 'v013-create-status'
+            if(-not $create2.receipt){throw 'status fixture project create failed'}
+
+            $status=Capture-Turn $session 'NextPlan：把“Windows验收测试V2”设置为 waiting' 'v013-status-waiting'
+            if(-not $status.receipt -or $status.receipt.status -ne 'applied'){throw "project status update failed: $($status | ConvertTo-Json -Compress -Depth 8)"}
+
+            $calendar=Capture-Turn $session 'NextPlan：记录一下，明天下午4点有一个测试 meeting' 'v013-calendar'
+            if(-not $calendar.receipt -or $calendar.receipt.status -ne 'applied'){throw "calendar write failed: $($calendar | ConvertTo-Json -Compress -Depth 8)"}
+
+            $state=Invoke-RestMethod http://127.0.0.1:47123/state -Headers @{Origin=$session.origin;Authorization="Bearer $($session.token)"}
+            $persist=$state.projects | Where-Object {$_.name -eq '持久化测试'}
+            if(-not $persist){throw '持久化测试 missing before restart'}
+            $statusProject=$state.projects | Where-Object {$_.name -eq 'Windows验收测试V2'}
+            if(-not $statusProject -or $statusProject.status -ne 'waiting'){throw 'waiting status not persisted'}
+            $meeting=$state.calendar_events | Where-Object {$_.title -eq 'Meeting' -and $_.date -eq '2026-09-14' -and $_.time -eq '16:00'}
+            if(-not $meeting){throw 'calendar event not in canonical state'}
+          } finally {
+            Stop-Process -Id $session.proc.Id -Force -ErrorAction SilentlyContinue
+            Get-NetTCPConnection -LocalPort 47123,47124 -State Listen -ErrorAction SilentlyContinue | ForEach-Object {Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue}
+            Start-Sleep 2
+          }
+
+          $restart=Start-NextPlanAndBootstrap $desktop.FullName
+          try {
+            $state2=Invoke-RestMethod http://127.0.0.1:47123/state -Headers @{Origin=$restart.origin;Authorization="Bearer $($restart.token)"}
+            if(-not ($state2.projects | Where-Object {$_.name -eq '持久化测试'})){throw 'project lost after restart'}
+            $statusProject2=$state2.projects | Where-Object {$_.name -eq 'Windows验收测试V2'}
+            if(-not $statusProject2 -or $statusProject2.status -ne 'waiting'){throw 'project status lost after restart'}
+            if(-not ($state2.calendar_events | Where-Object {$_.title -eq 'Meeting' -and $_.date -eq '2026-09-14' -and $_.time -eq '16:00'})){throw 'calendar event lost after restart'}
+            Write-Host WINDOWS_V013_REAL_ACCEPTANCE_PASS
+          } finally {
+            Stop-Process -Id $restart.proc.Id -Force -ErrorAction SilentlyContinue
+            Get-NetTCPConnection -LocalPort 47123,47124 -State Listen -ErrorAction SilentlyContinue | ForEach-Object {Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue}
+          }
+
+      - name: Checksums and upload
+        shell: pwsh
+        run: |
+          Get-FileHash release-artifacts/* -Algorithm SHA256 | ForEach-Object {"$($_.Hash.ToLower())  $([IO.Path]::GetFileName($_.Path))"} | Set-Content release-artifacts/SHA256SUMS-windows.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NextPlan-Windows-v0.1.3-fresh-core
+          path: release-artifacts/*
+          if-no-files-found: error
+          retention-days: 30
