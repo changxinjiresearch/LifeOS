@@ -1,6 +1,6 @@
 (() => {
-  if (window.__NEXTPLAN_LOCAL_V010__) return;
-  window.__NEXTPLAN_LOCAL_V010__ = true;
+  if (window.__NEXTPLAN_LOCAL_V011__) return;
+  window.__NEXTPLAN_LOCAL_V011__ = true;
 
   const seen = new Set();
   let timer = null;
@@ -51,11 +51,11 @@
 
   function handle(result) {
     if (!result) return;
-    if (result.status === "auto_synced") toast(`NextPlan · 已同步${result.label ? `：${result.label}` : ""}`, "ok");
-    else if (result.status === "queued") toast(`NextPlan · 已识别${result.label ? `：${result.label}` : " 1 项变更"}，请点扩展确认`, "info", 5600);
-    else if (result.status === "informational") toast(`NextPlan · ${result.label || "无需变更"}`, "info");
-    else if (result.status === "needs_pairing") toast("NextPlan Local 尚未与浏览器配对", "warn", 6000);
-    else if (result.status === "error") toast(`NextPlan Local：${result.error || "连接失败"}`, "bad", 6500);
+    if (result.status === "auto_synced") toast(`NextPlan · Synced${result.label ? `: ${result.label}` : ""}`, "ok");
+    else if (result.status === "queued") toast(`NextPlan · Change detected${result.label ? `: ${result.label}` : ""}. Open the extension to confirm.`, "info", 5600);
+    else if (result.status === "informational") toast(`NextPlan · ${result.label || "No change needed"}`, "info");
+    else if (result.status === "needs_desktop") toast(result.error || "Open NextPlan Desktop to connect.", "warn", 6000);
+    else if (result.status === "error") toast(`NextPlan Local: ${result.error || "Connection failed"}`, "bad", 6500);
   }
 
   function collectLatestTurn() {
@@ -78,7 +78,7 @@
         title: document.title || "ChatGPT",
         url: location.href
       }
-    }).then(handle).catch(err => toast(`NextPlan Local：${err?.message || "连接失败"}`, "bad", 6500));
+    }).then(handle).catch(err => toast(`NextPlan Local: ${err?.message || "Connection failed"}`, "bad", 6500));
   }
 
   function schedule() {
