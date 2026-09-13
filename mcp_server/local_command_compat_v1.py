@@ -27,16 +27,16 @@ _STATUS_MAP = {
 }
 
 _STATUS_RE = re.compile(
-    r"(?:把|将)\s*[“\"「『]?([^”\"」』，。]+?)[”\"」』]?\s*(?:项目)?\s*"
-    r"(?:设置为|设为|改成|改为|标记为|设置成)\s*"
-    r"(active|waiting|planned|completed|done|blocked|进行中|正在进行|已开始|等待|待定|计划中|未开始|尚未开始|已完成|完成|阻塞|暂停)",
+    r'(?:把|将)\s*[“\"「『]?([^”\"」』，。]+?)[”\"」』]?\s*(?:项目)?\s*'
+    r'(?:设置为|设为|改成|改为|标记为|设置成)\s*'
+    r'(active|waiting|planned|completed|done|blocked|进行中|正在进行|已开始|等待|待定|计划中|未开始|尚未开始|已完成|完成|阻塞|暂停)',
     re.I,
 )
 
 
 def _clean_name(value: Any) -> str:
     text = str(value or "").strip()
-    text = re.sub(r'^[\s“”\"\'「」『』【】]+|[\s“”\"\'「」『』【】]+$', "", text)
+    text = re.sub(r"^[\s“”\"'「」『』【】]+|[\s“”\"'「」『』【】]+$", "", text)
     text = re.sub(r"\s*项目$", "", text, flags=re.I)
     return text.strip()
 
