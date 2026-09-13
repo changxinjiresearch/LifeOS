@@ -1,5 +1,10 @@
 (() => {
   const CFG_KEY = 'clo-v3-cfg';
+  const WEB_DEFAULTS = {
+    repo: 'changxinjiresearch/LifeOS',
+    branch: 'main',
+    path: 'state.json',
+  };
   const originalFetch = window.fetch.bind(window);
   const originalSetItem = Storage.prototype.setItem;
   let corePromise = null;
@@ -7,9 +12,12 @@
   function ensureDesktopConfig() {
     let cfg = {};
     try { cfg = JSON.parse(localStorage.getItem(CFG_KEY) || '{}') || {}; } catch (_) {}
-    cfg.repo = cfg.repo || 'local/NextPlan';
-    cfg.branch = cfg.branch || 'main';
-    cfg.path = cfg.path || 'state.json';
+    // Keep all user-visible Settings defaults exactly the same as the canonical Web UI.
+    // The token is a masked local sentinel only; network access is transparently routed
+    // to Local Core below, so desktop canonical state remains SQLite-local.
+    cfg.repo = cfg.repo || WEB_DEFAULTS.repo;
+    cfg.branch = cfg.branch || WEB_DEFAULTS.branch;
+    cfg.path = cfg.path || WEB_DEFAULTS.path;
     cfg.token = 'nextplan-local';
     originalSetItem.call(localStorage, CFG_KEY, JSON.stringify(cfg));
   }
@@ -18,6 +26,9 @@
     if (key === CFG_KEY) {
       try {
         const cfg = JSON.parse(String(value || '{}')) || {};
+        cfg.repo = cfg.repo || WEB_DEFAULTS.repo;
+        cfg.branch = cfg.branch || WEB_DEFAULTS.branch;
+        cfg.path = cfg.path || WEB_DEFAULTS.path;
         cfg.token = 'nextplan-local';
         value = JSON.stringify(cfg);
       } catch (_) {}
