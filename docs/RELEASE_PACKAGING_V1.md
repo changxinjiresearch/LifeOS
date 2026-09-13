@@ -23,17 +23,20 @@ Clean-machine acceptance must launch the installed application with development-
 
 NextPlan Desktop owns a loopback-only bootstrap service on `127.0.0.1:47124`. The Chrome/Chromium bridge uses it to obtain the current Desktop session credential automatically. End users must not copy tokens or enter a pairing code.
 
-The bootstrap service accepts only `chrome-extension://` origins. CORS preflight validates the extension origin, and the actual bootstrap POST additionally requires `X-NextPlan-Extension-Id` to exactly match that origin. The first extension instance to connect is bound for the lifetime of the Desktop process. The returned credential is the current random Desktop bootstrap token; it changes on every Desktop launch.
+The v0.1.1 beta Bridge has a stable public extension key whose Chrome extension ID is `gbdcbnbdmkgjffjioohjfidjmchiggpc`. The Desktop bootstrap service accepts only the exact origin `chrome-extension://gbdcbnbdmkgjffjioohjfidjmchiggpc`. CORS preflight validates that exact origin, and the actual bootstrap POST additionally requires `X-NextPlan-Extension-Id: gbdcbnbdmkgjffjioohjfidjmchiggpc`. Ordinary web pages and other Chrome extensions are rejected.
 
-Before handing the session credential to the browser bridge, the Desktop shell clears any legacy persisted extension-pairing metadata through the authenticated Local Core `/pairing/reset` path. This prevents an old extension ID from blocking a clean v0.1.1 connection.
+The returned credential is the current random Desktop bootstrap token and changes on every Desktop launch. The Bridge reuses a valid session credential and automatically re-bootstraps only when the Desktop session changes or the credential is no longer valid.
+
+Before handing the session credential to the official browser bridge, the Desktop shell clears any legacy persisted extension-pairing metadata through the authenticated Local Core `/pairing/reset` path. This prevents an old extension ID from blocking a clean v0.1.1 connection.
 
 Release acceptance must prove all of the following on Windows, macOS Apple Silicon, and macOS Intel:
 
 - the installed app starts without Python/Node/Rust/Git/Xcode on PATH;
 - Local Core is healthy on `127.0.0.1:47123`;
-- a valid Chrome extension origin passes CORS preflight on `127.0.0.1:47124`;
-- that extension can bootstrap a session credential and use it to read local state;
-- a normal web origin such as `https://example.com` is rejected by the bootstrap service.
+- the official NextPlan Bridge origin passes CORS preflight on `127.0.0.1:47124`;
+- the official Bridge can bootstrap a session credential and use it to read local state;
+- a normal web origin such as `https://example.com` is rejected by the bootstrap service;
+- a different Chrome extension ID is rejected by the bootstrap service.
 
 ## Beta security confirmation
 
@@ -41,4 +44,4 @@ Unsigned/unnotarized beta builds may require a first-launch security confirmatio
 
 ## Chrome Bridge distribution boundary
 
-The desktop installer is self-contained and the browser connection is now automatic once the Bridge is installed. Consumer Chrome does not permit an ordinary third-party desktop installer to silently sideload an arbitrary browser extension. Until the Bridge is distributed through an approved browser installation channel such as the Chrome Web Store, beta users may still need to install the provided Bridge bundle manually. This packaging limitation must not be confused with application runtime dependencies.
+The desktop installer is self-contained and the browser connection is automatic once the Bridge is installed. Consumer Chrome does not permit an ordinary third-party desktop installer to silently sideload an arbitrary browser extension. Until the Bridge is distributed through an approved browser installation channel such as the Chrome Web Store, beta users may still need to install the provided Bridge bundle manually with Chrome Developer Mode / Load unpacked. This packaging limitation must not be confused with application runtime dependencies.
