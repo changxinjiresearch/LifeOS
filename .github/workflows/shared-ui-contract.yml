@@ -1,0 +1,86 @@
+name: Shared Web UI authority contract
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/sync_web_ui_to_desktop.py'
+      - 'desktop_local/**'
+      - '.github/workflows/shared-ui-contract.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/sync_web_ui_to_desktop.py'
+      - 'desktop_local/**'
+      - '.github/workflows/shared-ui-contract.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Generate desktop bundle from canonical Web UI
+        run: python scripts/sync_web_ui_to_desktop.py
+
+      - name: Syntax checks
+        run: |
+          python -m py_compile scripts/sync_web_ui_to_desktop.py
+          node --check desktop_local/ui/desktop-adapter.js
+          node --check desktop_local/ui/web-runtime.js
+
+      - name: Verify single UI authority
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import json
+          import subprocess
+
+          ui = Path('desktop_local/ui')
+          conf = json.loads(Path('desktop_local/src-tauri/tauri.conf.json').read_text())
+          source = json.loads((ui / 'web-ui-source.json').read_text(encoding='utf-8'))
+          index = (ui / 'index.html').read_text(encoding='utf-8')
+          package = json.loads(Path('desktop_local/package.json').read_text())
+          tracked_ui = set(subprocess.run(
+              ['git', 'ls-files', 'desktop_local/ui'],
+              check=True,
+              capture_output=True,
+              text=True,
+          ).stdout.splitlines())
+
+          assert tracked_ui == {
+              'desktop_local/ui/.gitignore',
+              'desktop_local/ui/desktop-adapter.js',
+          }
+          assert not (ui / 'app.js').exists()
+          assert not (ui / 'styles.css').exists()
+          assert source['source_repository'] == 'changxinjiresearch/LifeOS-App'
+          assert source['contract'] == 'LifeOS-App is the only UI authority; desktop injects only the local data adapter'
+          assert index.count('src="./desktop-adapter.js"') == 1
+          assert index.count('src="./web-runtime.js"') == 1
+          for name, expected in source['asset_sha256'].items():
+              actual = hashlib.sha256((ui / name).read_bytes()).hexdigest()
+              assert actual == expected, name
+
+          window = conf['app']['windows'][0]
+          assert (window['width'], window['height']) == (1180, 780)
+          assert (window['minWidth'], window['minHeight']) == (900, 620)
+          assert conf['build']['frontendDist'] == '../ui'
+          assert 'sync:web-ui' in package['scripts']['tauri']
+          assert 'sync:web-ui' in package['scripts']['check:ui']
+          print('single UI authority contract PASS')
+          PY
