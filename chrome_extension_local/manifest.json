@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "NextPlan Local Bridge",
-  "version": "0.1.0",
-  "description": "Thin ChatGPT-to-NextPlan bridge for the local-first NextPlan runtime.",
+  "version": "0.1.1",
+  "description": "Thin ChatGPT-to-NextPlan bridge with automatic local desktop connection.",
   "permissions": ["storage", "scripting"],
   "host_permissions": [
     "https://chatgpt.com/*",
