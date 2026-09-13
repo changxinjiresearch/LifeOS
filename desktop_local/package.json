@@ -1,7 +1,7 @@
 {
   "name": "nextplan-local-desktop",
   "private": true,
-  "version": "0.1.1",
+  "version": "0.1.3",
   "scripts": {
     "sync:web-ui": "python ../scripts/sync_web_ui_to_desktop.py",
     "tauri": "npm run sync:web-ui && tauri",
