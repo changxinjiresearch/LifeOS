@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "NextPlan Local Bridge",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA4rBEUns4MA5ukANO5cNcJRNxKGsEUMi5GRirJxtZXZooM4a5/ZaAxMXqVeNgzZfRnjz1vKHJ0vXD9iJNPHmyJjFBVqNjukRSDytXiUefzsI/NVOn4SraaqL3F2WkuRQe7VUv2VOx/r1mY4tR527mDOwyAOwsX7ynQtRhQmbwsh4ha7F5EwZQ9Tu2KAmoI7OwyHAWmUepwCVlbH2590CRqe6wGbZC3g5dEebhnJ3mBu9cqAEdmxLG7UJeiGLEocwSNk+FfMUO7WWrecnqB+7RLXItRX/y8uVyiOX9QakMcqXhqeDEitnhwqHCXVlNPrSuoUsXDja/USk2BeDmoUNNRwIDAQAB",
   "description": "Thin ChatGPT-to-NextPlan bridge with automatic local desktop connection.",
   "permissions": ["storage", "scripting"],
