@@ -2,18 +2,19 @@ from __future__ import annotations
 
 from typing import Any
 
-from .cloud_classifier import classify_turn as legacy_classify_turn
+from .cloud_classifier_v5 import classify_turn as classify_explicit_and_contextual
 from .conversation_capture import capture_conversational_fact
 
 
 def classify_turn(turn: dict[str, Any], state: dict[str, Any], client: dict[str, Any] | None = None) -> dict[str, Any] | None:
-    """Stage IV classifier composition.
+    """Stage IV+ classifier composition.
 
-    Ordinary, high-confidence user facts are evaluated before the legacy explicit
-    command classifier. Explicit NextPlan commands deliberately fall through to
-    legacy behavior so Stage I-III command semantics remain stable.
+    Ordinary, high-confidence conversational facts are evaluated first. Explicit
+    NextPlan commands then flow through the full v5 classifier chain so local and
+    cloud runtimes retain Calendar/Deadline, Notes/Resources, Automation, entity
+    resolution, and legacy project/task semantics.
     """
     captured = capture_conversational_fact(turn, state)
     if captured is not None:
         return captured
-    return legacy_classify_turn(turn, state, client or {})
+    return classify_explicit_and_contextual(turn, state, client or {})
