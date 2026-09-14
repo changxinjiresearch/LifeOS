@@ -4,10 +4,17 @@ import os
 from pathlib import Path
 from typing import Any
 
+from . import local_core_v3 as local_core_v3_module
+from .local_actions_v4 import execute_action as execute_action_v4
 from .local_core_v3 import LocalCoreAppV3, _origin, _read_json, _send_json
 from .local_execution_v1 import LocalExecutionGateway
 from .local_pairing_v1 import LocalPairingManager
 from .storage_v3 import SQLiteCanonicalStoreV3
+
+# LocalCoreAppV3 resolves execute_action from its defining module at request time.
+# Patch that single action seam so the hardened v4 runtime exposes the complete
+# local action surface while preserving the stable v3 HTTP routing contract.
+local_core_v3_module.execute_action = execute_action_v4
 
 
 class LocalCoreAppV4(LocalCoreAppV3):
