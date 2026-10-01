@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-15T13:52:23Z",
+    "last_updated": "2026-10-01T05:46:56Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -31,7 +31,7 @@
       "version": 1,
       "mode": "append-only-event-files",
       "inbox": "events/inbox",
-      "builder": "engine/build_state_v2.py",
+      "builder": "engine/build_state_v3.py",
       "processed_event_ids": [
         "evt-20260910T170426Z-task-created-ad83839a",
         "evt-20260910T172100Z-delete-backend-test-create",
@@ -125,13 +125,12 @@
         "evt-20260912T231522Z-nextplan-local-platform-testing-note",
         "evt-20260913T004938Z-preparation-window-on",
         "evt-20260915T135223Z-calendar-event-ups-c9e60532",
-        "evt-20261001-automation-daily"
+        "evt-20261001-automation-daily",
+        "evt-20261001T054656Z-agent-github-head-f976f189"
       ],
-      "processed_count": 93,
-      "last_build_at": "2026-10-01T00:47:06Z",
-      "last_applied": [
-        "evt-20260915T135223Z-calendar-event-ups-c9e60532"
-      ],
+      "processed_count": 94,
+      "last_build_at": "2026-10-01T05:46:56Z",
+      "last_applied": [],
       "status": "ready"
     }
   },
@@ -618,6 +617,17 @@
     }
   ],
   "events": [
+    {
+      "id": "evt-20261001T054656Z-agent-github-head-f976f189",
+      "at": "2026-10-01T05:46:56Z",
+      "project_id": "project-item-daed6c",
+      "type": "external_signal_recorded",
+      "summary": "Observed verified GitHub repository head change: f976f189fb1a",
+      "source": {
+        "kind": "automation",
+        "via": "nextplan-agent-github-poll"
+      }
+    },
     {
       "id": "evt-20260915T135223Z-calendar-event-ups-c9e60532",
       "at": "2026-09-15T13:52:23Z",
@@ -1911,6 +1921,24 @@
         "author_name": "Changxin Ji",
         "committed_at": "2026-09-12T18:59:24Z"
       }
+    },
+    {
+      "id": "signal-github-head-f976f189fb1aa758ebff8e95",
+      "provider": "github",
+      "event_type": "repo_head_changed",
+      "provider_event_id": "f976f189fb1aa758ebff8e95e3238381a73323cb",
+      "verified_source": true,
+      "received_at": "2026-10-01T05:46:56Z",
+      "project_id": "project-item-daed6c",
+      "status": "observed",
+      "payload": {
+        "repository": "changxinjiresearch/LifeOS",
+        "head_sha": "f976f189fb1aa758ebff8e95e3238381a73323cb",
+        "branch": "main",
+        "message": "NextPlan: Calendar: 与导师 Meeting on 2026-09-16 16:30",
+        "author_name": "Changxin Ji",
+        "committed_at": "2026-09-15T13:52:24Z"
+      }
     }
   ],
   "agent_actions": [
@@ -2198,9 +2226,9 @@
   "agent_meta": {
     "agent_version": "1.0",
     "provider_cursors": {
-      "github:changxinjiresearch/LifeOS:head": "84bec21c88ae36238a08513c36baae3722297e02"
+      "github:changxinjiresearch/LifeOS:head": "f976f189fb1aa758ebff8e95e3238381a73323cb"
     },
-    "last_signal_at": "2026-09-12T20:31:17Z",
+    "last_signal_at": "2026-10-01T05:46:56Z",
     "last_action_at": "2026-09-12T14:15:40Z",
     "last_reconciliation_at": "2026-09-12T14:15:35Z",
     "last_run_at": "2026-09-12T14:15:42Z"

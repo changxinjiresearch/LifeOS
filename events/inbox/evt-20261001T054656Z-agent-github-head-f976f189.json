@@ -1,0 +1,29 @@
+{
+  "id": "evt-20261001T054656Z-agent-github-head-f976f189",
+  "at": "2026-10-01T05:46:56Z",
+  "project_id": "project-item-daed6c",
+  "type": "external_signal_recorded",
+  "summary": "Observed verified GitHub repository head change: f976f189fb1a",
+  "source": {
+    "kind": "automation",
+    "via": "nextplan-agent-github-poll"
+  },
+  "external_signal": {
+    "id": "signal-github-head-f976f189fb1aa758ebff8e95",
+    "provider": "github",
+    "event_type": "repo_head_changed",
+    "provider_event_id": "f976f189fb1aa758ebff8e95e3238381a73323cb",
+    "verified_source": true,
+    "received_at": "2026-10-01T05:46:56Z",
+    "project_id": "project-item-daed6c",
+    "status": "observed",
+    "payload": {
+      "repository": "changxinjiresearch/LifeOS",
+      "head_sha": "f976f189fb1aa758ebff8e95e3238381a73323cb",
+      "branch": "main",
+      "message": "NextPlan: Calendar: 与导师 Meeting on 2026-09-16 16:30",
+      "author_name": "Changxin Ji",
+      "committed_at": "2026-09-15T13:52:24Z"
+    }
+  }
+}
