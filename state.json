@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-09-13T00:49:38Z",
+    "last_updated": "2026-09-15T13:52:23Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -31,7 +31,7 @@
       "version": 1,
       "mode": "append-only-event-files",
       "inbox": "events/inbox",
-      "builder": "engine/build_state_v3.py",
+      "builder": "engine/build_state_v2.py",
       "processed_event_ids": [
         "evt-20260910T170426Z-task-created-ad83839a",
         "evt-20260910T172100Z-delete-backend-test-create",
@@ -123,11 +123,15 @@
         "evt-20260912T185701Z-local-v01-stage10-completed",
         "evt-20260912T203117Z-agent-github-head-84bec21c",
         "evt-20260912T231522Z-nextplan-local-platform-testing-note",
-        "evt-20260913T004938Z-preparation-window-on"
+        "evt-20260913T004938Z-preparation-window-on",
+        "evt-20260915T135223Z-calendar-event-ups-c9e60532",
+        "evt-20261001-automation-daily"
       ],
-      "processed_count": 91,
-      "last_build_at": "2026-09-13T00:53:32Z",
-      "last_applied": [],
+      "processed_count": 93,
+      "last_build_at": "2026-10-01T00:47:06Z",
+      "last_applied": [
+        "evt-20260915T135223Z-calendar-event-ups-c9e60532"
+      ],
       "status": "ready"
     }
   },
@@ -614,6 +618,28 @@
     }
   ],
   "events": [
+    {
+      "id": "evt-20260915T135223Z-calendar-event-ups-c9e60532",
+      "at": "2026-09-15T13:52:23Z",
+      "project_id": "calendar",
+      "type": "calendar_event_upserted",
+      "summary": "Calendar: 与导师 Meeting on 2026-09-16 16:30",
+      "source": {
+        "kind": "chatgpt",
+        "via": "nextplan-phase-b"
+      }
+    },
+    {
+      "id": "evt-20261001-automation-daily",
+      "at": "2026-10-01T00:47:06Z",
+      "project_id": "project-item-daed6c",
+      "type": "automation_snapshot_refreshed",
+      "summary": "Daily automation evaluation: 8 finding(s).",
+      "source": {
+        "kind": "automation",
+        "via": "github-actions-daily"
+      }
+    },
     {
       "id": "evt-20260913T004938Z-preparation-window-on",
       "at": "2026-09-13T00:49:38Z",
@@ -1704,7 +1730,7 @@
       "date": "2026-09-16",
       "time": "16:30",
       "timezone": "Australia/Adelaide",
-      "kind": "meeting",
+      "kind": "event",
       "category": "课程",
       "project_id": "flinders-presentation"
     }
@@ -1728,12 +1754,20 @@
   ],
   "automation_feed": [
     {
-      "rule_id": "preparation-window",
+      "rule_id": "stale-active",
       "severity": "medium",
-      "title": "与导师 Meeting",
-      "project_id": "flinders-presentation",
-      "reason": "Confirmed commitment enters preparation window: 4 day(s) remaining.",
-      "id": "automation-preparation-window-1"
+      "title": "PCC v2-R2",
+      "project_id": "research-pcc-v2",
+      "reason": "No recorded movement for 18 day(s).",
+      "id": "automation-stale-active-1"
+    },
+    {
+      "rule_id": "stale-active",
+      "severity": "medium",
+      "title": "PhD 申请",
+      "project_id": "phd",
+      "reason": "No recorded movement for 20 day(s).",
+      "id": "automation-stale-active-2"
     },
     {
       "rule_id": "stale-active",
@@ -1741,7 +1775,31 @@
       "title": "USYD 转学与入学",
       "project_id": "usyd",
       "reason": "No recorded movement for 7 day(s).",
-      "id": "automation-stale-active-2"
+      "id": "automation-stale-active-3"
+    },
+    {
+      "rule_id": "stale-active",
+      "severity": "medium",
+      "title": "Research Proposal / Presentation",
+      "project_id": "flinders-presentation",
+      "reason": "No recorded movement for 18 day(s).",
+      "id": "automation-stale-active-4"
+    },
+    {
+      "rule_id": "stale-active",
+      "severity": "medium",
+      "title": "学生签证与行政事项",
+      "project_id": "visa-admin",
+      "reason": "No recorded movement for 20 day(s).",
+      "id": "automation-stale-active-5"
+    },
+    {
+      "rule_id": "stale-active",
+      "severity": "medium",
+      "title": "帮助宝宝找实习",
+      "project_id": "project-item-9ef9ef",
+      "reason": "No recorded movement for 18 day(s).",
+      "id": "automation-stale-active-6"
     },
     {
       "rule_id": "waiting-followup",
@@ -1749,7 +1807,7 @@
       "title": "Neuroscience Informatics 论文",
       "project_id": "research-neuri",
       "reason": "Waiting project has no recorded movement for 7 day(s).",
-      "id": "automation-waiting-followup-3"
+      "id": "automation-waiting-followup-7"
     },
     {
       "rule_id": "waiting-followup",
@@ -1757,12 +1815,12 @@
       "title": "PCC 第一篇论文",
       "project_id": "research-pcc-v1",
       "reason": "Waiting project has no recorded movement for 7 day(s).",
-      "id": "automation-waiting-followup-4"
+      "id": "automation-waiting-followup-8"
     }
   ],
   "automation_meta": {
-    "last_run_at": "2026-09-12T07:14:35+00:00",
-    "finding_count": 4,
+    "last_run_at": "2026-10-01T00:47:06+00:00",
+    "finding_count": 8,
     "automation_version": "1.0"
   },
   "agent_policies": [],
