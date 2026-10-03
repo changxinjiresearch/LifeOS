@@ -31,7 +31,7 @@
       "version": 1,
       "mode": "append-only-event-files",
       "inbox": "events/inbox",
-      "builder": "engine/build_state_v2.py",
+      "builder": "engine/build_state_v3.py",
       "processed_event_ids": [
         "evt-20260910T170426Z-task-created-ad83839a",
         "evt-20260910T172100Z-delete-backend-test-create",
@@ -131,7 +131,7 @@
         "evt-20261003-automation-daily"
       ],
       "processed_count": 96,
-      "last_build_at": "2026-10-03T00:40:23Z",
+      "last_build_at": "2026-10-03T05:13:51Z",
       "last_applied": [],
       "status": "ready"
     }
