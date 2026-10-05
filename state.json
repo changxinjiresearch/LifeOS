@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-10-03T00:40:23Z",
+    "last_updated": "2026-10-05T00:06:12Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -31,7 +31,7 @@
       "version": 1,
       "mode": "append-only-event-files",
       "inbox": "events/inbox",
-      "builder": "engine/build_state_v3.py",
+      "builder": "engine/build_state_v2.py",
       "processed_event_ids": [
         "evt-20260910T170426Z-task-created-ad83839a",
         "evt-20260910T172100Z-delete-backend-test-create",
@@ -128,10 +128,11 @@
         "evt-20261001-automation-daily",
         "evt-20261001T054656Z-agent-github-head-f976f189",
         "evt-20261002-automation-daily",
-        "evt-20261003-automation-daily"
+        "evt-20261003-automation-daily",
+        "evt-20261005-automation-daily"
       ],
-      "processed_count": 96,
-      "last_build_at": "2026-10-04T21:20:15Z",
+      "processed_count": 97,
+      "last_build_at": "2026-10-05T00:06:12Z",
       "last_applied": [],
       "status": "ready"
     }
@@ -619,6 +620,17 @@
     }
   ],
   "events": [
+    {
+      "id": "evt-20261005-automation-daily",
+      "at": "2026-10-05T00:06:12Z",
+      "project_id": "project-item-daed6c",
+      "type": "automation_snapshot_refreshed",
+      "summary": "Daily automation evaluation: 8 finding(s).",
+      "source": {
+        "kind": "automation",
+        "via": "github-actions-daily"
+      }
+    },
     {
       "id": "evt-20261003-automation-daily",
       "at": "2026-10-03T00:40:23Z",
@@ -1792,7 +1804,7 @@
       "severity": "medium",
       "title": "PCC v2-R2",
       "project_id": "research-pcc-v2",
-      "reason": "No recorded movement for 20 day(s).",
+      "reason": "No recorded movement for 22 day(s).",
       "id": "automation-stale-active-1"
     },
     {
@@ -1800,7 +1812,7 @@
       "severity": "medium",
       "title": "PhD 申请",
       "project_id": "phd",
-      "reason": "No recorded movement for 22 day(s).",
+      "reason": "No recorded movement for 24 day(s).",
       "id": "automation-stale-active-2"
     },
     {
@@ -1816,7 +1828,7 @@
       "severity": "medium",
       "title": "Research Proposal / Presentation",
       "project_id": "flinders-presentation",
-      "reason": "No recorded movement for 20 day(s).",
+      "reason": "No recorded movement for 22 day(s).",
       "id": "automation-stale-active-4"
     },
     {
@@ -1824,7 +1836,7 @@
       "severity": "medium",
       "title": "学生签证与行政事项",
       "project_id": "visa-admin",
-      "reason": "No recorded movement for 22 day(s).",
+      "reason": "No recorded movement for 24 day(s).",
       "id": "automation-stale-active-5"
     },
     {
@@ -1832,7 +1844,7 @@
       "severity": "medium",
       "title": "帮助宝宝找实习",
       "project_id": "project-item-9ef9ef",
-      "reason": "No recorded movement for 20 day(s).",
+      "reason": "No recorded movement for 22 day(s).",
       "id": "automation-stale-active-6"
     },
     {
@@ -1853,7 +1865,7 @@
     }
   ],
   "automation_meta": {
-    "last_run_at": "2026-10-03T00:40:23+00:00",
+    "last_run_at": "2026-10-05T00:06:12+00:00",
     "finding_count": 8,
     "automation_version": "1.0"
   },
