@@ -1,0 +1,29 @@
+{
+  "id": "evt-20261007T230253Z-agent-github-head-066e8992",
+  "at": "2026-10-07T23:02:53Z",
+  "project_id": "project-item-daed6c",
+  "type": "external_signal_recorded",
+  "summary": "Observed verified GitHub repository head change: 066e8992fdb3",
+  "source": {
+    "kind": "automation",
+    "via": "nextplan-agent-github-poll"
+  },
+  "external_signal": {
+    "id": "signal-github-head-066e8992fdb3cd163160a98e",
+    "provider": "github",
+    "event_type": "repo_head_changed",
+    "provider_event_id": "066e8992fdb3cd163160a98e8588ec50a8a04081",
+    "verified_source": true,
+    "received_at": "2026-10-07T23:02:53Z",
+    "project_id": "project-item-daed6c",
+    "status": "observed",
+    "payload": {
+      "repository": "changxinjiresearch/LifeOS",
+      "head_sha": "066e8992fdb3cd163160a98e8588ec50a8a04081",
+      "branch": "main",
+      "message": "Align NextPlan Desktop and Bridge release version contracts",
+      "author_name": "Changxin Ji",
+      "committed_at": "2026-10-07T16:38:16Z"
+    }
+  }
+}

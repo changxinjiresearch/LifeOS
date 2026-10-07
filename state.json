@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-10-07T00:58:18Z",
+    "last_updated": "2026-10-07T23:02:53Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -131,10 +131,11 @@
         "evt-20261003-automation-daily",
         "evt-20261005-automation-daily",
         "evt-20261006-automation-daily",
-        "evt-20261007-automation-daily"
+        "evt-20261007-automation-daily",
+        "evt-20261007T230253Z-agent-github-head-066e8992"
       ],
-      "processed_count": 99,
-      "last_build_at": "2026-10-07T13:16:24Z",
+      "processed_count": 100,
+      "last_build_at": "2026-10-07T23:02:53Z",
       "last_applied": [],
       "status": "ready"
     }
@@ -622,6 +623,17 @@
     }
   ],
   "events": [
+    {
+      "id": "evt-20261007T230253Z-agent-github-head-066e8992",
+      "at": "2026-10-07T23:02:53Z",
+      "project_id": "project-item-daed6c",
+      "type": "external_signal_recorded",
+      "summary": "Observed verified GitHub repository head change: 066e8992fdb3",
+      "source": {
+        "kind": "automation",
+        "via": "nextplan-agent-github-poll"
+      }
+    },
     {
       "id": "evt-20261007-automation-daily",
       "at": "2026-10-07T00:58:18Z",
@@ -1999,6 +2011,24 @@
         "author_name": "Changxin Ji",
         "committed_at": "2026-09-15T13:52:24Z"
       }
+    },
+    {
+      "id": "signal-github-head-066e8992fdb3cd163160a98e",
+      "provider": "github",
+      "event_type": "repo_head_changed",
+      "provider_event_id": "066e8992fdb3cd163160a98e8588ec50a8a04081",
+      "verified_source": true,
+      "received_at": "2026-10-07T23:02:53Z",
+      "project_id": "project-item-daed6c",
+      "status": "observed",
+      "payload": {
+        "repository": "changxinjiresearch/LifeOS",
+        "head_sha": "066e8992fdb3cd163160a98e8588ec50a8a04081",
+        "branch": "main",
+        "message": "Align NextPlan Desktop and Bridge release version contracts",
+        "author_name": "Changxin Ji",
+        "committed_at": "2026-10-07T16:38:16Z"
+      }
     }
   ],
   "agent_actions": [
@@ -2286,9 +2316,9 @@
   "agent_meta": {
     "agent_version": "1.0",
     "provider_cursors": {
-      "github:changxinjiresearch/LifeOS:head": "f976f189fb1aa758ebff8e95e3238381a73323cb"
+      "github:changxinjiresearch/LifeOS:head": "066e8992fdb3cd163160a98e8588ec50a8a04081"
     },
-    "last_signal_at": "2026-10-01T05:46:56Z",
+    "last_signal_at": "2026-10-07T23:02:53Z",
     "last_action_at": "2026-09-12T14:15:40Z",
     "last_reconciliation_at": "2026-09-12T14:15:35Z",
     "last_run_at": "2026-09-12T14:15:42Z"
