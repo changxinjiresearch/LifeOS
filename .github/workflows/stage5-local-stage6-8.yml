@@ -2,7 +2,7 @@ name: NextPlan Local Stage 6-8 acceptance
 
 on:
   push:
-    branches: [main, 'stage5/local-v01-stage6-8']
+    branches: [main, 'stage5/local-v01-stage6-8', 'nextplan-batch-status-v014']
     paths:
       - 'mcp_server/local_projector.py'
       - 'mcp_server/storage_v2.py'
