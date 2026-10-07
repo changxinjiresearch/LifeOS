@@ -6,10 +6,10 @@ NextPlan Desktop is distributed as a prebuilt, self-contained installer. End use
 
 Supported distributables:
 
-- Windows: `NextPlan-Setup-v0.1.1.exe`
-- macOS Apple Silicon: `NextPlan-v0.1.1-macOS-apple-silicon.dmg`
-- macOS Intel: `NextPlan-v0.1.1-macOS-intel.dmg`
-- Chrome/Chromium bridge beta bundle: `NextPlan-Local-Bridge-v0.1.1.zip`
+- Windows: `NextPlan-Setup-v0.1.3.exe`
+- macOS Apple Silicon: `NextPlan-v0.1.3-macOS-apple-silicon.dmg`
+- macOS Intel: `NextPlan-v0.1.3-macOS-intel.dmg`
+- Chrome/Chromium bridge beta bundle: `NextPlan-Local-Bridge-v0.1.4.zip`
 
 The Tauri application launches the PyInstaller-built `nextplan-core` executable from inside the installed application bundle. User data is stored in the platform application-data directory, outside the installation bundle, so replacing or upgrading the app does not replace the SQLite database.
 
@@ -23,11 +23,11 @@ Clean-machine acceptance must launch the installed application with development-
 
 NextPlan Desktop owns a loopback-only bootstrap service on `127.0.0.1:47124`. The Chrome/Chromium bridge uses it to obtain the current Desktop session credential automatically. End users must not copy tokens or enter a pairing code.
 
-The v0.1.1 beta Bridge has a stable public extension key whose Chrome extension ID is `gbdcbnbdmkgjffjioohjfidjmchiggpc`. The Desktop bootstrap service accepts only the exact origin `chrome-extension://gbdcbnbdmkgjffjioohjfidjmchiggpc`. CORS preflight validates that exact origin, and the actual bootstrap POST additionally requires `X-NextPlan-Extension-Id: gbdcbnbdmkgjffjioohjfidjmchiggpc`. Ordinary web pages and other Chrome extensions are rejected.
+The v0.1.4 beta Bridge has a stable public extension key whose Chrome extension ID is `gbdcbnbdmkgjffjioohjfidjmchiggpc`. The Desktop bootstrap service accepts only the exact origin `chrome-extension://gbdcbnbdmkgjffjioohjfidjmchiggpc`. CORS preflight validates that exact origin, and the actual bootstrap POST additionally requires `X-NextPlan-Extension-Id: gbdcbnbdmkgjffjioohjfidjmchiggpc`. Ordinary web pages and other Chrome extensions are rejected.
 
 The returned credential is the current random Desktop bootstrap token and changes on every Desktop launch. The Bridge reuses a valid session credential and automatically re-bootstraps only when the Desktop session changes or the credential is no longer valid.
 
-Before handing the session credential to the official browser bridge, the Desktop shell clears any legacy persisted extension-pairing metadata through the authenticated Local Core `/pairing/reset` path. This prevents an old extension ID from blocking a clean v0.1.1 connection.
+Before handing the session credential to the official browser bridge, the Desktop shell clears any legacy persisted extension-pairing metadata through the authenticated Local Core `/pairing/reset` path. This prevents an old extension ID from blocking a clean v0.1.4 connection.
 
 Release acceptance must prove all of the following on Windows, macOS Apple Silicon, and macOS Intel:
 
