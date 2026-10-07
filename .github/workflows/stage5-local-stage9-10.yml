@@ -2,7 +2,7 @@ name: NextPlan Local Stage 9-10 release acceptance
 
 on:
   push:
-    branches: [main, 'stage5/local-v01-stage9-10', 'nextplan-batch-status-v014']
+    branches: [main, 'stage5/local-v01-stage9-10']
     paths:
       - 'mcp_server/storage_v3.py'
       - 'mcp_server/local_core_v4.py'
