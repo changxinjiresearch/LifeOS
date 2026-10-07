@@ -168,9 +168,9 @@ jobs:
         run: |
           $releaseDir = Join-Path $pwd 'release-artifacts'
           New-Item -ItemType Directory -Path $releaseDir -Force | Out-Null
-          Compress-Archive -Path 'chrome_extension_local/*' -DestinationPath (Join-Path $releaseDir 'NextPlan-Local-Bridge-v0.1.0.zip') -Force
+          Compress-Archive -Path 'chrome_extension_local/*' -DestinationPath (Join-Path $releaseDir 'NextPlan-Local-Bridge-v0.1.4.zip') -Force
           $manifest = Get-Content 'chrome_extension_local/manifest.json' -Raw | ConvertFrom-Json
-          if ($manifest.manifest_version -ne 3 -or $manifest.version -ne '0.1.0') { throw 'Extension manifest contract failed' }
+          if ($manifest.manifest_version -ne 3 -or $manifest.version -ne '0.1.4') { throw 'Extension manifest contract failed' }
           $installer = Get-ChildItem 'desktop_local/src-tauri/target/release/bundle/nsis' -Filter '*.exe' | Select-Object -First 1
           if (-not $installer) { throw 'NSIS installer missing' }
           Copy-Item $installer.FullName (Join-Path $releaseDir 'NextPlan-Local-v0.1.0-Setup.exe') -Force
