@@ -139,6 +139,8 @@ def classify_compat_command(turn: dict[str, Any], state: dict[str, Any]) -> dict
         "id": str(uuid.uuid4()),
         "kind": "batch_project_status" if len(resolved) > 1 else "direct_project_status",
         "confidence": 0.99,
+        "requiresConfirmation": False,
+        "destructive": False,
         "label": f"更新 {len(changed)} 个项目状态 → {status}",
         "reason": "检测到明确的 NextPlan 项目状态设置指令；全部目标已精确匹配",
         "action": {
