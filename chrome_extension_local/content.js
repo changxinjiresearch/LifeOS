@@ -1,6 +1,6 @@
 (() => {
-  if (window.__NEXTPLAN_LOCAL_V013__) return;
-  window.__NEXTPLAN_LOCAL_V013__ = true;
+  if (window.__NEXTPLAN_LOCAL_V014__) return;
+  window.__NEXTPLAN_LOCAL_V014__ = true;
 
   const seen = new Set();
   let timer = null;
@@ -65,12 +65,19 @@
     else if (result.status === "error") toast(`NextPlan Local: ${result.error || "Connection failed"}`, "bad", 6500);
   }
 
+  function assistantAfterUser(userNode) {
+    const assistants = [...document.querySelectorAll('[data-message-author-role="assistant"]')];
+    return assistants.find(node => Boolean(userNode.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING)) || null;
+  }
+
   function collectLatestTurn() {
     const users = [...document.querySelectorAll('[data-message-author-role="user"]')];
-    const assistants = [...document.querySelectorAll('[data-message-author-role="assistant"]')];
-    if (!users.length || !assistants.length) return;
-    const originalUserText = textOf(users[users.length - 1]);
-    const assistantText = textOf(assistants[assistants.length - 1]);
+    if (!users.length) return;
+    const userNode = users[users.length - 1];
+    const assistantNode = assistantAfterUser(userNode);
+    if (!assistantNode) return;
+    const originalUserText = textOf(userNode);
+    const assistantText = textOf(assistantNode);
     if (!originalUserText || !assistantText) return;
     const fingerprint = stableKey(originalUserText, users.length);
     if (seen.has(fingerprint)) return;
