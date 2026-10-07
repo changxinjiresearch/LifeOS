@@ -3,7 +3,7 @@ name: NextPlan Release Packaging v1
 on:
   workflow_dispatch:
   push:
-    branches: [main, 'fix/release-version-contract-014']
+    branches: [main]
     tags: ['v*']
     paths:
       - 'mcp_server/**'
