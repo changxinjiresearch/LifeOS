@@ -120,6 +120,24 @@ def _apply_local_runtime_event(state: dict[str, Any], event: dict[str, Any]) -> 
         if isinstance(changes, dict):
             state["local_permissions"].update(deepcopy(changes))
         return True
+    if et == "project_status_batch_updated":
+        updates = event.get("updates") or []
+        if not isinstance(updates, list) or not updates:
+            raise ValueError("project_status_batch_updated requires updates")
+        projects = {str(p.get("id") or ""): p for p in state.get("projects", [])}
+        for update in updates:
+            if not isinstance(update, dict):
+                raise ValueError("project_status_batch_updated update must be an object")
+            pid = str(update.get("project_id") or "")
+            status = str(update.get("status") or "")
+            if not pid or pid not in projects:
+                raise ValueError(f"Unknown project_id: {pid}")
+            if status not in {"active", "waiting", "planned", "completed", "done", "blocked"}:
+                raise ValueError(f"invalid status: {status}")
+        for update in updates:
+            project = projects[str(update["project_id"])]
+            project["status"] = str(update["status"])
+        return True
     return False
 
 
