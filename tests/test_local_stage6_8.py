@@ -162,3 +162,83 @@ async def test_desktop_status_pairing_code_and_permission_mode(tmp_path):
         assert status.status_code == 200
         assert status.json()["permission_mode"] == "conservative"
         assert Path(status.json()["db_path"]).name == "desktop.db"
+
+
+@pytest.mark.asyncio
+async def test_explicit_batch_project_status_command_applies_atomically(tmp_path):
+    app = create_local_app(tmp_path / "batch-status.db", bootstrap_token="desktop-token", execution_dry_run=True)
+    headers = {"Authorization": "Bearer desktop-token"}
+    transport = httpx.ASGITransport(app=app)
+
+    projects = [
+        ("research-neuri", "Neuroscience Informatics 论文", "waiting"),
+        ("flinders-presentation", "Research Proposal / Presentation", "active"),
+        ("project-item-9ef9ef", "帮助宝宝找实习", "active"),
+    ]
+    async with httpx.AsyncClient(transport=transport, base_url="http://127.0.0.1") as client:
+        for pid, name, status in projects:
+            created = await client.post("/actions/execute", headers=headers, json={
+                "action": {"action": "create_project", "project_id": pid, "name": name, "status": status}
+            })
+            assert created.status_code == 200
+            if status != "active":
+                updated = await client.post("/actions/execute", headers=headers, json={
+                    "action": {"action": "update_project", "project_id": pid, "status": status}
+                })
+                assert updated.status_code == 200
+
+        command = (
+            "更新 NextPlan：将「Neuroscience Informatics 论文」、"
+            "「Research Proposal / Presentation」和「帮助宝宝找实习」"
+            "三个项目的状态全部更新为 Completed / 已完成。"
+        )
+        response = await client.post("/conversation/capture", headers=headers, json={
+            "turn": {"userText": command, "assistantText": "收到。", "title": "ChatGPT"},
+            "apply": True,
+        })
+        assert response.status_code == 200
+        body = response.json()
+        assert body["candidate"]["kind"] == "batch_project_status"
+        assert body["candidate"]["requiresConfirmation"] is False
+        assert body["candidate"]["action"]["action"] == "batch_update_project_status"
+        assert len(body["candidate"]["action"]["updates"]) == 3
+        assert body["receipt"]["status"] == "applied"
+
+        state = (await client.get("/state", headers=headers)).json()
+        actual = {p["name"]: p["status"] for p in state["projects"]}
+        for _, name, _ in projects:
+            assert actual[name] == "completed"
+
+        events = app.store.list_events()
+        batch_events = [e for e in events if e.get("type") == "project_status_batch_updated"]
+        assert len(batch_events) == 1
+        assert len(batch_events[0]["updates"]) == 3
+
+
+@pytest.mark.asyncio
+async def test_batch_project_status_missing_target_causes_no_partial_write(tmp_path):
+    app = create_local_app(tmp_path / "batch-missing.db", bootstrap_token="desktop-token", execution_dry_run=True)
+    headers = {"Authorization": "Bearer desktop-token"}
+    transport = httpx.ASGITransport(app=app)
+
+    async with httpx.AsyncClient(transport=transport, base_url="http://127.0.0.1") as client:
+        await client.post("/actions/execute", headers=headers, json={
+            "action": {"action": "create_project", "project_id": "known", "name": "已存在项目"}
+        })
+        response = await client.post("/conversation/capture", headers=headers, json={
+            "turn": {
+                "userText": "更新 NextPlan：将「已存在项目」和「不存在项目」两个项目的状态全部更新为 Completed。",
+                "assistantText": "收到。",
+            },
+            "apply": True,
+        })
+        assert response.status_code == 200
+        body = response.json()
+        assert body["candidate"]["kind"] == "project_status_target_missing"
+        assert body["candidate"]["informational"] is True
+        assert "receipt" not in body
+
+        state = (await client.get("/state", headers=headers)).json()
+        project = next(p for p in state["projects"] if p["id"] == "known")
+        assert project["status"] == "active"
+        assert not any(e.get("type") == "project_status_batch_updated" for e in app.store.list_events())

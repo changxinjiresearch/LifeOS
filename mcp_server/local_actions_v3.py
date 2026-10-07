@@ -45,10 +45,51 @@ def _sha256(path: Path) -> str:
 
 def execute_action(store: CanonicalStore, action: dict[str, Any]) -> dict[str, Any]:
     op = str(action.get("action") or "").strip()
-    if op not in {"bind_workspace", "unbind_workspace", "attach_artifact", "verify_artifact", "remove_artifact", "update_local_permissions"}:
+    if op not in {"batch_update_project_status", "bind_workspace", "unbind_workspace", "attach_artifact", "verify_artifact", "remove_artifact", "update_local_permissions"}:
         return execute_action_v2(store, action)
 
     state = store.get_state()
+
+    if op == "batch_update_project_status":
+        raw_updates = action.get("updates")
+        if not isinstance(raw_updates, list) or not raw_updates:
+            raise ValueError("batch_update_project_status requires a non-empty updates list")
+        if len(raw_updates) > 50:
+            raise ValueError("batch_update_project_status supports at most 50 projects")
+        allowed = {"active", "waiting", "planned", "completed", "done", "blocked"}
+        projects = {str(p.get("id") or ""): p for p in state.get("projects", [])}
+        normalized: list[dict[str, str]] = []
+        seen: dict[str, str] = {}
+        for raw in raw_updates:
+            if not isinstance(raw, dict):
+                raise ValueError("batch update item must be an object")
+            pid = str(raw.get("project_id") or "").strip()
+            status = str(raw.get("status") or "").strip()
+            if not pid or pid not in projects:
+                raise ValueError(f"Unknown project_id: {pid}")
+            if status not in allowed:
+                raise ValueError(f"invalid status: {status}")
+            if pid in seen and seen[pid] != status:
+                raise ValueError(f"conflicting statuses for project_id: {pid}")
+            seen[pid] = status
+        for pid, status in seen.items():
+            if str(projects[pid].get("status") or "") != status:
+                normalized.append({"project_id": pid, "status": status})
+        if not normalized:
+            return {"status": "no_change", "project_ids": list(seen)}
+        result = store.append_event(_event(
+            "project_status_batch_updated",
+            f"Updated {len(normalized)} project statuses",
+            updates=normalized,
+            source_command=str(action.get("source_command") or "")[:1000],
+        ))
+        return {
+            "status": result["status"],
+            "event_id": result["event_id"],
+            "summary": f"Updated {len(normalized)} project statuses",
+            "project_ids": [item["project_id"] for item in normalized],
+            "updates": normalized,
+        }
 
     if op == "bind_workspace":
         pid = str(action.get("project_id") or "").strip()

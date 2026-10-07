@@ -5,7 +5,7 @@ const DEFAULTS = {
   autoSync: true,
   autoThreshold: 0.88
 };
-const GENERATION = "local-v0.1.3-command-calendar";
+const GENERATION = "local-v0.1.4-batch-project-status";
 const CAL_COMPAT_PREFIX = "__NP_CAL_V1__:";
 
 async function getConfig() {
@@ -80,7 +80,7 @@ async function remember(fp){
 }
 function clientContext(){
   let timezone=""; try{timezone=Intl.DateTimeFormat().resolvedOptions().timeZone||"";}catch{}
-  return {source:"nextplan-local-extension",bridgeVersion:"0.1.3",now:new Date().toISOString(),timezone,utcOffsetMinutes:-new Date().getTimezoneOffset()};
+  return {source:"nextplan-local-extension",bridgeVersion:"0.1.4",now:new Date().toISOString(),timezone,utcOffsetMinutes:-new Date().getTimezoneOffset()};
 }
 function normalizeCommandText(text){
   return String(text||"")
@@ -103,11 +103,19 @@ function statusValue(raw){
   if(["blocked","阻塞","暂停"].includes(s))return"blocked";
   return"";
 }
-function parseProjectStatusCommand(text){
+function parseProjectStatusCommands(text){
   const source=normalizeCommandText(text).replace(/^NextPlan\s*/i,"").trim();
-  const m=source.match(/(?:把|将)\s*[“"「『]?([^”"」』，。]+?)[”"」』]?\s*(?:项目)?\s*(?:设置为|设为|改成|改为|标记为|设置成)\s*(active|waiting|planned|completed|done|blocked|进行中|正在进行|已开始|等待|待定|计划中|未开始|尚未开始|已完成|完成|阻塞|暂停)/i);
-  if(!m)return null;
-  const name=cleanName(m[1]),status=statusValue(m[2]); return name&&status?{name,status}:null;
+  const statusWords="active|waiting|planned|completed|done|blocked|进行中|正在进行|已开始|等待|待定|计划中|未开始|尚未开始|已完成|完成|阻塞|暂停";
+  const pattern=new RegExp("(?:把|将)\\s*(.+?)\\s*(?:(?:这|这些|这几个|\\d+个|[一二三四五六七八九十两]+个)\\s*)?(?:项目)?\\s*(?:的)?\\s*(?:状态)?\\s*(?:全部|都)?\\s*(?:更新为|更新成|设置为|设为|改成|改为|标记为|设置成)\\s*("+statusWords+")","i");
+  const m=source.match(pattern);
+  if(!m)return[];
+  const status=statusValue(m[2]);if(!status)return[];
+  const rawTargets=String(m[1]||"").trim();
+  const quoted=[...rawTargets.matchAll(/[“"「『]([^”"」』]+)[”"」』]/g)].map(x=>cleanName(x[1])).filter(Boolean);
+  const names=quoted.length?quoted:rawTargets.split(/\s*(?:、|，|,|；|;|和|与|及)\s*/).map(cleanName).filter(Boolean);
+  const unique=[];const seenNames=new Set();
+  for(const name of names){const key=nameKey(name);if(key&&!seenNames.has(key)){seenNames.add(key);unique.push({name,status});}}
+  return unique;
 }
 function localDateISO(date){return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;}
 function parseCalendarDate(text){
@@ -141,12 +149,17 @@ function parseCalendarCommand(text){
 function compatCalendarTitle(event){return CAL_COMPAT_PREFIX+encodeURIComponent(JSON.stringify({title:event.title,time:event.time||"",timezone:event.timezone||"",kind:event.kind||"event",category:event.category||"其他"}));}
 
 async function directProjectStatus(text){
-  const parsed=parseProjectStatusCommand(text);if(!parsed)return null;
-  const state=await api("/state"); const project=(state.projects||[]).find(p=>nameKey(p.name)===nameKey(parsed.name));
-  if(!project)return{status:"error",error:`Project not found: ${parsed.name}`};
-  if(String(project.status||"")===parsed.status)return{status:"informational",label:`项目状态已是 ${parsed.status}：${project.name}`};
-  const receipt=await api("/actions/execute",{method:"POST",body:JSON.stringify({action:{action:"update_project",project_id:project.id,status:parsed.status}})});
-  return{status:"auto_synced",label:`更新项目状态：${project.name} → ${parsed.status}`,receipt};
+  const parsed=parseProjectStatusCommands(text);if(!parsed.length)return null;
+  const state=await api("/state");
+  const resolved=parsed.map(item=>({item,project:(state.projects||[]).find(p=>nameKey(p.name)===nameKey(item.name))}));
+  const missing=resolved.filter(x=>!x.project).map(x=>x.item.name);
+  if(missing.length)return{status:"error",error:`Project not found: ${missing.join("、")}`};
+  const updates=resolved.map(x=>({project_id:x.project.id,status:x.item.status}));
+  const targetStatus=parsed[0].status;
+  const changed=resolved.filter(x=>String(x.project.status||"")!==targetStatus);
+  if(!changed.length)return{status:"informational",label:`${resolved.length} 个项目状态已是 ${targetStatus}`};
+  const receipt=await api("/actions/execute",{method:"POST",body:JSON.stringify({action:{action:"batch_update_project_status",updates,source_command:text}})});
+  return{status:"auto_synced",label:`批量更新项目状态：${changed.length} 项 → ${targetStatus}`,receipt,projects:changed.map(x=>x.project.name)};
 }
 async function directCalendarWrite(text){
   const event=parseCalendarCommand(text);if(!event)return null;
@@ -180,7 +193,7 @@ async function ignorePending(id){const result=await api("/pending/ignore",{metho
 async function statusSnapshot(){
   let connectionError=null,runtime=null;try{const connected=await connectDesktop();runtime=connected.runtime;}catch(err){connectionError=err.message;}
   const config=await getConfig();let pending=[];if(!connectionError){try{pending=await getPending();}catch(err){connectionError=err.message;}}
-  const {lastSync=null}=await chrome.storage.local.get({lastSync:null});return{connected:!connectionError,paired:!connectionError,connectionError,runtime,endpoint:config.endpoint,pending,lastSync,mode:"desktop-auto-bootstrap",version:"0.1.3"};
+  const {lastSync=null}=await chrome.storage.local.get({lastSync:null});return{connected:!connectionError,paired:!connectionError,connectionError,runtime,endpoint:config.endpoint,pending,lastSync,mode:"desktop-auto-bootstrap",version:"0.1.4"};
 }
 chrome.runtime.onInstalled.addListener(async()=>{const current=await chrome.storage.local.get(Object.keys(DEFAULTS));await chrome.storage.local.set({...DEFAULTS,...current,token:""});try{await connectDesktop();}catch{}});
 chrome.runtime.onStartup.addListener(async()=>{await chrome.storage.local.set({token:""});try{await connectDesktop();}catch{}});

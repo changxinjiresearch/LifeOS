@@ -20,6 +20,7 @@ permissions:
 
 env:
   VERSION: '0.1.1'
+  BRIDGE_VERSION: '0.1.4'
   EXTENSION_ID: 'gbdcbnbdmkgjffjioohjfidjmchiggpc'
 
 jobs:
@@ -70,7 +71,7 @@ jobs:
           $installer=Get-ChildItem desktop_local/src-tauri/target/release/bundle/nsis -Filter '*.exe' | Select-Object -First 1
           if(-not $installer){throw 'NSIS installer missing'}
           Copy-Item $installer.FullName "release-artifacts/NextPlan-Setup-v$env:VERSION.exe" -Force
-          Compress-Archive -Path 'chrome_extension_local/*' -DestinationPath "release-artifacts/NextPlan-Local-Bridge-v$env:VERSION.zip" -Force
+          Compress-Archive -Path 'chrome_extension_local/*' -DestinationPath "release-artifacts/NextPlan-Local-Bridge-v$env:BRIDGE_VERSION.zip" -Force
 
       - name: Clean-machine and secure browser bootstrap acceptance
         shell: pwsh
@@ -204,7 +205,7 @@ jobs:
           mkdir -p release-artifacts bridge-package
           cp "$DMG_PATH" "release-artifacts/NextPlan-v${VERSION}-macOS-${{ matrix.arch }}.dmg"
           cp -R chrome_extension_local/. bridge-package/
-          (cd bridge-package && /usr/bin/zip -qr "../release-artifacts/NextPlan-Local-Bridge-v${VERSION}.zip" .)
+          (cd bridge-package && /usr/bin/zip -qr "../release-artifacts/NextPlan-Local-Bridge-v${BRIDGE_VERSION}.zip" .)
           shasum -a 256 release-artifacts/* | sed 's#release-artifacts/##' > "release-artifacts/SHA256SUMS-${{ matrix.arch }}.txt"
 
       - uses: actions/upload-artifact@v4
