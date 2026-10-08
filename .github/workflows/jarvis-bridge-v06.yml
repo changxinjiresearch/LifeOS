@@ -55,3 +55,10 @@ jobs:
           assert 'jarvis_bridge_v1.js' in Path('chrome_extension/background_v041.js').read_text()
           print("Jarvis extension provenance, confirmation queue and Chrome MV3 PASS")
           PY
+      - name: Package installable MV3 NextPlan Sync v0.6
+        uses: actions/upload-artifact@v4
+        with:
+          name: nextplan-sync-v0.6-unpacked
+          path: chrome_extension/
+          retention-days: 30
+
