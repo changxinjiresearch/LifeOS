@@ -1,0 +1,44 @@
+name: Jarvis P0 contracts
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'mcp_server/jarvis_p0_contracts.py'
+      - 'tests/test_jarvis_p0_contracts.py'
+      - 'docs/jarvis/**'
+      - '.github/workflows/jarvis-p0-contracts.yml'
+  push:
+    branches: [main, 'phase/p0-jarvis-capability-audit']
+    paths:
+      - 'mcp_server/jarvis_p0_contracts.py'
+      - 'tests/test_jarvis_p0_contracts.py'
+      - 'docs/jarvis/**'
+      - '.github/workflows/jarvis-p0-contracts.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile Jarvis P0 contracts
+        run: python -m py_compile mcp_server/jarvis_p0_contracts.py tests/test_jarvis_p0_contracts.py
+      - name: Run authority, consent and privacy tests
+        run: python -m unittest discover -s tests -p 'test_jarvis_p0_contracts.py' -v
+      - name: Verify single-UI architecture remains intact
+        run: |
+          test -f desktop_local/ui/desktop-adapter.js
+          test ! -f desktop_local/ui/app.js
+          test ! -f desktop_local/ui/styles.css
+          test -f desktop_local/src-tauri/tauri.conf.json
+          test -f chrome_extension_local/manifest.json
