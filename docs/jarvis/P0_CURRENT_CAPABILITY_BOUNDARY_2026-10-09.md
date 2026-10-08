@@ -3,7 +3,7 @@
 **审计日期：** 2026-10-09（Australia/Adelaide）  
 **审计范围：** `changxinjiresearch/LifeOS`、`changxinjiresearch/LifeOS-App` 默认分支及 GitHub Actions 历史  
 **审计性质：** 静态代码与 CI 证据审计；**未在用户设备上做安装和真实端到端验证**  
-**状态：** P0 IN PROGRESS；本文只确认当前边界，不表示 Jarvis 已实现。
+**状态：** 能力审计基线已完成；P0 按用户确认的 Web-first 限缩范围关闭；本文不表示 Jarvis 已实现。
 
 ## 1. 判定标准
 
@@ -88,17 +88,14 @@ Local Bridge 默认依赖 Desktop 本机回环服务。ChromeOS 第一版优先 
 ### High — Agent 能力过度宣传
 现有 Action Gateway、记录/回执、Proactive Policy 是良好基础，但不能将 GitHub 的定向受控动作框架称为通用 Jarvis。必须重新引入可测试的 AI 模型适配、任务规划和工具调度，再证明端到端行为。
 
-## 7. P0 完成标准
+## 7. P0 关闭范围（2026-10-09 修订）
 
-P0 只有全部检查通过才可关闭：
+用户明确确认 NextPlan 当前主要以 Web 端运行，将 P0 的 exit gate 调整为**现有能力审计、统一数据架构决议、Context Bridge 安全契约、CI 契约测试、后续阶段验收计划**。
 
-1. 确认并记录完整现有能力矩阵，标记 CODE / CI / DEVICE；
-2. 给出单一数据权威与 Mac ↔ ChromeOS 同步架构，包含迁移/冲突/离线策略；
-3. 评估现有公开状态数据的隐私风险，明确私有存储与清理计划；
-4. Mac Apple Silicon 与 Intel 发布包完成真实安装、启动、权限、Local Core、扩展连接、状态写入回执测试；
-5. ChromeOS 的 PWA、云端扩展、授权边界和状态同步完成真实测试；
-6. 针对 NextPlan Sync 运行单项、批量、重复、误识别、失败恢复回归用例；
-7. 完成 Jarvis 新模块的独立接口契约，不修改现有业务实体和唯一 UI authority；
-8. 回归现有 NextPlan 测试并确认无功能倒退。
+- 当前 P0 **COMPLETED (WEB-FIRST BASELINE)**；结论见 [最终验收报告](P0_EXECUTION_AND_ACCEPTANCE_REPORT.md)。
+- 实际 macOS / ChromeOS 设备验收延期而非 PASS：[Issue #20](https://github.com/changxinjiresearch/LifeOS/issues/20)。
+- 历史公开仓库状态安全整改延期而非修复：[Issue #19](https://github.com/changxinjiresearch/LifeOS/issues/19)。
+- 实际跨设备 canonical sync 属于 P1；ChatGPT–Jarvis Context Bridge 端到端数据流属于 P2。
+- 保留本报告的 CODE/CI/DEVICE 判断，不因用户调整 P0 的验收范围而改变其真实性。
 
-**当前结论：P0 审计已形成基线，P0 整体验收尚未完成。** 本文未更改 `state.json` 或用户项目/任务。
+**本文未更改** `state.json` 或任何用户项目/任务状态。
