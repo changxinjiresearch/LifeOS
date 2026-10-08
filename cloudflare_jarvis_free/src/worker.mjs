@@ -131,7 +131,7 @@ export default {
     messages.push({role:"user",content:body.question});
     try {
       const result=await env.AI.run(MODEL,{
-        messages, temperature:0.2, max_completion_tokens:512, stream:false
+        messages, temperature:0.2, max_tokens:512, stream:false
       });
       const answer=answerText(result).trim();
       if (!answer) return reply(502,{error:"model_empty_response"},origin);
