@@ -1,0 +1,44 @@
+name: Jarvis P4 Free Cloudflare Worker
+
+on:
+  push:
+    branches: [main, 'feature/jarvis-free-cloudflare-model-v1']
+    paths:
+      - 'cloudflare_jarvis_free/**'
+      - '.github/workflows/jarvis-free-ai.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'cloudflare_jarvis_free/**'
+      - '.github/workflows/jarvis-free-ai.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  free-ai:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check Worker syntax
+        run: node --check cloudflare_jarvis_free/src/worker.mjs
+      - name: Free tier gateway contract tests (no AI inference/billing)
+        run: node --test cloudflare_jarvis_free/tests/worker.test.mjs
+      - name: No paid model or paid service in deployment config
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          config=Path('cloudflare_jarvis_free/wrangler.toml').read_text()
+          source=Path('cloudflare_jarvis_free/src/worker.mjs').read_text()
+          assert 'binding = "AI"' in config
+          assert '@cf/zai-org/glm-4.7-flash' in source
+          assert 'env.AI.run(MODEL' in source
+          assert 'api.openai.com' not in source
+          assert 'Bearer sk-' not in source
+          print('Free Workers AI binding only; no paid LLM fallback PASS')
+          PY
