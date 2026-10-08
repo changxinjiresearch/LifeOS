@@ -136,7 +136,8 @@ async def app(scope, receive, send):
             result = store.context_bundle(arg("project_id"))
         elif path == PREFIX + "/brain/ask" and method == "POST":
             result = await JarvisBrain(store).ask(payload.get("question"),
-                                                  payload.get("project_id", ""))
+                                                  payload.get("project_id", ""),
+                                                  allow_model=payload.get("allow_model") is True)
         else:
             return await _send(send, 404, {"error": "not_found"}, origin)
         return await _send(send, 200, result, origin)
