@@ -131,12 +131,27 @@ class JarvisP0ContractsTests(unittest.TestCase):
         with self.assertRaises(JarvisContractError):
             self.context(source_kind="assistant_summary")
 
+    def test_missing_postcondition_is_not_verified(self):
+        with self.assertRaises(JarvisContractError):
+            self.context(context_type="handoff", source_kind="jarvis_verified_receipt",
+                         confirmed_by_user=False, verified_receipt={"status": "verified"})
+
+    def test_reported_hypothesis_is_not_verified_fact(self):
+        candidate = self.context(context_type="hypothesis")
+        self.assertEqual(candidate["epistemic_status"], "reported_hypothesis")
+
+    def test_storage_checks_still_require_confirmed_provenance(self):
+        candidate = self.context()
+        candidate["confirmed"] = False
+        with self.assertRaises(JarvisContractError):
+            check_storage_policy(candidate, destination="local_encrypted")
+
     def test_no_raw_chat_transcript_is_in_minimal_record(self):
         record = self.context()
         self.assertEqual(
             set(record.keys()),
             {"protocol_version", "record_type", "context_type", "project_id",
-             "summary", "source", "confirmed", "privacy", "storage_status", "fingerprint"},
+             "summary", "source", "confirmed", "epistemic_status", "privacy", "storage_status", "fingerprint"},
         )
 
 
