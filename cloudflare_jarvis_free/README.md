@@ -5,7 +5,7 @@
 ## Hard cost constraint
 
 - Use **Cloudflare Workers Free** and **Workers AI Free allocation only**.
-- Source hardcodes the Cloudflare free-eligible `@cf/zai-org/glm-4.7-flash` candidate. Model availability can change; inspect the current official pricing/model catalog before deploying.
+- Source hardcodes the open-weights Apache-2.0 Qwen3-30B-A3B-FP8 Cloudflare-hosted model (subject to model availability and Workers Free plan eligibility): `@cf/qwen/qwen3-30b-a3b-fp8`. Model availability can change; inspect the current official pricing/model catalog before deploying.
 - Free tier currently grants 10,000 Workers AI neurons/day. On **Workers Free**, over-limit inference is rejected, not automatically billed. On **Workers Paid**, overages can be billed. **DO NOT UPGRADE TO PAID** to work around any limit.
 - This project has no paid OpenAI/Gemini/other LLM fallback, no auto-purchase, no remote GPU rental and no worker-side persistent storage.
 - Basic Worker code and Workers AI binding are built for the free tier, but this README cannot certify the account owner's actual plan/billing. Confirm it yourself in Cloudflare dashboard before first inference.
@@ -13,8 +13,18 @@
 
 Official references:
 - https://developers.cloudflare.com/workers-ai/platform/pricing/
-- https://developers.cloudflare.com/workers-ai/models/glm-4.7-flash/
+- https://developers.cloudflare.com/workers-ai/models/qwen3-30b-a3b-fp8/
 - https://developers.cloudflare.com/workers-ai/get-started/workers-wrangler/
+
+## Control ownership: open model vs our Jarvis system
+
+**Jarvis Core, not the language model, is the product.** We own and implement the NextPlan project authority, ChatGPT context consent bridge, source-attributed knowledge memory, deterministic skill registry, agent scheduler, tool permission gates, execution receipts, and UI.
+
+The language model provides **text understanding, conversation and structured action suggestions**. It is never allowed to turn a model suggestion into a privileged command without deterministic authorization and verification in our own service.
+
+The Qwen3-30B-A3B weights are distributed under **Apache-2.0**, making future self-hosted deployment possible on suitable user-owned hardware (subject to performance and capacity). In the initial zero-cost web-first setup, **Cloudflare owns and operates the model inference infrastructure**; we do not control their operational uptime, server security implementation, inference-side data processing or free-tier policy. No customer secrets, raw full conversations, or sensitive private material should be automatically sent.
+
+The currently delivered P4 gateway is a read-only conversational pilot: it does **not** implement autonomous voice, computer control, live ChatGPT memory access or the complete multi-step agent. Those are separate tracked milestones.
 
 ## Architecture
 
@@ -27,7 +37,7 @@ Cloudflare Worker: bearer secret + origin + size/policy gate
         |
         | env.AI.run() binding
         v
-@cf/zai-org/glm-4.7-flash, Workers AI free allocation
+@cf/qwen/qwen3-30b-a3b-fp8, Workers AI free allocation
         |
         v
 Grounded text-only response and source pointers to NextPlan

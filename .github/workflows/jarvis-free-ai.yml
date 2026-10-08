@@ -2,7 +2,7 @@ name: Jarvis P4 Free Cloudflare Worker
 
 on:
   push:
-    branches: [main, 'feature/jarvis-free-cloudflare-model-v1']
+    branches: [main, 'feature/jarvis-free-cloudflare-model-v1', 'feature/jarvis-open-qwen3-control-v1']
     paths:
       - 'cloudflare_jarvis_free/**'
       - '.github/workflows/jarvis-free-ai.yml'
@@ -36,7 +36,7 @@ jobs:
           config=Path('cloudflare_jarvis_free/wrangler.toml').read_text()
           source=Path('cloudflare_jarvis_free/src/worker.mjs').read_text()
           assert 'binding = "AI"' in config
-          assert '@cf/zai-org/glm-4.7-flash' in source
+          assert '@cf/qwen/qwen3-30b-a3b-fp8' in source
           assert 'env.AI.run(MODEL' in source
           assert 'api.openai.com' not in source
           assert 'Bearer sk-' not in source

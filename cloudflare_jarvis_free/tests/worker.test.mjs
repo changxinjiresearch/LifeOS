@@ -36,7 +36,7 @@ test("free model returns source-grounded read-only response", async()=>{
   const r=await worker.fetch(req(),e);
   assert.equal(r.status,200);
   const out=await r.json();
-  assert.equal(selected,"@cf/zai-org/glm-4.7-flash");
+  assert.equal(selected,"@cf/qwen/qwen3-30b-a3b-fp8");
   assert.ok(call.messages.length>=3);
   assert.equal(out.executed_actions,0);
   assert.equal(out.sources[0].source_ref,"manual://unit-test");

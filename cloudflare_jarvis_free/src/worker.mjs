@@ -3,7 +3,7 @@
  * Any Worker on a Paid plan may incur charges; deployment guide REQUIRES staying Free.
  * Never logs questions, sources, tokens, personal context or response bodies.
  */
-const MODEL = "@cf/zai-org/glm-4.7-flash";
+const MODEL = "@cf/qwen/qwen3-30b-a3b-fp8";
 const ALLOWED_ORIGIN = "https://changxinjiresearch.github.io";
 const MAX_BODY_BYTES = 16_384;
 const MAX_ITEMS = 8;
@@ -131,7 +131,7 @@ export default {
     messages.push({role:"user",content:body.question});
     try {
       const result=await env.AI.run(MODEL,{
-        messages, temperature:0.2, max_completion_tokens:512, stream:false
+        messages, temperature:0.2, max_tokens:512, stream:false
       });
       const answer=answerText(result).trim();
       if (!answer) return reply(502,{error:"model_empty_response"},origin);
