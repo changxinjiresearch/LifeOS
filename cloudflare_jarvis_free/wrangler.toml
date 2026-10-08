@@ -1,0 +1,12 @@
+name = "nextplan-jarvis-free"
+main = "src/worker.mjs"
+compatibility_date = "2026-09-20"
+workers_dev = true
+
+# Cloudflare Workers AI — do not use a paid model/provider.
+[ai]
+binding = "AI"
+
+# No paid account, usage-based model fallback, KV, R2 or database bindings.
+# Set the JARVIS_SHARED_TOKEN via "npx wrangler secret put JARVIS_SHARED_TOKEN"
+# and verify the Cloudflare account is on Workers FREE before deployment.
