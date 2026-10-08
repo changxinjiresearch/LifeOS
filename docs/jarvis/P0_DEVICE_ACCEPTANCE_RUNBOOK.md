@@ -1,4 +1,6 @@
-# P0 macOS / ChromeOS 真实设备验收手册（尚待执行）
+# macOS / ChromeOS 真实设备验收手册（用户延期，未来执行）
+
+**当前决议：** 用户采用 Web-first 范围关闭 P0；本文全部真机步骤标记 `DEFERRED / NOT TESTED`，并转由 [Issue #20](https://github.com/changxinjiresearch/LifeOS/issues/20) 跟踪。**此延期不表示 macOS/ChromeOS 功能已验收。**
 
 **日期：** 2026-10-09  
 **版本：** P0-v1  
