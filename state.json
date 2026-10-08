@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-10-08T01:13:40Z",
+    "last_updated": "2026-10-08T14:55:51Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -133,11 +133,14 @@
         "evt-20261006-automation-daily",
         "evt-20261007-automation-daily",
         "evt-20261007T230253Z-agent-github-head-066e8992",
-        "evt-20261008-automation-daily"
+        "evt-20261008-automation-daily",
+        "evt-20261008T145551Z-project-completed-neuri"
       ],
-      "processed_count": 101,
-      "last_build_at": "2026-10-08T13:23:09Z",
-      "last_applied": [],
+      "processed_count": 102,
+      "last_build_at": "2026-10-08T14:59:02Z",
+      "last_applied": [
+        "evt-20261008T145551Z-project-completed-neuri"
+      ],
       "status": "ready"
     }
   },
@@ -146,9 +149,9 @@
       "id": "research-neuri",
       "name": "Neuroscience Informatics 论文",
       "category": "科研",
-      "status": "waiting",
+      "status": "completed",
       "priority": 3,
-      "next_action": "等待编辑最终决定；收到决定后再处理接收、校样或下一轮意见。",
+      "next_action": "项目已完成",
       "milestones": [
         {
           "id": "draft",
@@ -624,6 +627,18 @@
     }
   ],
   "events": [
+    {
+      "id": "evt-20261008T145551Z-project-completed-neuri",
+      "at": "2026-10-08T14:55:51Z",
+      "project_id": "research-neuri",
+      "type": "project_status_changed",
+      "summary": "Completed project: Neuroscience Informatics 论文",
+      "source": {
+        "kind": "chatgpt",
+        "via": "explicit-user-command",
+        "command_time": "2026-10-08T14:55:51Z"
+      }
+    },
     {
       "id": "evt-20261008-automation-daily",
       "at": "2026-10-08T01:13:40Z",
