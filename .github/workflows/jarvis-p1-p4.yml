@@ -1,0 +1,50 @@
+name: NextPlan Jarvis P1-P4 Web Pilot
+
+on:
+  push:
+    branches: [main, 'feature/jarvis-p1-p4-web-first']
+    paths:
+      - 'mcp_server/jarvis_*'
+      - 'mcp_server/server_v13.py'
+      - 'tests/test_jarvis_p1_p4.py'
+      - 'tests/test_jarvis_p0_contracts.py'
+      - '.github/workflows/jarvis-p1-p4.yml'
+      - 'Dockerfile'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'mcp_server/jarvis_*'
+      - 'mcp_server/server_v13.py'
+      - 'tests/test_jarvis_p1_p4.py'
+      - 'tests/test_jarvis_p0_contracts.py'
+      - '.github/workflows/jarvis-p1-p4.yml'
+      - 'Dockerfile'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  p1-p4:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install runtime dependencies
+        run: python -m pip install -r mcp_server/requirements.txt
+      - name: Compile server and modules
+        run: python -m py_compile mcp_server/jarvis_p0_contracts.py mcp_server/jarvis_workspace_v1.py mcp_server/jarvis_brain_v1.py mcp_server/server_v13.py
+      - name: Run P0 and P1-P4 tests
+        run: python -m unittest discover -s tests -p 'test_jarvis*.py' -v
+      - name: Legacy NextPlan Phase A contract tests
+        run: python -m unittest tests.test_phase_a -v
+      - name: Verify fail-closed status when Jarvis is not provisioned
+        run: |
+          env -u NEXTPLAN_JARVIS_ENABLED -u NEXTPLAN_JARVIS_DB -u NEXTPLAN_JARVIS_TOKEN python - <<'PY'
+          from mcp_server import server_v13
+          assert not server_v13._configured()
+          print('Jarvis disabled without explicit private infrastructure PASS')
+          PY
