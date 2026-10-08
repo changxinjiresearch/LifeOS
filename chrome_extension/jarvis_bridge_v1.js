@@ -81,6 +81,25 @@ export async function bridgeRequest(message,sender,{storage,readCanonical,uuid})
     default: return {status:"rejected",reason:"unknown_message"};
   }
 }
+export function parseExplicitMemory(userText){
+  if(typeof userText!=="string")return null;
+  const match=userText.trim().match(/^(?:Jarvis[，,:：\s]*请?记住[：:\s]*|\/jarvis-remember\s+)([\s\S]{6,1200})$/i);
+  if(!match)return null;
+  return match[1].trim();
+}
+export async function captureExplicitChatGPTMemory(turn,sender,{storage,uuid}){
+  const pageUrl=String(sender?.url||"");
+  if(!pageUrl.startsWith("https://chatgpt.com/"))return {status:"rejected",reason:"chatgpt_only"};
+  const summary=parseExplicitMemory(turn?.userText);
+  if(!summary)return {status:"ignored"};
+  const item=captureItem(summary,turn?.url||pageUrl,"capture-"+uuid());
+  item.source_kind="chatgpt_explicit_user_intent";
+  const old=(await storage.get({jarvisContextCaptures:[]})).jarvisContextCaptures;
+  if(old.some(x=>x.source_ref===item.source_ref&&x.summary===item.summary))
+    return {status:"already_queued"};
+  await storage.set({jarvisContextCaptures:[...old,item].slice(-MAX_PENDING)});
+  return {status:"queued_for_review",id:item.id};
+}
 export async function captureSelection(info,tab,{storage,uuid}){
   if(info?.menuItemId!=="jarvis-capture-context")return {status:"ignored"};
   const item=captureItem(info.selectionText,info.pageUrl||tab?.url,"capture-"+uuid());
