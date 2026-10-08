@@ -108,7 +108,7 @@
 
     // Explicit user intent only. Stores an unconfirmed, short summary in the
     // extension's review inbox; no automatic Jarvis private memory writes.
-    if (/^(?:Jarvis[，,:：\\s]*请?记住[：:\\s]*|\\/jarvis-remember\\s+)/i.test(userText)) {
+    if (/^(?:Jarvis[，,:：\s]*请?记住[：:\s]*|\/jarvis-remember\s+)/i.test(userText)) {
       chrome.runtime.sendMessage({
         type:"NEXTPLAN_JARVIS_EXPLICIT_MEMORY",
         turn:{userText:userText.slice(0,1600),url:location.href}
