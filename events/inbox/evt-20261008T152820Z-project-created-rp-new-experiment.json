@@ -1,0 +1,69 @@
+{
+  "id": "evt-20261008T152820Z-project-created-rp-new-experiment",
+  "at": "2026-10-08T15:28:20Z",
+  "type": "project_created",
+  "project_id": "research-rp-new-experiment",
+  "project": {
+    "id": "research-rp-new-experiment",
+    "name": "RP新实验",
+    "category": "科研",
+    "status": "active",
+    "priority": 3,
+    "description": "新论文创新点中正在推进的 glioma MRI XAI 证据依赖/解释稳定性与解剖及病理一致性审计实验。研究 BraTS 2020 主队列与 UCSF-PDGM 独立验证；采用 RCES、RWSM、病理归因比例、DPD 干预及 2×2 正则化设计。科研资产以 glioma-xai-evidence GitHub 仓库为唯一权威位置。",
+    "repository": "https://github.com/changxinjiresearch/glioma-xai-evidence",
+    "current_phase": "P4 Regularisation Qualification — P4Q04 COMPLETED; P4Q05 REGISTERED_BEFORE_EXECUTION (截至最新 GitHub 登记)",
+    "next_action": "核对 P4Q05 预注册与 verify-only 状态，按冻结协议推进 P4 候选运行；全部配置、代码、检查点、QA、日志及结果持久化至 glioma-xai-evidence GitHub，不提前使用 internal test / UCSF。",
+    "milestones": [
+      {
+        "id": "p0",
+        "name": "P0 研究方案与审计协议冻结",
+        "status": "completed"
+      },
+      {
+        "id": "p1",
+        "name": "P1 BraTS 数据审计、分割与资格锁定",
+        "status": "completed"
+      },
+      {
+        "id": "p2",
+        "name": "P2 RCES/RWSM/DPD 表征与指标资格审计",
+        "status": "completed"
+      },
+      {
+        "id": "p3",
+        "name": "P3 基线实现与匹配对照可行性诊断（保留未解决的资格限制）",
+        "status": "completed"
+      },
+      {
+        "id": "p4",
+        "name": "P4 正则化候选训练及资格评估（P4Q04 已完成；P4Q05 已注册）",
+        "status": "active"
+      },
+      {
+        "id": "p5",
+        "name": "P5 锁定内部测试集评估（仅在前置门槛满足后）",
+        "status": "planned"
+      },
+      {
+        "id": "p6",
+        "name": "P6 UCSF-PDGM 独立外部复现",
+        "status": "planned"
+      },
+      {
+        "id": "p7",
+        "name": "P7 证据依赖审计与预注册统计分析",
+        "status": "planned"
+      },
+      {
+        "id": "p8",
+        "name": "P8 论文写作、审计与投稿",
+        "status": "planned"
+      }
+    ]
+  },
+  "summary": "Create RP新实验 from 新论文创新点: ongoing glioma XAI evidence qualification at P4; original GitHub artifacts authoritative",
+  "source": {
+    "kind": "chatgpt",
+    "via": "explicit-user-request"
+  }
+}
