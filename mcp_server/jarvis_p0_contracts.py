@@ -16,9 +16,9 @@ VALID_SOURCES = frozenset({"chatgpt_user_turn", "jarvis_verified_receipt", "manu
 PRIVATE_STORAGE = frozenset({"local_encrypted", "private_authenticated_service"})
 SECRET_PATTERN = re.compile(
     r"(?:-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|"
-    r"\\bBearer\\s+[A-Za-z0-9_.~+/-]{8,}|"
-    r"\\b(?:sk-[A-Za-z0-9_-]{12,}|gh[pousr]_[A-Za-z0-9_]{12,})|"
-    r"\\b(?:api[_-]?key|access[_-]?token|password|secret)\\s*[:=]\\s*[^\\s,;]{6,})",
+    r"\bBearer\s+[A-Za-z0-9_.~+/-]{8,}|"
+    r"\b(?:sk-[A-Za-z0-9_-]{12,}|gh[pousr]_[A-Za-z0-9_]{12,})|"
+    r"\b(?:api[_-]?key|access[_-]?token|password|secret)\s*[:=]\s*[^\s,;]{6,})",
     re.IGNORECASE,
 )
 
