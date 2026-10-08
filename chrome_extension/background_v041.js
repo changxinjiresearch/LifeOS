@@ -1,4 +1,4 @@
-import {bridgeRequest,captureSelection} from "./jarvis_bridge_v1.js";
+import {bridgeRequest,captureSelection,captureExplicitChatGPTMemory} from "./jarvis_bridge_v1.js";
 
 const DEFAULT_ENDPOINT = "https://lifeos-production-89ce.up.railway.app";
 const DEFAULTS = { endpoint: DEFAULT_ENDPOINT, token: "", autoSync: true, autoThreshold: 0.88 };
@@ -202,6 +202,12 @@ chrome.contextMenus.onClicked.addListener((info,tab)=>{
 });
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if(message?.type==="NEXTPLAN_JARVIS_EXPLICIT_MEMORY"){
+    captureExplicitChatGPTMemory(message.turn,_sender,{storage:chrome.storage.local,
+      uuid:()=>crypto.randomUUID()})
+      .then(sendResponse).catch(err=>sendResponse({status:"error",reason:String(err.message).slice(0,100)}));
+    return true;
+  }
   if(message?.type?.startsWith("NEXTPLAN_JARVIS_")){
     bridgeRequest(message,_sender,{storage:chrome.storage.local,
       readCanonical:()=>api("/extension/state"),uuid:()=>crypto.randomUUID()})
