@@ -36,7 +36,7 @@ jobs:
           config=Path('cloudflare_jarvis_free/wrangler.toml').read_text()
           source=Path('cloudflare_jarvis_free/src/worker.mjs').read_text()
           assert 'binding = "AI"' in config
-          assert '@cf/zai-org/glm-4.7-flash' in source
+          assert '@cf/qwen/qwen3-30b-a3b-fp8' in source
           assert 'env.AI.run(MODEL' in source
           assert 'api.openai.com' not in source
           assert 'Bearer sk-' not in source
