@@ -1,3 +1,5 @@
+import {bridgeRequest,captureSelection,captureExplicitChatGPTMemory} from "./jarvis_bridge_v1.js";
+
 const DEFAULT_ENDPOINT = "https://lifeos-production-89ce.up.railway.app";
 const DEFAULTS = { endpoint: DEFAULT_ENDPOINT, token: "", autoSync: true, autoThreshold: 0.88 };
 const PROCESSING_GENERATION = "v0.5.0-cloud-bridge";
@@ -58,10 +60,43 @@ async function enqueue(candidate, turn) {
 
 async function applyCandidate(candidate) {
   if (!candidate?.action) throw new Error("Candidate has no writable action");
-  const result = await api("/extension/action", {
-    method: "POST",
-    body: JSON.stringify(candidate.action)
-  });
+  if(candidate.jarvisProposal)candidate.action.operation_id??=candidate.id;
+  let result={status:"pending_verification"};
+  if(!candidate.jarvisProposal || !candidate.submitted){
+    result=await api("/extension/action", {
+      method:"POST",body:JSON.stringify(candidate.action)
+    });
+    if(candidate.jarvisProposal){
+      // Durable checkpoint BEFORE returning; no re-submit while awaiting builder.
+      candidate.submitted=true;
+      candidate.submitted_at=new Date().toISOString();
+      const queued=await getPending();
+      await setPending(queued.map(x=>x.id===candidate.id?candidate:x));
+    }
+  }
+  if(candidate.jarvisProposal){
+    // A GitHub event accepted for processing is NOT verified canonical state.
+    let verified=false;
+    for(let attempt=0;attempt<4;attempt++){
+      try{
+        const state=await api("/extension/state");
+        const current=(state.projects||[]).find(p=>p.id===candidate.verification.project_id);
+        if(current&&current[candidate.verification.field]===candidate.verification.value){
+          verified=true;break;
+        }
+      }catch(_){/* retry reads without replaying writes */}
+      if(attempt<3)await new Promise(resolve=>setTimeout(resolve,900));
+    }
+    if(!verified){
+      return {status:"verification_pending",operation_id:candidate.action.operation_id,
+        message:"Write submitted, but canonical state has NOT yet been verified. Keep pending."};
+    }
+    await setPending((await getPending()).filter(x=>x.id!==candidate.id));
+    await chrome.storage.local.set({lastSync:{at:new Date().toISOString(),label:candidate.label,result:"verified"}});
+    return {status:"verified",operation_id:candidate.action.operation_id,
+      project_id:candidate.verification.project_id,
+      field:candidate.verification.field,value:candidate.verification.value};
+  }
   await setPending((await getPending()).filter(x => x.id !== candidate.id));
   await chrome.storage.local.set({
     lastSync: {at: new Date().toISOString(), label: candidate.label, result: result.status || "ok"}
@@ -150,6 +185,10 @@ async function injectIntoOpenChatGPTTabs() {
 }
 
 chrome.runtime.onInstalled.addListener(async () => {
+  try{
+    chrome.contextMenus.create({id:"jarvis-capture-context",title:"发送选中文本到 Jarvis 待确认知识",
+      contexts:["selection"],documentUrlPatterns:["https://chatgpt.com/*"]});
+  }catch(_){/* creation may already exist on extension reload */}
   const current = await chrome.storage.local.get(Object.keys(DEFAULTS));
   await chrome.storage.local.set({...DEFAULTS, ...current});
   await setPending(await getPending());
@@ -157,8 +196,24 @@ chrome.runtime.onInstalled.addListener(async () => {
 });
 
 chrome.runtime.onStartup.addListener(() => { injectIntoOpenChatGPTTabs(); });
+chrome.contextMenus.onClicked.addListener((info,tab)=>{
+  captureSelection(info,tab,{storage:chrome.storage.local,uuid:()=>crypto.randomUUID()})
+    .catch(()=>{/* intentionally no raw selected text in logs */});
+});
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if(message?.type==="NEXTPLAN_JARVIS_EXPLICIT_MEMORY"){
+    captureExplicitChatGPTMemory(message.turn,_sender,{storage:chrome.storage.local,
+      uuid:()=>crypto.randomUUID()})
+      .then(sendResponse).catch(err=>sendResponse({status:"error",reason:String(err.message).slice(0,100)}));
+    return true;
+  }
+  if(message?.type?.startsWith("NEXTPLAN_JARVIS_")){
+    bridgeRequest(message,_sender,{storage:chrome.storage.local,
+      readCanonical:()=>api("/extension/state"),uuid:()=>crypto.randomUUID()})
+      .then(sendResponse).catch(err=>sendResponse({status:"error",reason:String(err.message).slice(0,180)}));
+    return true;
+  }
   if (message?.type === "NEXTPLAN_TURN") {
     handleTurn(message.turn).then(sendResponse).catch(err => sendResponse({status: "error", error: err.message}));
     return true;

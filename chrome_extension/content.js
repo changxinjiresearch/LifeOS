@@ -106,6 +106,18 @@
     seen.add(fingerprint);
     if (seen.size > 100) seen.delete(seen.values().next().value);
 
+    // Explicit user intent only. Stores an unconfirmed, short summary in the
+    // extension's review inbox; no automatic Jarvis private memory writes.
+    if (/^(?:Jarvis[，,:：\s]*请?记住[：:\s]*|\/jarvis-remember\s+)/i.test(userText)) {
+      chrome.runtime.sendMessage({
+        type:"NEXTPLAN_JARVIS_EXPLICIT_MEMORY",
+        turn:{userText:userText.slice(0,1600),url:location.href}
+      }).then(result=>{
+        if(result?.status==="queued_for_review")
+          showToast("Jarvis · 已识别明确记忆指令，待你在 NextPlan 审核后保存","info",6200);
+      }).catch(()=>{});
+    }
+
     chrome.runtime.sendMessage({
       type: "NEXTPLAN_TURN",
       turn: {

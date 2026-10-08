@@ -1,15 +1,17 @@
 {
   "manifest_version": 3,
   "name": "NextPlan Sync",
-  "version": "0.5.0",
-  "description": "Thin ChatGPT-to-NextPlan bridge. Parsing and decision logic run in the NextPlan cloud backend.",
+  "version": "0.6.0",
+  "description": "NextPlan Sync + opt-in Jarvis project action review and user-selected ChatGPT context bridge.",
   "permissions": [
     "storage",
-    "scripting"
+    "scripting",
+    "contextMenus"
   ],
   "host_permissions": [
     "https://chatgpt.com/*",
-    "https://lifeos-production-89ce.up.railway.app/*"
+    "https://lifeos-production-89ce.up.railway.app/*",
+    "https://changxinjiresearch.github.io/*"
   ],
   "background": {
     "service_worker": "background_v041.js",
@@ -22,6 +24,15 @@
       ],
       "js": [
         "content.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://changxinjiresearch.github.io/LifeOS-App/jarvis.html"
+      ],
+      "js": [
+        "jarvis_page_bridge.js"
       ],
       "run_at": "document_idle"
     }

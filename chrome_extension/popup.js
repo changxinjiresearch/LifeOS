@@ -75,6 +75,13 @@ list.addEventListener("click", async e => {
       const res = await chrome.runtime.sendMessage({type:"NEXTPLAN_APPLY", id});
       if (res?.status === "error") throw new Error(res.error || "同步失败");
 
+      if(res?.status==="verification_pending"){
+        btn.textContent="等待核验 · 点击重查";
+        feedback.textContent="已提交写入，但 NextPlan 正式状态尚未核验成功。该操作仍保留在待确认队列，不会重复提交。";
+        feedback.className="inline-status";
+        setBusy(card,false);
+        return;
+      }
       btn.textContent = destructive ? "✓ 已删除" : "✓ 已同步";
       feedback.textContent = res?.status === "accepted_pending_builder"
         ? (destructive ? "删除已提交，中央状态正在更新。" : "已提交，中央状态正在更新。")

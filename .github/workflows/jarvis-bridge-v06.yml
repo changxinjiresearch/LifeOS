@@ -1,0 +1,64 @@
+name: Jarvis Canonical Bridge v0.6
+
+on:
+  push:
+    branches: [main, 'feature/jarvis-action-context-voice-v1']
+    paths:
+      - 'chrome_extension/jarvis_*.js'
+      - 'chrome_extension/background_v041.js'
+      - 'chrome_extension/popup.js'
+      - 'chrome_extension/manifest.json'
+      - 'chrome_extension/tests/**'
+      - '.github/workflows/jarvis-bridge-v06.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'chrome_extension/jarvis_*.js'
+      - 'chrome_extension/background_v041.js'
+      - 'chrome_extension/popup.js'
+      - 'chrome_extension/manifest.json'
+      - 'chrome_extension/tests/**'
+      - '.github/workflows/jarvis-bridge-v06.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  extension-bridge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Parse scripts
+        run: |
+          node --check chrome_extension/background_v041.js
+          node --check chrome_extension/jarvis_bridge_v1.js
+          node --check chrome_extension/jarvis_page_bridge.js
+          node --check chrome_extension/popup.js
+      - name: User consent, sender origin, state compare-and-swap tests
+        run: node --test chrome_extension/tests/jarvis_bridge.test.mjs
+      - name: Verify MV3 extension manifest safe integration
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          manifest=json.loads(Path('chrome_extension/manifest.json').read_text())
+          assert manifest['manifest_version']==3
+          assert manifest['background']['service_worker']=='background_v041.js'
+          assert 'contextMenus' in manifest['permissions']
+          assert 'https://chatgpt.com/*' in manifest['host_permissions']
+          assert any('jarvis_page_bridge.js' in c['js'] for c in manifest['content_scripts'])
+          assert 'jarvis_bridge_v1.js' in Path('chrome_extension/background_v041.js').read_text()
+          print("Jarvis extension provenance, confirmation queue and Chrome MV3 PASS")
+          PY
+      - name: Package installable MV3 NextPlan Sync v0.6
+        uses: actions/upload-artifact@v4
+        with:
+          name: nextplan-sync-v0.6-unpacked
+          path: chrome_extension/
+          retention-days: 30
+
