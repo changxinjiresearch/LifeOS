@@ -61,10 +61,19 @@ async function enqueue(candidate, turn) {
 async function applyCandidate(candidate) {
   if (!candidate?.action) throw new Error("Candidate has no writable action");
   if(candidate.jarvisProposal)candidate.action.operation_id??=candidate.id;
-  const result = await api("/extension/action", {
-    method: "POST",
-    body: JSON.stringify(candidate.action)
-  });
+  let result={status:"pending_verification"};
+  if(!candidate.jarvisProposal || !candidate.submitted){
+    result=await api("/extension/action", {
+      method:"POST",body:JSON.stringify(candidate.action)
+    });
+    if(candidate.jarvisProposal){
+      // Durable checkpoint BEFORE returning; no re-submit while awaiting builder.
+      candidate.submitted=true;
+      candidate.submitted_at=new Date().toISOString();
+      const queued=await getPending();
+      await setPending(queued.map(x=>x.id===candidate.id?candidate:x));
+    }
+  }
   if(candidate.jarvisProposal){
     // A GitHub event accepted for processing is NOT verified canonical state.
     let verified=false;
