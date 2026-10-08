@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-10-08T15:28:20Z",
+    "last_updated": "2026-10-08T15:29:57Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -137,12 +137,13 @@
         "evt-20261008T145551Z-project-completed-internship",
         "evt-20261008T145551Z-project-completed-neuri",
         "evt-20261008T145551Z-project-completed-presentation",
-        "evt-20261008T152820Z-project-created-rp-new-experiment"
+        "evt-20261008T152820Z-project-created-rp-new-experiment",
+        "evt-20261008T152957Z-project-deleted-pcc-v2-r2"
       ],
-      "processed_count": 105,
-      "last_build_at": "2026-10-08T15:29:01Z",
+      "processed_count": 106,
+      "last_build_at": "2026-10-08T15:31:11Z",
       "last_applied": [
-        "evt-20261008T152820Z-project-created-rp-new-experiment"
+        "evt-20261008T152957Z-project-deleted-pcc-v2-r2"
       ],
       "status": "ready"
     }
@@ -224,56 +225,6 @@
         {
           "id": "final",
           "name": "最终投稿结果",
-          "status": "planned"
-        }
-      ]
-    },
-    {
-      "id": "research-pcc-v2",
-      "name": "PCC v2-R2",
-      "category": "科研",
-      "status": "active",
-      "priority": 3,
-      "next_action": "R4 — Main Training，执行五主种子的正式主训练",
-      "milestones": [
-        {
-          "id": "p1",
-          "name": "P1.1 科学协议冻结",
-          "status": "completed"
-        },
-        {
-          "id": "r0",
-          "name": "R0 Authority / inheritance",
-          "status": "completed"
-        },
-        {
-          "id": "r1",
-          "name": "R1 数据资格与锁定",
-          "status": "completed"
-        },
-        {
-          "id": "r2",
-          "name": "R2 核心训练执行",
-          "status": "completed"
-        },
-        {
-          "id": "external",
-          "name": "独立外部验证",
-          "status": "planned"
-        },
-        {
-          "id": "path",
-          "name": "组织病理验证",
-          "status": "planned"
-        },
-        {
-          "id": "function",
-          "name": "功能使用实验",
-          "status": "planned"
-        },
-        {
-          "id": "paper",
-          "name": "论文写作与投稿",
           "status": "planned"
         }
       ]
@@ -688,6 +639,18 @@
     }
   ],
   "events": [
+    {
+      "id": "evt-20261008T152957Z-project-deleted-pcc-v2-r2",
+      "at": "2026-10-08T15:29:57Z",
+      "project_id": "research-pcc-v2",
+      "type": "project_deleted",
+      "summary": "Permanently delete PCC v2-R2 project and its eight associated milestones from NextPlan, as explicitly confirmed by the user",
+      "source": {
+        "kind": "chatgpt",
+        "via": "explicit_user_confirmation",
+        "confirmed_at": "2026-10-08T15:29:57Z"
+      }
+    },
     {
       "id": "evt-20261008T152820Z-project-created-rp-new-experiment",
       "at": "2026-10-08T15:28:20Z",
