@@ -1,3 +1,5 @@
+import {bridgeRequest,captureSelection} from "./jarvis_bridge_v1.js";
+
 const DEFAULT_ENDPOINT = "https://lifeos-production-89ce.up.railway.app";
 const DEFAULTS = { endpoint: DEFAULT_ENDPOINT, token: "", autoSync: true, autoThreshold: 0.88 };
 const PROCESSING_GENERATION = "v0.5.0-cloud-bridge";
@@ -150,6 +152,10 @@ async function injectIntoOpenChatGPTTabs() {
 }
 
 chrome.runtime.onInstalled.addListener(async () => {
+  try{
+    chrome.contextMenus.create({id:"jarvis-capture-context",title:"发送选中文本到 Jarvis 待确认知识",
+      contexts:["selection"],documentUrlPatterns:["https://chatgpt.com/*"]});
+  }catch(_){/* creation may already exist on extension reload */}
   const current = await chrome.storage.local.get(Object.keys(DEFAULTS));
   await chrome.storage.local.set({...DEFAULTS, ...current});
   await setPending(await getPending());
@@ -157,8 +163,18 @@ chrome.runtime.onInstalled.addListener(async () => {
 });
 
 chrome.runtime.onStartup.addListener(() => { injectIntoOpenChatGPTTabs(); });
+chrome.contextMenus.onClicked.addListener((info,tab)=>{
+  captureSelection(info,tab,{storage:chrome.storage.local,uuid:()=>crypto.randomUUID()})
+    .catch(()=>{/* intentionally no raw selected text in logs */});
+});
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if(message?.type?.startsWith("NEXTPLAN_JARVIS_")){
+    bridgeRequest(message,_sender,{storage:chrome.storage.local,
+      readCanonical:()=>api("/extension/state"),uuid:()=>crypto.randomUUID()})
+      .then(sendResponse).catch(err=>sendResponse({status:"error",reason:String(err.message).slice(0,180)}));
+    return true;
+  }
   if (message?.type === "NEXTPLAN_TURN") {
     handleTurn(message.turn).then(sendResponse).catch(err => sendResponse({status: "error", error: err.message}));
     return true;
