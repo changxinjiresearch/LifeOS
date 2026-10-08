@@ -28,24 +28,29 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Build canonical state from unprocessed events
-        run: python3 engine/build_state_v3.py
-
-      - name: Commit state if changed
+      - name: Rebuild canonical state with safe conflict recovery
         shell: bash
         run: |
-          if git diff --quiet -- state.json; then
-            echo 'No state change.'
-            exit 0
-          fi
+          set -euo pipefail
           git config user.name 'nextplan-state-bot'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add state.json
-          git commit -m 'Build NextPlan state from conversation events'
-
-          for attempt in 1 2 3; do
-            git pull --rebase origin main && git push origin HEAD:main && exit 0
-            echo "Push attempt ${attempt} failed; retrying..."
+          for attempt in 1 2 3 4 5; do
+            echo "State build attempt ${attempt}"
+            git fetch origin main
+            git reset --hard origin/main
+            python3 engine/build_state_v3.py
+            if git diff --quiet -- state.json; then
+              echo 'Canonical state already current.'
+              exit 0
+            fi
+            git add state.json
+            git commit -m 'Build NextPlan state from conversation events'
+            if git push origin HEAD:main; then
+              echo 'Canonical state published.'
+              exit 0
+            fi
+            echo 'Concurrent write detected; rebuilding from the latest main instead of rebasing state.json.'
             sleep 2
           done
+          echo 'Failed to publish canonical state after five clean retries.' >&2
           exit 1
