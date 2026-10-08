@@ -1,0 +1,12 @@
+{
+  "id": "evt-20261008T152957Z-project-deleted-pcc-v2-r2",
+  "at": "2026-10-08T15:29:57Z",
+  "type": "project_deleted",
+  "project_id": "research-pcc-v2",
+  "summary": "Permanently delete PCC v2-R2 project and its eight associated milestones from NextPlan, as explicitly confirmed by the user",
+  "source": {
+    "kind": "chatgpt",
+    "via": "explicit_user_confirmation",
+    "confirmed_at": "2026-10-08T15:29:57Z"
+  }
+}
