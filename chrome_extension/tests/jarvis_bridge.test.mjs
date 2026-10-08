@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {safeProposal,validJarvisSender,captureItem,bridgeRequest,captureSelection} from "../jarvis_bridge_v1.js";
+import {safeProposal,validJarvisSender,captureItem,bridgeRequest,captureSelection,parseExplicitMemory,captureExplicitChatGPTMemory} from "../jarvis_bridge_v1.js";
 
 const project={id:"p-001",name:"Research",status:"active",next_action:"Old action"};
 const sender={url:"https://changxinjiresearch.github.io/LifeOS-App/jarvis.html"};
@@ -71,4 +71,22 @@ test("untrusted website cannot request sensitive context",async()=>{
     {url:"https://attacker.invalid/x"},
     {storage:storage(),readCanonical:async()=>({}),uuid:()=>""});
   assert.equal(result.status,"rejected");
+});
+
+test("explicit Jarvis memory only queues user-authorized text and remains unconfirmed",async()=>{
+  assert.equal(parseExplicitMemory("Jarvis，记住：研究结果必须入 GitHub"),"研究结果必须入 GitHub");
+  assert.equal(parseExplicitMemory("请解释 GitHub 的作用"),null);
+  const store=storage();
+  const turn={userText:"Jarvis，记住：实验结果必须放在 GitHub 正式仓库里",url:"https://chatgpt.com/c/one"};
+  const result=await captureExplicitChatGPTMemory(turn,{url:"https://chatgpt.com/c/one"},{
+    storage:store,uuid:()=>"test-uuid"});
+  assert.equal(result.status,"queued_for_review");
+  assert.equal(store.db.jarvisContextCaptures.length,1);
+  assert.equal(store.db.jarvisContextCaptures[0].epistemic_status,"unconfirmed");
+  const dup=await captureExplicitChatGPTMemory(turn,{url:"https://chatgpt.com/c/one"},{
+    storage:store,uuid:()=>"test-uuid"});
+  assert.equal(dup.status,"already_queued");
+  const denied=await captureExplicitChatGPTMemory(turn,{url:"https://evil.invalid/c/one"},{
+    storage:store,uuid:()=>"test-uuid"});
+  assert.equal(denied.status,"rejected");
 });
