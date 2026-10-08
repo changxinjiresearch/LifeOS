@@ -5,7 +5,7 @@
 ## Hard cost constraint
 
 - Use **Cloudflare Workers Free** and **Workers AI Free allocation only**.
-- Source hardcodes the Cloudflare free-eligible `@cf/zai-org/glm-4.7-flash` candidate. Model availability can change; inspect the current official pricing/model catalog before deploying.
+- Source hardcodes the open-weights Apache-2.0 Qwen3-30B-A3B-FP8 Cloudflare-hosted model (subject to model availability and Workers Free plan eligibility): `@cf/qwen/qwen3-30b-a3b-fp8` candidate. Model availability can change; inspect the current official pricing/model catalog before deploying.
 - Free tier currently grants 10,000 Workers AI neurons/day. On **Workers Free**, over-limit inference is rejected, not automatically billed. On **Workers Paid**, overages can be billed. **DO NOT UPGRADE TO PAID** to work around any limit.
 - This project has no paid OpenAI/Gemini/other LLM fallback, no auto-purchase, no remote GPU rental and no worker-side persistent storage.
 - Basic Worker code and Workers AI binding are built for the free tier, but this README cannot certify the account owner's actual plan/billing. Confirm it yourself in Cloudflare dashboard before first inference.
@@ -13,7 +13,7 @@
 
 Official references:
 - https://developers.cloudflare.com/workers-ai/platform/pricing/
-- https://developers.cloudflare.com/workers-ai/models/glm-4.7-flash/
+- https://developers.cloudflare.com/workers-ai/models/qwen3-30b-a3b-fp8/
 - https://developers.cloudflare.com/workers-ai/get-started/workers-wrangler/
 
 ## Architecture
@@ -27,7 +27,7 @@ Cloudflare Worker: bearer secret + origin + size/policy gate
         |
         | env.AI.run() binding
         v
-@cf/zai-org/glm-4.7-flash, Workers AI free allocation
+@cf/qwen/qwen3-30b-a3b-fp8, Workers AI free allocation
         |
         v
 Grounded text-only response and source pointers to NextPlan
