@@ -121,10 +121,10 @@ def build_context_candidate(
             raise JarvisContractError("verified receipt is required")
         # 'accepted', 'started' and 'executed' are NOT proof of completion.
         verification = verified_receipt.get("verification")
-        if verified_receipt.get("status") != "verified" or (
-            isinstance(verification, Mapping) and verification.get("status") not in {"verified", "passed"}
+        if verified_receipt.get("status") != "verified" or not isinstance(verification, Mapping) or (
+            verification.get("status") not in {"verified", "passed"}
         ):
-            raise JarvisContractError("unverified tool execution cannot become confirmed context")
+            raise JarvisContractError("verified receipt and postcondition are both required")
     cleaned = _text(summary, "summary", 2000)
     pointer = _text(source_ref, "source_ref", 1024)
     project = _text(project_id, "project_id", 256)
@@ -141,6 +141,11 @@ def build_context_candidate(
         "summary": cleaned,
         "source": {"kind": source_kind, "ref": pointer},
         "confirmed": bool(confirmed_by_user or source_kind == "jarvis_verified_receipt"),
+        "epistemic_status": (
+            "reported_hypothesis" if context_type == "hypothesis"
+            else "provider_verified" if source_kind == "jarvis_verified_receipt"
+            else "user_confirmed"
+        ),
         "privacy": "private",
         "storage_status": "not_persisted",
         "fingerprint": fingerprint,
@@ -153,8 +158,8 @@ def check_storage_policy(record: Mapping[str, Any], *, destination: str) -> dict
         raise JarvisContractError("unsupported or unclassified Jarvis data")
     if destination not in PRIVATE_STORAGE:
         raise JarvisContractError("private Jarvis context cannot be saved to this destination")
-    if record.get("storage_status") != "not_persisted":
-        raise JarvisContractError("record requires original capture provenance")
+    if record.get("storage_status") != "not_persisted" or record.get("confirmed") is not True:
+        raise JarvisContractError("record requires confirmed provenance and an original candidate")
     for field in ("summary", "project_id"):
         _text(record.get(field), field)
     source = record.get("source")
