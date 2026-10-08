@@ -60,10 +60,34 @@ async function enqueue(candidate, turn) {
 
 async function applyCandidate(candidate) {
   if (!candidate?.action) throw new Error("Candidate has no writable action");
+  if(candidate.jarvisProposal)candidate.action.operation_id??=candidate.id;
   const result = await api("/extension/action", {
     method: "POST",
     body: JSON.stringify(candidate.action)
   });
+  if(candidate.jarvisProposal){
+    // A GitHub event accepted for processing is NOT verified canonical state.
+    let verified=false;
+    for(let attempt=0;attempt<4;attempt++){
+      try{
+        const state=await api("/extension/state");
+        const current=(state.projects||[]).find(p=>p.id===candidate.verification.project_id);
+        if(current&&current[candidate.verification.field]===candidate.verification.value){
+          verified=true;break;
+        }
+      }catch(_){/* retry reads without replaying writes */}
+      if(attempt<3)await new Promise(resolve=>setTimeout(resolve,900));
+    }
+    if(!verified){
+      return {status:"verification_pending",operation_id:candidate.action.operation_id,
+        message:"Write submitted, but canonical state has NOT yet been verified. Keep pending."};
+    }
+    await setPending((await getPending()).filter(x=>x.id!==candidate.id));
+    await chrome.storage.local.set({lastSync:{at:new Date().toISOString(),label:candidate.label,result:"verified"}});
+    return {status:"verified",operation_id:candidate.action.operation_id,
+      project_id:candidate.verification.project_id,
+      field:candidate.verification.field,value:candidate.verification.value};
+  }
   await setPending((await getPending()).filter(x => x.id !== candidate.id));
   await chrome.storage.local.set({
     lastSync: {at: new Date().toISOString(), label: candidate.label, result: result.status || "ok"}
