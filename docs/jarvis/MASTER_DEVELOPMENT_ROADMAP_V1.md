@@ -1,7 +1,7 @@
 # NextPlan × J.A.R.V.I.S. — Master Development Roadmap v1.0
 
 **Date:** 2026-10-09  
-**Status:** DESIGN APPROVED AS ROADMAP DRAFT; PHASE P0 UNDER WAY; NOT AN IMPLEMENTATION OR ACCEPTANCE CLAIM  
+**Status:** MASTER ROADMAP ACTIVE; P0 CLOSED IN WEB-FIRST SCOPE (2026-10-09); P1 NEXT; NOT A CLAIM THAT JARVIS IS DEPLOYED  
 **Target platforms:** macOS (Apple Silicon and Intel), ChromeOS (Web/PWA + Chrome Extension)  
 **Code owners:** existing LifeOS backend + LifeOS-App single UI authority  
 **Core requirement:** ChatGPT continues to be the main work environment; NextPlan supplies consistent factual state; Jarvis supplies voice, intelligence, execution, perception and proactive assistance. There is no independent third NextPlan/Jarvis product.
@@ -237,12 +237,21 @@ No-cost API strategy: retain usable local model route and deterministic automati
 7. Risks from interpreting untrusted web content as commands.
 8. Signing/notarization/distribution and privacy policies for public release.
 
+## P0 closure / Web-first scope revision (2026-10-09)
+
+The user chose to close P0 as a **web-first architecture and contract baseline**, deferring physical macOS/ChromeOS acceptance and remediation of existing public `state.json`. These remain **unverified/unresolved**, not passed.
+
+- P0 outputs: capability audit, ADR-001 canonical sync design, ADR-002 authorized ChatGPT/Jarvis context design, pure safety/consent/revision contracts, 21 successful unit tests, macOS/ChromeOS runbook and closeout record.
+- Deferred public-state risk: [Issue #19](https://github.com/changxinjiresearch/LifeOS/issues/19). New private Jarvis data must **never** flow into public GitHub as a shortcut.
+- Deferred macOS/ChromeOS real-device tests: [Issue #20](https://github.com/changxinjiresearch/LifeOS/issues/20).
+- Actual authenticated, protected state synchronization and migration remain P1 deliverables; actual context-bridge ingestion/retrieval remain P2 deliverables.
+
 ## Immediate next actions
 
-- P0-B: select authoritative sync topology and migration plan.
-- P0-C: private data boundary and clean-up strategy for any exposed metadata.
-- P0-G: precise ChatGPT extraction, NextPlan Knowledge record schema, export/retrieve/handoff protocol.
-- P0-D/E: collect Mac and Chromebook hardware/version and real acceptance results.
-- Do not begin voice or auto-control before critical authority and privacy gates have passed.
+- **P1:** design and implement Web-first canonical state service with verified writes, conflict/receipt semantics, private storage and migration safeguards.
+- **P2:** implement consent-based ChatGPT context extraction, private knowledge store and Jarvis/ChatGPT handoff.
+- **Before device release:** execute the deferred Mac and ChromeOS hardware acceptance playbook.
+- **Before any private data ingestion:** verify protected storage and authorization regardless of deferred legacy cleanup.
+- Continue using the existing NextPlan Web UI without claiming Jarvis autonomous OS control exists.
 
-**Scope:** planning/documentation only. No existing project/task status is modified by this roadmap.
+**Scope:** roadmap/architecture and P0 pure contracts are completed; production P1–P12 implementations are not. No pre-existing NextPlan project/task status is changed by this roadmap.
