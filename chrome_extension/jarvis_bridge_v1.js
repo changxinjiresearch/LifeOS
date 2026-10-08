@@ -4,6 +4,13 @@
  */
 export const ALLOWED_WEB = "https://changxinjiresearch.github.io";
 const MAX_PENDING = 30;
+const CAPTURE_TTL_MS = 7*24*60*60*1000;
+function unexpired(items){
+  return (Array.isArray(items)?items:[]).filter(x=>{
+    const age=Date.now()-Date.parse(x?.captured_at||"");
+    return Number.isFinite(age)&&age>=0&&age<CAPTURE_TTL_MS;
+  });
+}
 export function validJarvisSender(sender) {
   try {
     const u=new URL(sender?.url||"");
@@ -68,7 +75,8 @@ export async function bridgeRequest(message,sender,{storage,readCanonical,uuid})
         message:"Open NextPlan Sync extension popup and approve; not applied yet"};
     }
     case "NEXTPLAN_JARVIS_CAPTURES":{
-      const captures=(await storage.get({jarvisContextCaptures:[]})).jarvisContextCaptures;
+      const captures=unexpired((await storage.get({jarvisContextCaptures:[]})).jarvisContextCaptures);
+      await storage.set({jarvisContextCaptures:captures});
       return {status:"ok",captures};
     }
     case "NEXTPLAN_JARVIS_CAPTURE_ACK":{
@@ -94,7 +102,7 @@ export async function captureExplicitChatGPTMemory(turn,sender,{storage,uuid}){
   if(!summary)return {status:"ignored"};
   const item=captureItem(summary,turn?.url||pageUrl,"capture-"+uuid());
   item.source_kind="chatgpt_explicit_user_intent";
-  const old=(await storage.get({jarvisContextCaptures:[]})).jarvisContextCaptures;
+  const old=unexpired((await storage.get({jarvisContextCaptures:[]})).jarvisContextCaptures);
   if(old.some(x=>x.source_ref===item.source_ref&&x.summary===item.summary))
     return {status:"already_queued"};
   await storage.set({jarvisContextCaptures:[...old,item].slice(-MAX_PENDING)});
@@ -103,7 +111,7 @@ export async function captureExplicitChatGPTMemory(turn,sender,{storage,uuid}){
 export async function captureSelection(info,tab,{storage,uuid}){
   if(info?.menuItemId!=="jarvis-capture-context")return {status:"ignored"};
   const item=captureItem(info.selectionText,info.pageUrl||tab?.url,"capture-"+uuid());
-  const old=(await storage.get({jarvisContextCaptures:[]})).jarvisContextCaptures;
+  const old=unexpired((await storage.get({jarvisContextCaptures:[]})).jarvisContextCaptures);
   await storage.set({jarvisContextCaptures:[...old,item].slice(-MAX_PENDING)});
   return {status:"queued",id:item.id};
 }
