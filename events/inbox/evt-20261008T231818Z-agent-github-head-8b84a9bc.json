@@ -1,0 +1,29 @@
+{
+  "id": "evt-20261008T231818Z-agent-github-head-8b84a9bc",
+  "at": "2026-10-08T23:18:18Z",
+  "project_id": "project-item-daed6c",
+  "type": "external_signal_recorded",
+  "summary": "Observed verified GitHub repository head change: 8b84a9bcc0de",
+  "source": {
+    "kind": "automation",
+    "via": "nextplan-agent-github-poll"
+  },
+  "external_signal": {
+    "id": "signal-github-head-8b84a9bcc0dea94b81ceddc9",
+    "provider": "github",
+    "event_type": "repo_head_changed",
+    "provider_event_id": "8b84a9bcc0dea94b81ceddc925a6a2d3eb16b614",
+    "verified_source": true,
+    "received_at": "2026-10-08T23:18:18Z",
+    "project_id": "project-item-daed6c",
+    "status": "observed",
+    "payload": {
+      "repository": "changxinjiresearch/LifeOS",
+      "head_sha": "8b84a9bcc0dea94b81ceddc925a6a2d3eb16b614",
+      "branch": "main",
+      "message": "Jarvis: reviewed NextPlan project operations and explicit ChatGPT context bridge",
+      "author_name": "Changxin Ji",
+      "committed_at": "2026-10-08T18:01:13Z"
+    }
+  }
+}
