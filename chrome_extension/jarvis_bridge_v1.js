@@ -24,7 +24,8 @@ export function safeProposal(raw, project) {
   if("next_action" in raw && (typeof raw.next_action!=="string"||
       !raw.next_action.trim()||raw.next_action.length>500))
     throw Error("Invalid next action");
-  if(raw.status===project.status||raw.next_action===project.next_action)
+  const selectedField=changes[0];
+  if(raw[selectedField]===project[selectedField])
     throw Error("No change to queue");
   return {action:"update_project_snapshot",project_id:project.id,
           ...(raw.status?{status:raw.status}:{next_action:raw.next_action.trim()})};
