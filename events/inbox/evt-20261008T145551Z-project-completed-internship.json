@@ -1,0 +1,14 @@
+{
+  "id": "evt-20261008T145551Z-project-completed-internship",
+  "at": "2026-10-08T14:55:51Z",
+  "type": "project_status_changed",
+  "project_id": "project-item-9ef9ef",
+  "status": "completed",
+  "next_action": "项目已完成",
+  "summary": "Completed project: 帮助宝宝找实习",
+  "source": {
+    "kind": "chatgpt",
+    "via": "explicit-user-command",
+    "command_time": "2026-10-08T14:55:51Z"
+  }
+}
