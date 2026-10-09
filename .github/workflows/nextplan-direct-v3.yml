@@ -7,14 +7,14 @@ on:
       - 'mcp_server/direct_v3.py'
       - 'mcp_server/direct_v3_http.py'
       - 'mcp_server/server_v14.py'
-      - 'tests/test_direct_v3.py'
+      - 'tests/test_direct_v3*.py'
       - '.github/workflows/nextplan-direct-v3.yml'
   pull_request:
     paths:
       - 'mcp_server/direct_v3.py'
       - 'mcp_server/direct_v3_http.py'
       - 'mcp_server/server_v14.py'
-      - 'tests/test_direct_v3.py'
+      - 'tests/test_direct_v3*.py'
       - '.github/workflows/nextplan-direct-v3.yml'
   workflow_dispatch:
 
@@ -33,4 +33,4 @@ jobs:
       - name: Syntax check
         run: python -m compileall -q mcp_server
       - name: V3 isolated safety regression
-        run: python -W error::ResourceWarning -m unittest discover -s tests -p 'test_direct_v3.py' -v
+        run: python -W error::ResourceWarning -m unittest discover -s tests -p 'test_direct_v3*.py' -v
