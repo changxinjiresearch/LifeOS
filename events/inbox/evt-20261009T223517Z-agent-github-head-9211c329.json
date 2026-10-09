@@ -1,0 +1,29 @@
+{
+  "id": "evt-20261009T223517Z-agent-github-head-9211c329",
+  "at": "2026-10-09T22:35:17Z",
+  "project_id": "project-item-daed6c",
+  "type": "external_signal_recorded",
+  "summary": "Observed verified GitHub repository head change: 9211c329aa2b",
+  "source": {
+    "kind": "automation",
+    "via": "nextplan-agent-github-poll"
+  },
+  "external_signal": {
+    "id": "signal-github-head-9211c329aa2be1eca3d91dcd",
+    "provider": "github",
+    "event_type": "repo_head_changed",
+    "provider_event_id": "9211c329aa2be1eca3d91dcd3f236b7f5d731c16",
+    "verified_source": true,
+    "received_at": "2026-10-09T22:35:17Z",
+    "project_id": "project-item-daed6c",
+    "status": "observed",
+    "payload": {
+      "repository": "changxinjiresearch/LifeOS",
+      "head_sha": "9211c329aa2be1eca3d91dcd3f236b7f5d731c16",
+      "branch": "main",
+      "message": "Jarvis Brain v2 Lite: Qwen reasoning, retrieval and evidence checks (#27)",
+      "author_name": "Changxin Ji",
+      "committed_at": "2026-10-09T19:59:39Z"
+    }
+  }
+}
