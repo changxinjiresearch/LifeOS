@@ -92,3 +92,47 @@ test("no AI binding fails closed",async()=>{
 test("method and path restricted",async()=>{
   assert.equal((await worker.fetch(req("/anything"),env())).status,404);
 });
+
+test("Brain v2 planner requests only bounded read-only local search queries",async()=>{
+  let calls=0;
+  const e=env({AI:{run:async(_model,args)=>{
+    calls++;
+    assert.equal(args.max_tokens,160);
+    return {response:'{"search_queries":["P4 checkpoint","failed QA","unapproved third"]}'};
+  }}});
+  const r=await worker.fetch(req("/v1/chat",{...valid,phase:"plan"}),e);
+  assert.equal(r.status,200);
+  const out=await r.json();
+  assert.equal(calls,1);
+  assert.equal(out.mode,"free_cloudflare_ai_plan");
+  assert.deepEqual(out.search_queries,["P4 checkpoint","failed QA"]);
+  assert.equal(out.executed_actions,0);
+  assert.equal(out.answer,undefined);
+});
+test("Brain v2 malformed model plan cannot invent a tool request",async()=>{
+  const e=env({AI:{run:async()=>({response:"Run a delete SQL command now!"})}});
+  const r=await worker.fetch(req("/v1/chat",{...valid,phase:"plan"}),e);
+  const out=await r.json();
+  assert.equal(out.status,"planned");
+  assert.deepEqual(out.search_queries,[]);
+});
+test("Brain v2 answer never reports independently verified truth or actions",async()=>{
+  let args;
+  const e=env({AI:{run:async(_model,options)=>{
+    args=options;
+    return {response:"需人工核对最新日志，不应当声称操作完成。"};
+  }}});
+  const r=await worker.fetch(req("/v1/chat",{...valid,phase:"answer",
+    retrieval_queries:["P4 checkpoint"]}),e);
+  const out=await r.json();
+  assert.equal(r.status,200);
+  assert.equal(out.mode,"free_cloudflare_ai_v2");
+  assert.equal(out.executed_actions,0);
+  assert.equal(out.sources[0].evidence_role,"provided_context_not_independently_verified");
+  assert.equal(out.verification.semantic_truth_verified,false);
+  assert.ok(args.messages.some(x=>x.content.includes("read-only searches")));
+});
+test("Brain v2 rejects arbitrary phases and injected remote tool arguments",async()=>{
+  assert.equal((await worker.fetch(req("/v1/chat",{...valid,phase:"execute"}),env())).status,400);
+  assert.equal((await worker.fetch(req("/v1/chat",{...valid,retrieval_queries:["a","b","c"]}),env())).status,400);
+});
