@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-10-08T23:18:18Z",
+    "last_updated": "2026-10-09T01:21:08Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -31,7 +31,7 @@
       "version": 1,
       "mode": "append-only-event-files",
       "inbox": "events/inbox",
-      "builder": "engine/build_state_v3.py",
+      "builder": "engine/build_state_v2.py",
       "processed_event_ids": [
         "evt-20260910T170426Z-task-created-ad83839a",
         "evt-20260910T172100Z-delete-backend-test-create",
@@ -139,10 +139,11 @@
         "evt-20261008T145551Z-project-completed-presentation",
         "evt-20261008T152820Z-project-created-rp-new-experiment",
         "evt-20261008T152957Z-project-deleted-pcc-v2-r2",
-        "evt-20261008T231818Z-agent-github-head-8b84a9bc"
+        "evt-20261008T231818Z-agent-github-head-8b84a9bc",
+        "evt-20261009-automation-daily"
       ],
-      "processed_count": 107,
-      "last_build_at": "2026-10-08T23:18:18Z",
+      "processed_count": 108,
+      "last_build_at": "2026-10-09T01:21:08Z",
       "last_applied": [],
       "status": "ready"
     }
@@ -638,6 +639,17 @@
     }
   ],
   "events": [
+    {
+      "id": "evt-20261009-automation-daily",
+      "at": "2026-10-09T01:21:08Z",
+      "project_id": "project-item-daed6c",
+      "type": "automation_snapshot_refreshed",
+      "summary": "Daily automation evaluation: 4 finding(s).",
+      "source": {
+        "kind": "automation",
+        "via": "github-actions-daily"
+      }
+    },
     {
       "id": "evt-20261008T231818Z-agent-github-head-8b84a9bc",
       "at": "2026-10-08T23:18:18Z",
@@ -1934,18 +1946,10 @@
     {
       "rule_id": "stale-active",
       "severity": "medium",
-      "title": "PCC v2-R2",
-      "project_id": "research-pcc-v2",
-      "reason": "No recorded movement for 25 day(s).",
-      "id": "automation-stale-active-1"
-    },
-    {
-      "rule_id": "stale-active",
-      "severity": "medium",
       "title": "PhD 申请",
       "project_id": "phd",
-      "reason": "No recorded movement for 27 day(s).",
-      "id": "automation-stale-active-2"
+      "reason": "No recorded movement for 28 day(s).",
+      "id": "automation-stale-active-1"
     },
     {
       "rule_id": "stale-active",
@@ -1953,39 +1957,15 @@
       "title": "USYD 转学与入学",
       "project_id": "usyd",
       "reason": "No recorded movement for 7 day(s).",
-      "id": "automation-stale-active-3"
-    },
-    {
-      "rule_id": "stale-active",
-      "severity": "medium",
-      "title": "Research Proposal / Presentation",
-      "project_id": "flinders-presentation",
-      "reason": "No recorded movement for 25 day(s).",
-      "id": "automation-stale-active-4"
+      "id": "automation-stale-active-2"
     },
     {
       "rule_id": "stale-active",
       "severity": "medium",
       "title": "学生签证与行政事项",
       "project_id": "visa-admin",
-      "reason": "No recorded movement for 27 day(s).",
-      "id": "automation-stale-active-5"
-    },
-    {
-      "rule_id": "stale-active",
-      "severity": "medium",
-      "title": "帮助宝宝找实习",
-      "project_id": "project-item-9ef9ef",
-      "reason": "No recorded movement for 25 day(s).",
-      "id": "automation-stale-active-6"
-    },
-    {
-      "rule_id": "waiting-followup",
-      "severity": "medium",
-      "title": "Neuroscience Informatics 论文",
-      "project_id": "research-neuri",
-      "reason": "Waiting project has no recorded movement for 7 day(s).",
-      "id": "automation-waiting-followup-7"
+      "reason": "No recorded movement for 28 day(s).",
+      "id": "automation-stale-active-3"
     },
     {
       "rule_id": "waiting-followup",
@@ -1993,12 +1973,12 @@
       "title": "PCC 第一篇论文",
       "project_id": "research-pcc-v1",
       "reason": "Waiting project has no recorded movement for 7 day(s).",
-      "id": "automation-waiting-followup-8"
+      "id": "automation-waiting-followup-4"
     }
   ],
   "automation_meta": {
-    "last_run_at": "2026-10-08T01:13:40+00:00",
-    "finding_count": 8,
+    "last_run_at": "2026-10-09T01:21:08+00:00",
+    "finding_count": 4,
     "automation_version": "1.0"
   },
   "agent_policies": [],
