@@ -80,9 +80,12 @@ class DirectStore:
             c.executescript("""
             CREATE TABLE IF NOT EXISTS canonical(
               id INTEGER PRIMARY KEY CHECK(id=1),revision INTEGER NOT NULL,document TEXT NOT NULL);
+            CREATE TABLE IF NOT EXISTS project_revisions(
+              project_id TEXT PRIMARY KEY, revision INTEGER NOT NULL);
             CREATE TABLE IF NOT EXISTS operations(
               id TEXT PRIMARY KEY,source TEXT NOT NULL,source_ref TEXT NOT NULL UNIQUE,
               payload_hash TEXT NOT NULL,command TEXT NOT NULL,revision_at_intake INTEGER NOT NULL,
+              project_revision_at_intake INTEGER NOT NULL,
               status TEXT NOT NULL,receipt TEXT,created TEXT NOT NULL,updated TEXT NOT NULL);
             CREATE TABLE IF NOT EXISTS audit(
               id INTEGER PRIMARY KEY AUTOINCREMENT,op TEXT NOT NULL,event TEXT NOT NULL,at TEXT NOT NULL);
@@ -115,6 +118,8 @@ class DirectStore:
             if c.execute("SELECT 1 FROM canonical").fetchone():
                 raise DirectError("already_initialized")
             c.execute("INSERT INTO canonical(id,revision,document) VALUES(1,0,?)",(encoded(state),))
+            for project_id in ids:
+                c.execute("INSERT INTO project_revisions(project_id,revision) VALUES(?,0)",(project_id,))
             c.commit()
         return {"status":"bootstrapped","project_count":len(ids),"revision":0,"sha256":expected_hash}
 
@@ -143,12 +148,16 @@ class DirectStore:
             row=c.execute("SELECT revision FROM canonical WHERE id=1").fetchone()
             if not row:
                 raise DirectError("not_bootstrapped")
+            project_row=c.execute("SELECT revision FROM project_revisions WHERE project_id=?",
+                                  (cmd["project_id"],)).fetchone()
+            project_revision = project_row["revision"] if project_row else -1
             status="needs_confirmation" if cmd["action"]=="delete_project" else "accepted"
             t=stamp()
             c.execute("""INSERT INTO operations(id,source,source_ref,payload_hash,command,
-                         revision_at_intake,status,created,updated) VALUES(?,?,?,?,?,?,?,?,?)""",
+                         revision_at_intake,project_revision_at_intake,status,created,updated)
+                         VALUES(?,?,?,?,?,?,?,?,?,?)""",
                       (cmd["operation_id"],source,source_ref,digest(cmd),encoded(cmd),
-                       row["revision"],status,t,t))
+                       row["revision"],project_revision,status,t,t))
             c.execute("INSERT INTO audit(op,event,at) VALUES(?,?,?)",(cmd["operation_id"],status,t))
             c.commit()
         return {"status":status,"operation_id":cmd["operation_id"],"duplicate":False}
@@ -185,9 +194,15 @@ class DirectStore:
                 return {"status":"needs_confirmation","operation_id":op}
             state_row=c.execute("SELECT revision,document FROM canonical WHERE id=1").fetchone()
             revision=state_row["revision"]
-            expected=cmd["expected_revision"] if cmd["expected_revision"] is not None else row["revision_at_intake"]
-            if expected!=revision:
-                return self._finish(c,op,"conflict",{"revision":revision,"reason":"stale_revision"})
+            current_project=c.execute("SELECT revision FROM project_revisions WHERE project_id=?",
+                                      (cmd["project_id"],)).fetchone()
+            project_revision = current_project["revision"] if current_project else -1
+            expected = (cmd["expected_revision"] if cmd["expected_revision"] is not None
+                        else row["project_revision_at_intake"])
+            if expected!=project_revision:
+                return self._finish(c,op,"conflict",
+                                    {"revision":revision,"project_revision":project_revision,
+                                     "reason":"stale_project_revision"})
             state=json.loads(state_row["document"])
             matches=[p for p in state["projects"] if p.get("id")==cmd["project_id"]]
             if len(matches)!=1:
@@ -204,13 +219,19 @@ class DirectStore:
                 after=matches[0]
             if changed:
                 revision+=1
+                if cmd["action"]=="delete_project":
+                    c.execute("DELETE FROM project_revisions WHERE project_id=?",(cmd["project_id"],))
+                else:
+                    c.execute("UPDATE project_revisions SET revision=revision+1 WHERE project_id=?",
+                              (cmd["project_id"],))
                 state["events"].append({"id":"direct-"+op,"at":stamp(),"project_id":cmd["project_id"],
                    "type":"project_deleted" if cmd["action"]=="delete_project" else "project_updated",
                    "summary":"NextPlan Direct verified change","source":"nextplan-direct-v3",
                    "changes":cmd["changes"] if after is not None else {}})
                 c.execute("UPDATE canonical SET revision=?,document=? WHERE id=1",(revision,encoded(state)))
             return self._finish(c,op,"applied" if changed else "no_change",{
-                 "revision":revision,"project_id":cmd["project_id"],"before":before,
+                 "revision":revision,"project_revision":project_revision+(1 if changed else 0),
+                 "project_id":cmd["project_id"],"before":before,
                  "after":after,"verified":True})
 
     def process_pending(self,limit=50):
