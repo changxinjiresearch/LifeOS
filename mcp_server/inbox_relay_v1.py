@@ -140,8 +140,8 @@ async def deliver(issue):
     prior=await read_event(eid)
     if prior is not None:
         # Once submitted, an Issue edit must never change the original operation.
-        if prior.get("type")!=event.get("type") or prior.get("project_id")!=event.get("project_id") or (
-                prior.get("changes",prior.get("task",{}))!=event.get("changes",event.get("task",{}))):
+        immutable=("type","project_id","changes","task","task_id","milestone_id","status")
+        if any(prior.get(field)!=event.get(field) for field in immutable):
             return "conflict"
         state=await legacy._state()
         if eid in state.get("system",{}).get("event_layer",{}).get("processed_event_ids",[]):
