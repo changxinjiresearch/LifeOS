@@ -118,3 +118,22 @@ class DirectV3Safety(unittest.TestCase):
         ev["sender"]["login"]="other"
         with self.assertRaises(DirectError):
             parse_github_issue(ev,**opts)
+
+    def test_public_inbox_accepts_safe_structured_issue(self):
+        ev={"action":"opened","repository":{"id":123456,"private":False,
+             "name":"nextplan-command-inbox","owner":{"login":"testuser"}},
+             "sender":{"login":"testuser"},
+             "issue":{"number":17,"user":{"login":"testuser"},"body":json.dumps(cmd())}}
+        opts={"repo_id":123456,"owner":"testuser","name":"nextplan-command-inbox",
+              "author":"testuser","visibility":"public"}
+        parsed,op=parse_github_issue(ev,**opts)
+        self.assertEqual(op,"github:123456:17")
+        self.assertEqual(parsed["project_id"],"project-a")
+        ev["sender"]["login"]="other"
+        with self.assertRaises(DirectError):
+            parse_github_issue(ev,**opts)
+        ev["sender"]["login"]="testuser"
+        ev["issue"]["body"]=json.dumps(cmd(changes={"next_action":"arbitrary public text"}))
+        with self.assertRaises(DirectError) as ctx:
+            parse_github_issue(ev,**opts)
+        self.assertEqual(ctx.exception.code,"public_free_text_forbidden")
