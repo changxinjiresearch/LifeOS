@@ -1,0 +1,29 @@
+{
+  "id": "evt-20261013T224102Z-agent-github-head-6d2fa53c",
+  "at": "2026-10-13T22:41:02Z",
+  "project_id": "project-item-daed6c",
+  "type": "external_signal_recorded",
+  "summary": "Observed verified GitHub repository head change: 6d2fa53c068d",
+  "source": {
+    "kind": "automation",
+    "via": "nextplan-agent-github-poll"
+  },
+  "external_signal": {
+    "id": "signal-github-head-6d2fa53c068d7772eb3f0d51",
+    "provider": "github",
+    "event_type": "repo_head_changed",
+    "provider_event_id": "6d2fa53c068d7772eb3f0d51fecba28c00d5f306",
+    "verified_source": true,
+    "received_at": "2026-10-13T22:41:02Z",
+    "project_id": "project-item-daed6c",
+    "status": "observed",
+    "payload": {
+      "repository": "changxinjiresearch/LifeOS",
+      "head_sha": "6d2fa53c068d7772eb3f0d51fecba28c00d5f306",
+      "branch": "main",
+      "message": "Record production receipt reconciliation and two-stage delete audit verification",
+      "author_name": "Changxin Ji",
+      "committed_at": "2026-10-13T16:13:24Z"
+    }
+  }
+}
