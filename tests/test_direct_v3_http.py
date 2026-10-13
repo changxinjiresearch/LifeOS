@@ -56,6 +56,7 @@ class HttpAcceptance(unittest.TestCase):
 
     def test_auth_required(self):
         self.assertEqual(request(api.PREFIX+"/state")[0],401)
+        self.assertEqual(request(api.PREFIX+"/status")[1]["status"],"ready")
         with patch.dict(os.environ,{"NEXTPLAN_DIRECT_ENABLED":"0"}):
             self.assertEqual(request(api.PREFIX+"/status")[1]["status"],"disabled")
 
@@ -119,6 +120,28 @@ class HttpAcceptance(unittest.TestCase):
                 with self.assertRaises(Exception):
                     api.reconcile(api.store())
         self.assertEqual(api.store().snapshot()["revision"],0)
+
+class LifespanAcceptance(unittest.TestCase):
+    def test_v14_preserves_legacy_startup_shutdown(self):
+        from mcp_server import server_v14
+        messages=iter([{"type":"lifespan.startup"},{"type":"lifespan.shutdown"}])
+        observed=[]
+        async def fake_receive():
+            return next(messages)
+        async def fake_send(msg):
+            observed.append(msg["type"])
+        async def fake_legacy(scope,receive,send):
+            observed.append((await receive())["type"])
+            await send({"type":"lifespan.startup.complete"})
+            observed.append((await receive())["type"])
+            await send({"type":"lifespan.shutdown.complete"})
+        async def fake_scanner():
+            await asyncio.Event().wait()
+        with patch.object(server_v14.legacy,"app",fake_legacy), patch.object(
+                server_v14.direct,"periodic_reconcile",fake_scanner):
+            asyncio.run(server_v14.app({"type":"lifespan"},fake_receive,fake_send))
+        self.assertEqual(observed,["lifespan.startup","lifespan.startup.complete",
+                                   "lifespan.shutdown","lifespan.shutdown.complete"])
 
 if __name__=="__main__":
     unittest.main()
