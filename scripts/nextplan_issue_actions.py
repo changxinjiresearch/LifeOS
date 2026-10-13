@@ -242,26 +242,27 @@ def apply_issues(issues):
                 print(f"issue #{number}: edited command ignored")
             results.append((number,receipt.get("status","unknown")))
             continue
+        current=state_engine.load_json(state_engine.STATE_PATH)
         try:
-            current=state_engine.load_json(state_engine.STATE_PATH)
             check_target(current,event)
-            event_path=state_engine.EVENT_DIR / (event["id"]+".json")
-            if event_path.exists():
-                prior=state_engine.load_json(event_path)
-                if prior!=event:
-                    raise ValueError("event_id_collision")
-            else:
-                event_path.parent.mkdir(parents=True,exist_ok=True)
-                state_engine.save_json(event_path,event)
-            build_state_v3.main()
-            newstate=state_engine.load_json(state_engine.STATE_PATH)
-            if not verify(newstate,event):
-                raise RuntimeError("postcondition_mismatch: "+json.dumps({"project":next((x for x in newstate.get("projects",[]) if x.get("id")==event["project_id"]),None),"event_id":event["id"],"processed_ids":newstate.get("system",{}).get("event_layer",{}).get("processed_event_ids",[])},ensure_ascii=False))
-            write_receipt(number,"verified",bodyhash,event_id=event["id"])
-            results.append((number,"verified"))
         except ValueError as exc:
             write_receipt(number,"rejected",bodyhash,reason=str(exc))
             results.append((number,"rejected"))
+            continue
+        event_path=state_engine.EVENT_DIR / (event["id"]+".json")
+        if event_path.exists():
+            prior=state_engine.load_json(event_path)
+            if prior!=event:
+                raise RuntimeError("event_id_collision")
+        else:
+            event_path.parent.mkdir(parents=True,exist_ok=True)
+            state_engine.save_json(event_path,event)
+        build_state_v3.main()
+        newstate=state_engine.load_json(state_engine.STATE_PATH)
+        if not verify(newstate,event):
+            raise RuntimeError("postcondition_mismatch")
+        write_receipt(number,"verified",bodyhash,event_id=event["id"])
+        results.append((number,"verified"))
         # Unexpected errors leave workflow failed so GitHub Actions retries on next
         # scheduled run. They are NOT falsely recorded as successful.
     return results
