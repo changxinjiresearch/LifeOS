@@ -111,6 +111,19 @@ class ActionsInboxTests(unittest.TestCase):
         self.assertEqual(p["milestones"][0]["name"],"Renamed")
         self.assertEqual(p["milestones"][0]["deadline"],"2026-11-30")
 
+
+    def test_task_name_only_does_not_reset_project_status(self):
+        p=self.snapshot()
+        p["projects"][0]["status"]="waiting"
+        self.state.write_text(json.dumps(p),encoding="utf-8")
+        edit=issue(118,cmd("update_task",task_id="milestone-one",
+                           changes={"name":"Renamed but no change to status"}))
+        self.assertEqual(actions.apply_issues([edit]),[(118,"verified")])
+        project=self.snapshot()["projects"][0]
+        self.assertEqual(project["status"],"waiting")
+        self.assertEqual(project["milestones"][0]["status"],"active")
+        self.assertEqual(project["milestones"][0]["name"],"Renamed but no change to status")
+
     def test_deadline_create_and_removal(self):
         create=issue(112,cmd("set_deadline",title="Safe testing",date="2026-12-31"))
         remove=issue(113,cmd("remove_deadline",deadline_id="deadline-inbox-112"))
