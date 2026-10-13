@@ -60,7 +60,8 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
             python scripts/nextplan_issue_actions.py
-            git add state.json events/inbox events/receipts
+            git add state.json events/inbox
+            if [ -d events/receipts ]; then git add events/receipts; fi
             if git diff --cached --quiet; then
               echo "No new commands or state changes."
               exit 0
