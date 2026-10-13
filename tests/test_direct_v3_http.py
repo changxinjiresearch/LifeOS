@@ -138,7 +138,8 @@ class LifespanAcceptance(unittest.TestCase):
         async def fake_scanner():
             await asyncio.Event().wait()
         with patch.object(server_v14.legacy,"app",fake_legacy), patch.object(
-                server_v14.direct,"periodic_reconcile",fake_scanner):
+                server_v14.direct,"periodic_reconcile",fake_scanner), patch.object(
+                server_v14.inbox,"poll_loop",fake_scanner):
             asyncio.run(server_v14.app({"type":"lifespan"},fake_receive,fake_send))
         self.assertEqual(observed,["lifespan.startup","lifespan.startup.complete",
                                    "lifespan.shutdown","lifespan.shutdown.complete"])
