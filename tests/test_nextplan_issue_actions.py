@@ -39,6 +39,13 @@ class ActionsInboxTests(unittest.TestCase):
     def snapshot(self):
         return json.loads(self.state.read_text(encoding="utf-8"))
 
+
+    def test_empty_schedule_does_not_touch_state(self):
+        original=self.state.read_bytes()
+        self.assertEqual(actions.apply_issues([]),[])
+        self.assertEqual(self.state.read_bytes(),original)
+        self.assertFalse(self.receipts.exists())
+
     def test_submit_update_and_duplicate_exactly_once(self):
         ev=issue(21,cmd(changes={"status":"completed"}))
         first=actions.apply_issues([ev])
