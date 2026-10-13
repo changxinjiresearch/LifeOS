@@ -128,7 +128,7 @@ class DirectStore:
 
     def enqueue(self,raw,source,source_ref):
         cmd=validated(raw)
-        if source not in ("github_private_issue","jarvis_direct"):
+        if source not in ("github_private_issue","github_public_issue","jarvis_direct"):
             raise DirectError("untrusted_source")
         if not isinstance(source_ref,str) or not 1<=len(source_ref)<=256:
             raise DirectError("invalid_source_ref")
@@ -225,13 +225,17 @@ def valid_signature(raw,signature,secret):
     expected="sha256="+hmac.new(secret.encode(),raw,hashlib.sha256).hexdigest()
     return hmac.compare_digest(expected,signature)
 
-def parse_github_issue(event,repo_id,owner,name,author):
+def parse_github_issue(event,repo_id,owner,name,author,visibility="private"):
     if not isinstance(event,dict) or event.get("action")!="opened":
         return None
     repo=event.get("repository") or {}
     issue=event.get("issue") or {}
-    if repo.get("private") is not True or repo.get("id")!=repo_id or repo.get("name")!=name or (repo.get("owner") or {}).get("login")!=owner:
-        raise DirectError("private_repository_required")
+    if visibility not in ("public","private"):
+        raise DirectError("invalid_configured_visibility")
+    expected_private = visibility == "private"
+    if (repo.get("private") is not expected_private or repo.get("id")!=repo_id
+        or repo.get("name")!=name or (repo.get("owner") or {}).get("login")!=owner):
+        raise DirectError("repository_identity_or_visibility_mismatch")
     if (event.get("sender") or {}).get("login")!=author or (issue.get("user") or {}).get("login")!=author:
         raise DirectError("actor_forbidden")
     number=issue.get("number")
@@ -244,6 +248,13 @@ def parse_github_issue(event,repo_id,owner,name,author):
         cmd=validated(json.loads(body))
     except (ValueError,TypeError):
         raise DirectError("invalid_issue_body")
+    if visibility == "public":
+        # The user's chosen public inbox is allowed, but never relay arbitrary
+        # human prose, memory, or credentials through a public GitHub Issue.
+        # Destructive requests may still be staged, but are never executed
+        # without a separate authenticated second confirmation.
+        if "next_action" in cmd["changes"]:
+            raise DirectError("public_free_text_forbidden")
     op=f"github:{repo_id}:{number}"
     cmd["operation_id"]=op
     return cmd,op
