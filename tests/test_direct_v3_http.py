@@ -1,6 +1,7 @@
 """HTTP-level tests: real ASGI request -> signed intake -> SQLite receipt."""
 import asyncio
 import hashlib
+import io
 import hmac
 import json
 import os
@@ -87,6 +88,37 @@ class HttpAcceptance(unittest.TestCase):
         _,snapshot=request(api.PREFIX+"/state",headers=self.auth)
         self.assertEqual(snapshot["revision"],1)
         self.assertEqual(len(snapshot["state"]["events"]),1)
+
+
+    def test_public_repo_reconciliation_without_token(self):
+        issue={"number":41,"created_at":"2026-10-14T00:00:00Z",
+               "updated_at":"2026-10-14T00:00:00Z",
+               "user":{"login":"testuser"},"body":json.dumps({
+                "version":3,"operation_id":"ignored-by-server","action":"update_project",
+                "project_id":"project-a","changes":{"priority":2}})}
+        metadata={"id":123456,"full_name":"testuser/nextplan-command-inbox",
+                  "private":False}
+        replies=[metadata,[issue]]
+        calls=[]
+        def fake_open(req,timeout=15):
+            calls.append(req.full_url)
+            self.assertNotIn("Authorization",req.headers)
+            return io.BytesIO(json.dumps(replies.pop(0)).encode("utf-8"))
+        with patch.dict(os.environ,{"NEXTPLAN_DIRECT_GITHUB_TOKEN":""}):
+            with patch.object(api,"urlopen",side_effect=fake_open):
+                result=api.reconcile(api.store())
+        self.assertEqual(result["status"],"reconciled")
+        self.assertEqual(len(calls),2)
+        self.assertEqual(api.store().receipt("github:123456:41")["status"],"applied")
+        self.assertEqual(api.store().snapshot()["state"]["projects"][0]["priority"],2)
+
+    def test_public_reconciliation_rejects_mismatched_repo(self):
+        with patch.dict(os.environ,{"NEXTPLAN_DIRECT_GITHUB_TOKEN":""}):
+            with patch.object(api,"urlopen",
+                 return_value=io.BytesIO(b'{"id":999,"full_name":"testuser/nextplan-command-inbox","private":false}')):
+                with self.assertRaises(Exception):
+                    api.reconcile(api.store())
+        self.assertEqual(api.store().snapshot()["revision"],0)
 
 if __name__=="__main__":
     unittest.main()
