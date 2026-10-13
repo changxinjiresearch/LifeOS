@@ -15,10 +15,10 @@ health={"last_success":None,"last_error":None}
 def configured():
     names=("NEXTPLAN_DIRECT_DB","NEXTPLAN_DIRECT_ROOT","NEXTPLAN_DIRECT_TOKEN",
            "NEXTPLAN_DIRECT_GITHUB_SECRET","NEXTPLAN_DIRECT_GITHUB_REPO_ID",
-           "NEXTPLAN_DIRECT_GITHUB_REPO","NEXTPLAN_DIRECT_GITHUB_AUTHOR")
+           "NEXTPLAN_DIRECT_GITHUB_REPO","NEXTPLAN_DIRECT_GITHUB_AUTHOR","NEXTPLAN_DIRECT_GITHUB_VISIBILITY")
     return (os.getenv("NEXTPLAN_DIRECT_ENABLED")=="1" and all(os.getenv(k) for k in names)
        and len(os.getenv("NEXTPLAN_DIRECT_TOKEN",""))>=32
-       and len(os.getenv("NEXTPLAN_DIRECT_GITHUB_SECRET",""))>=32)
+       and len(os.getenv("NEXTPLAN_DIRECT_GITHUB_SECRET",""))>=32 and os.getenv("NEXTPLAN_DIRECT_GITHUB_VISIBILITY") in ("private","public"))
 
 def store():
     global _store
@@ -39,7 +39,7 @@ def options():
     if len(repo)!=2 or not all(repo):
         raise DirectError("invalid_repo_configuration")
     return {"repo_id":int(os.environ["NEXTPLAN_DIRECT_GITHUB_REPO_ID"]),
-      "owner":repo[0],"name":repo[1],"author":os.environ["NEXTPLAN_DIRECT_GITHUB_AUTHOR"]}
+      "owner":repo[0],"name":repo[1],"author":os.environ["NEXTPLAN_DIRECT_GITHUB_AUTHOR"],"visibility":os.environ["NEXTPLAN_DIRECT_GITHUB_VISIBILITY"]}
 
 async def reply(send,status,payload):
     await send({"type":"http.response.start","status":status,"headers":[
