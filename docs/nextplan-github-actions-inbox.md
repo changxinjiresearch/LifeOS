@@ -44,6 +44,7 @@ The GitHub public Pages NextPlan app already reads `LifeOS/main/state.json` and 
 - Public Issue commands #3–#13 formed a dedicated disposable test project, edited task details and deadline, then deleted the task and entire sandbox through two-stage confirmation. Ten commands received intended verified/pending statuses; an eleventh invalid-target command was rejected.
 - Authoritative `state.json` had nine pre-existing projects after the test, zero remaining sandbox projects/deadlines, and exactly one history event per successful QA write.
 - [QA receipt #12](https://github.com/changxinjiresearch/LifeOS/blob/main/events/receipts/issue-12.json) confirms sandbox project deletion and [QA receipt #13](https://github.com/changxinjiresearch/LifeOS/blob/main/events/receipts/issue-13.json) confirms fail-closed rejection.
+- [PR #30](https://github.com/changxinjiresearch/LifeOS/pull/30) closed the outstanding receipt lifecycle gap: original delete-request receipts #9/#11 now show `confirmed`, linked to verified confirmation #10/#12, following a second production reconciliation pass.
 - The public inbox remains intentionally public; no secrets or private content belong in Issues. GitHub scheduling delays and model tool invocation are still outside the code's guarantee.
 
 ## Remaining future upgrades
