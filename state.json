@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-10-12T00:42:03Z",
+    "last_updated": "2026-10-13T02:41:30Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -31,7 +31,7 @@
       "version": 1,
       "mode": "append-only-event-files",
       "inbox": "events/inbox",
-      "builder": "engine/build_state_v3.py",
+      "builder": "engine/build_state_v2.py",
       "processed_event_ids": [
         "evt-20260910T170426Z-task-created-ad83839a",
         "evt-20260910T172100Z-delete-backend-test-create",
@@ -144,10 +144,11 @@
         "evt-20261009T223517Z-agent-github-head-9211c329",
         "evt-20261010-automation-daily",
         "evt-20261011-automation-daily",
-        "evt-20261012-automation-daily"
+        "evt-20261012-automation-daily",
+        "evt-20261013-automation-daily"
       ],
-      "processed_count": 112,
-      "last_build_at": "2026-10-13T00:36:04Z",
+      "processed_count": 113,
+      "last_build_at": "2026-10-13T02:41:30Z",
       "last_applied": [],
       "status": "ready"
     }
@@ -643,6 +644,17 @@
     }
   ],
   "events": [
+    {
+      "id": "evt-20261013-automation-daily",
+      "at": "2026-10-13T02:41:30Z",
+      "project_id": "project-item-daed6c",
+      "type": "automation_snapshot_refreshed",
+      "summary": "Daily automation evaluation: 4 finding(s).",
+      "source": {
+        "kind": "automation",
+        "via": "github-actions-daily"
+      }
+    },
     {
       "id": "evt-20261012-automation-daily",
       "at": "2026-10-12T00:42:03Z",
@@ -1996,7 +2008,7 @@
       "severity": "medium",
       "title": "PhD 申请",
       "project_id": "phd",
-      "reason": "No recorded movement for 31 day(s).",
+      "reason": "No recorded movement for 32 day(s).",
       "id": "automation-stale-active-1"
     },
     {
@@ -2012,7 +2024,7 @@
       "severity": "medium",
       "title": "学生签证与行政事项",
       "project_id": "visa-admin",
-      "reason": "No recorded movement for 31 day(s).",
+      "reason": "No recorded movement for 32 day(s).",
       "id": "automation-stale-active-3"
     },
     {
@@ -2025,7 +2037,7 @@
     }
   ],
   "automation_meta": {
-    "last_run_at": "2026-10-12T00:42:03+00:00",
+    "last_run_at": "2026-10-13T02:41:30+00:00",
     "finding_count": 4,
     "automation_version": "1.0"
   },
