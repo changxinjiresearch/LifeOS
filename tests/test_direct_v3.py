@@ -137,3 +137,24 @@ class DirectV3Safety(unittest.TestCase):
         with self.assertRaises(DirectError) as ctx:
             parse_github_issue(ev,**opts)
         self.assertEqual(ctx.exception.code,"public_free_text_forbidden")
+
+    def test_independent_projects_do_not_block_each_other(self):
+        first=cmd("write-project-a",project="project-a",changes={"status":"completed"})
+        second=cmd("write-project-b",project="project-b",changes={"status":"active"})
+        self.send(first)
+        self.send(second)
+        self.assertEqual(self.s.process("write-project-a")["status"],"applied")
+        self.assertEqual(self.s.process("write-project-b")["status"],"applied")
+        state=self.s.snapshot()
+        self.assertEqual(state["revision"],2)
+        self.assertEqual([p["status"] for p in state["state"]["projects"]],
+                         ["completed","active"])
+
+    def test_explicit_project_revision_rejects_stale_command(self):
+        first=cmd("version-a1",changes={"status":"completed"})
+        second=cmd("version-a2",changes={"priority":2})
+        second["expected_revision"]=0
+        self.send(first)
+        self.assertEqual(self.s.process(first["operation_id"])["status"],"applied")
+        self.send(second)
+        self.assertEqual(self.s.process(second["operation_id"])["status"],"conflict")
