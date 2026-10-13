@@ -14,7 +14,7 @@ import os
 import re
 import sys
 import urllib.request
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -77,6 +77,16 @@ def _id(text, key):
     return text
 
 
+def _date(value):
+    if not isinstance(value,str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}",value):
+        raise ValueError("invalid_date_format")
+    try:
+        date.fromisoformat(value)
+    except ValueError as exc:
+        raise ValueError("invalid_date") from exc
+    return value
+
+
 def parse_issue(issue):
     """Return (event, canonical Issue body digest), or None for non-command Issues."""
     if not isinstance(issue,dict) or "pull_request" in issue:
@@ -110,7 +120,7 @@ def parse_issue(issue):
     if action=="update_project":
         permitted={"version","operation_id","action","project_id","changes"}
         changes=cmd.get("changes")
-        if not isinstance(changes,dict) or not changes or set(changes)-{"status","priority","next_action"}:
+        if not isinstance(changes,dict) or not changes or set(changes)-{"status","priority","next_action","progress"}:
             raise ValueError("invalid_changes")
         if "status" in changes and changes["status"] not in STATUSES:
             raise ValueError("invalid_status")
@@ -118,6 +128,9 @@ def parse_issue(issue):
             raise ValueError("invalid_priority")
         if "next_action" in changes and (not isinstance(changes["next_action"],str) or len(changes["next_action"])>400):
             raise ValueError("invalid_next_action")
+        if "progress" in changes and (type(changes["progress"]) not in (int,float)
+            or not 0<=changes["progress"]<=100):
+            raise ValueError("invalid_progress")
         event={"type":"project_updated","changes":changes}
     elif action=="create_task":
         permitted={"version","operation_id","action","project_id","name","task_id"}
@@ -134,6 +147,39 @@ def parse_issue(issue):
         event={"type":"milestone_status_changed",
                "milestone_id":_id(cmd.get("milestone_id"),"milestone_id"),
                "status":cmd["status"]}
+    elif action=="update_task":
+        permitted={"version","operation_id","action","project_id","task_id","changes"}
+        tid=_id(cmd.get("task_id"),"task_id")
+        changes=cmd.get("changes")
+        if not isinstance(changes,dict) or not changes or set(changes)-{"status","name","deadline","prep_days"}:
+            raise ValueError("invalid_task_changes")
+        payload={"type":"task_updated","task_id":tid}
+        if "status" in changes:
+            if changes["status"] not in STATUSES:
+                raise ValueError("invalid_status")
+            payload["status"]=changes["status"]
+        if "name" in changes:
+            payload["name"]=_name(changes["name"],"task_name")
+        if "deadline" in changes:
+            payload["deadline"]=_date(changes["deadline"])
+        if "prep_days" in changes:
+            if type(changes["prep_days"]) is not int or not 0<=changes["prep_days"]<=90:
+                raise ValueError("invalid_prep_days")
+            payload["prep_days"]=changes["prep_days"]
+        event=payload
+    elif action=="set_deadline":
+        permitted={"version","operation_id","action","project_id","deadline_id","title","date","task_id"}
+        did=_id(cmd.get("deadline_id") or "deadline-inbox-"+str(number),"deadline_id")
+        title=_name(cmd.get("title"),"deadline_title")
+        due=_date(cmd.get("date"))
+        taskid=cmd.get("task_id")
+        deadline={"id":did,"project_id":project_id,"title":title,"date":due}
+        if taskid is not None:
+            deadline["task_id"]=_id(taskid,"task_id")
+        event={"type":"deadline_set","deadline":deadline}
+    elif action=="remove_deadline":
+        permitted={"version","operation_id","action","project_id","deadline_id"}
+        event={"type":"deadline_removed","deadline_id":_id(cmd.get("deadline_id"),"deadline_id")}
     elif action=="create_project":
         permitted={"version","operation_id","action","project_id","name","category","next_action","priority"}
         name=_name(cmd.get("name"),"project_name")
@@ -166,10 +212,20 @@ def check_target(state,event):
     if len(projects)!=1:
         raise ValueError("unknown_or_ambiguous_project")
     project=projects[0]
-    if event["type"] in {"task_completed","milestone_status_changed"}:
+    if event["type"] in {"task_completed","milestone_status_changed","task_updated"}:
         mid=event.get("task_id") or event.get("milestone_id")
         if not any(m.get("id")==mid for m in project.get("milestones",[])):
             raise ValueError("unknown_task")
+    if event["type"]=="deadline_removed":
+        if len([d for d in state.get("deadlines",[]) if d.get("id")==event["deadline_id"] and d.get("project_id")==pid])!=1:
+            raise ValueError("unknown_or_ambiguous_deadline")
+    if event["type"]=="deadline_set":
+        dl=event["deadline"]
+        if any(d.get("id")==dl["id"] and (d.get("project_id")!=pid or d.get("title")!=dl["title"])
+               for d in state.get("deadlines",[])):
+            raise ValueError("deadline_id_conflict")
+        if "task_id" in dl and not any(m.get("id")==dl["task_id"] for m in project.get("milestones",[])):
+            raise ValueError("unknown_deadline_task")
     if event["type"]=="task_created":
         item=event["task"]
         if any(m.get("id")==item["id"] or m.get("name")==item["name"]
@@ -192,6 +248,14 @@ def verify(state,event):
         return project.get("name")==event["project"]["name"]
     if kind=="task_created":
         return any(m.get("id")==event["task"]["id"] for m in project.get("milestones",[]))
+    if kind=="deadline_set":
+        return any(all(d.get(k)==v for k,v in event["deadline"].items()) for d in state.get("deadlines",[]))
+    if kind=="deadline_removed":
+        return not any(d.get("id")==event["deadline_id"] for d in state.get("deadlines",[]))
+    if kind=="task_updated":
+        return any(m.get("id")==event["task_id"] and all(
+            m.get(k)==event[k] for k in ("status","name","deadline","prep_days") if k in event
+        ) for m in project.get("milestones",[]))
     if kind in {"task_completed","milestone_status_changed"}:
         mid=event.get("task_id") or event.get("milestone_id")
         status="completed" if kind=="task_completed" else event.get("status")
