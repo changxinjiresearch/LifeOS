@@ -127,15 +127,28 @@ def reconcile(st):
     from .direct_v3 import stamp
     token=os.getenv("NEXTPLAN_DIRECT_GITHUB_TOKEN","")
     repo=os.getenv("NEXTPLAN_DIRECT_GITHUB_REPO","")
-    if len(token)<20 or "/" not in repo:
+    if "/" not in repo:
+        raise DirectError("invalid_repository")
+    if options()["visibility"]=="private" and len(token)<20:
         raise DirectError("reconcile_token_required")
     count=0
     try:
         opts=options()
+        headers={"Accept":"application/vnd.github+json",
+                 "User-Agent":"NextPlan-Direct-v3"}
+        if token:
+            headers["Authorization"]="Bearer "+token
+        # Verify the actual GitHub repository identity/visibility, not a
+        # locally fabricated representation of repository metadata.
+        repo_request=Request("https://api.github.com/repos/"+repo,headers=headers)
+        with urlopen(repo_request,timeout=15) as response:
+            live_repo=json.load(response)
+        if (live_repo.get("id")!=opts["repo_id"] or live_repo.get("full_name")!=repo
+            or live_repo.get("private") is not (opts["visibility"]=="private")):
+            raise DirectError("repository_identity_or_visibility_mismatch")
         for page in range(1,101):
             url=f"https://api.github.com/repos/{repo}/issues?state=all&creator={opts['author']}&per_page=100&page={page}&sort=created&direction=desc"
-            req=Request(url,headers={"Authorization":"Bearer "+token,
-                "Accept":"application/vnd.github+json","User-Agent":"NextPlan-Direct-v3"})
+            req=Request(url,headers=headers)
             with urlopen(req,timeout=15) as r:
                 issues=json.load(r)
             if not isinstance(issues,list):
