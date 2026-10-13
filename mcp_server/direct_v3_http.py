@@ -133,7 +133,7 @@ def reconcile(st):
     try:
         opts=options()
         for page in range(1,101):
-            url=f"https://api.github.com/repos/{repo}/issues?state=all&per_page=100&page={page}&sort=created&direction=desc"
+            url=f"https://api.github.com/repos/{repo}/issues?state=all&creator={opts['author']}&per_page=100&page={page}&sort=created&direction=desc"
             req=Request(url,headers={"Authorization":"Bearer "+token,
                 "Accept":"application/vnd.github+json","User-Agent":"NextPlan-Direct-v3"})
             with urlopen(req,timeout=15) as r:
@@ -142,6 +142,8 @@ def reconcile(st):
                 raise DirectError("unexpected_github_reply")
             for issue in issues:
                 if "pull_request" in issue:
+                    continue
+                if issue.get("created_at") != issue.get("updated_at"):
                     continue
                 event={"action":"opened","repository":{
                      "id":opts["repo_id"],"private":opts["visibility"]=="private","owner":{"login":opts["owner"]},
