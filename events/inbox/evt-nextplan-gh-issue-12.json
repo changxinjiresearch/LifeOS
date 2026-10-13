@@ -1,0 +1,14 @@
+{
+  "id": "evt-nextplan-gh-issue-12",
+  "at": "2026-10-13T16:06:10Z",
+  "project_id": "qa-nextplan-inbox-20261014",
+  "summary": "Verified NextPlan command #12",
+  "source": {
+    "kind": "github_issue",
+    "via": "nextplan-actions-inbox",
+    "issue_number": 12,
+    "repository": "changxinjiresearch/nextplan-command-inbox"
+  },
+  "type": "project_deleted",
+  "expected_name": "NextPlan Inbox QA Sandbox 2026-10-14"
+}

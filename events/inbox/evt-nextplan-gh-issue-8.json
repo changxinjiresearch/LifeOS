@@ -1,0 +1,14 @@
+{
+  "id": "evt-nextplan-gh-issue-8",
+  "at": "2026-10-13T16:06:02Z",
+  "project_id": "qa-nextplan-inbox-20261014",
+  "summary": "Verified NextPlan command #8",
+  "source": {
+    "kind": "github_issue",
+    "via": "nextplan-actions-inbox",
+    "issue_number": 8,
+    "repository": "changxinjiresearch/nextplan-command-inbox"
+  },
+  "type": "deadline_removed",
+  "deadline_id": "qa-inbox-deadline-alpha"
+}

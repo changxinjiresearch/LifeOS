@@ -1,0 +1,7 @@
+{
+  "issue_number": 13,
+  "status": "rejected",
+  "command_sha256": "b7373daf279d4dc16fee953e1d5beb62811195e83b4cf20ee6672edf587b48a5",
+  "checked_at": "2026-10-13T16:07:13Z",
+  "reason": "unknown_or_ambiguous_project"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "evt-nextplan-gh-issue-3",
+  "at": "2026-10-13T16:05:49Z",
+  "project_id": "qa-nextplan-inbox-20261014",
+  "summary": "Verified NextPlan command #3",
+  "source": {
+    "kind": "github_issue",
+    "via": "nextplan-actions-inbox",
+    "issue_number": 3,
+    "repository": "changxinjiresearch/nextplan-command-inbox"
+  },
+  "type": "project_created",
+  "project": {
+    "id": "qa-nextplan-inbox-20261014",
+    "name": "NextPlan Inbox QA Sandbox 2026-10-14",
+    "category": "Engineering QA",
+    "status": "active",
+    "priority": 3,
+    "next_action": "",
+    "milestones": []
+  }
+}

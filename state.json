@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-10-13T15:40:23Z",
+    "last_updated": "2026-10-13T16:06:10Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -146,11 +146,21 @@
         "evt-20261011-automation-daily",
         "evt-20261012-automation-daily",
         "evt-20261013-automation-daily",
-        "evt-nextplan-gh-issue-2"
+        "evt-nextplan-gh-issue-10",
+        "evt-nextplan-gh-issue-12",
+        "evt-nextplan-gh-issue-2",
+        "evt-nextplan-gh-issue-3",
+        "evt-nextplan-gh-issue-4",
+        "evt-nextplan-gh-issue-5",
+        "evt-nextplan-gh-issue-6",
+        "evt-nextplan-gh-issue-7",
+        "evt-nextplan-gh-issue-8"
       ],
-      "processed_count": 114,
-      "last_build_at": "2026-10-13T16:05:22Z",
-      "last_applied": [],
+      "processed_count": 122,
+      "last_build_at": "2026-10-13T16:07:13Z",
+      "last_applied": [
+        "evt-nextplan-gh-issue-12"
+      ],
       "status": "ready"
     }
   },
@@ -645,6 +655,110 @@
     }
   ],
   "events": [
+    {
+      "id": "evt-nextplan-gh-issue-12",
+      "at": "2026-10-13T16:06:10Z",
+      "project_id": "qa-nextplan-inbox-20261014",
+      "type": "project_deleted",
+      "summary": "Verified NextPlan command #12",
+      "source": {
+        "kind": "github_issue",
+        "via": "nextplan-actions-inbox",
+        "issue_number": 12,
+        "repository": "changxinjiresearch/nextplan-command-inbox"
+      }
+    },
+    {
+      "id": "evt-nextplan-gh-issue-10",
+      "at": "2026-10-13T16:06:06Z",
+      "project_id": "qa-nextplan-inbox-20261014",
+      "type": "task_deleted",
+      "summary": "Verified NextPlan command #10",
+      "source": {
+        "kind": "github_issue",
+        "via": "nextplan-actions-inbox",
+        "issue_number": 10,
+        "repository": "changxinjiresearch/nextplan-command-inbox"
+      }
+    },
+    {
+      "id": "evt-nextplan-gh-issue-8",
+      "at": "2026-10-13T16:06:02Z",
+      "project_id": "qa-nextplan-inbox-20261014",
+      "type": "deadline_removed",
+      "summary": "Verified NextPlan command #8",
+      "source": {
+        "kind": "github_issue",
+        "via": "nextplan-actions-inbox",
+        "issue_number": 8,
+        "repository": "changxinjiresearch/nextplan-command-inbox"
+      }
+    },
+    {
+      "id": "evt-nextplan-gh-issue-7",
+      "at": "2026-10-13T16:05:59Z",
+      "project_id": "qa-nextplan-inbox-20261014",
+      "type": "project_updated",
+      "summary": "Verified NextPlan command #7",
+      "source": {
+        "kind": "github_issue",
+        "via": "nextplan-actions-inbox",
+        "issue_number": 7,
+        "repository": "changxinjiresearch/nextplan-command-inbox"
+      }
+    },
+    {
+      "id": "evt-nextplan-gh-issue-6",
+      "at": "2026-10-13T16:05:57Z",
+      "project_id": "qa-nextplan-inbox-20261014",
+      "type": "deadline_set",
+      "summary": "Verified NextPlan command #6",
+      "source": {
+        "kind": "github_issue",
+        "via": "nextplan-actions-inbox",
+        "issue_number": 6,
+        "repository": "changxinjiresearch/nextplan-command-inbox"
+      }
+    },
+    {
+      "id": "evt-nextplan-gh-issue-5",
+      "at": "2026-10-13T16:05:54Z",
+      "project_id": "qa-nextplan-inbox-20261014",
+      "type": "task_updated",
+      "summary": "Verified NextPlan command #5",
+      "source": {
+        "kind": "github_issue",
+        "via": "nextplan-actions-inbox",
+        "issue_number": 5,
+        "repository": "changxinjiresearch/nextplan-command-inbox"
+      }
+    },
+    {
+      "id": "evt-nextplan-gh-issue-4",
+      "at": "2026-10-13T16:05:51Z",
+      "project_id": "qa-nextplan-inbox-20261014",
+      "type": "task_created",
+      "summary": "Verified NextPlan command #4",
+      "source": {
+        "kind": "github_issue",
+        "via": "nextplan-actions-inbox",
+        "issue_number": 4,
+        "repository": "changxinjiresearch/nextplan-command-inbox"
+      }
+    },
+    {
+      "id": "evt-nextplan-gh-issue-3",
+      "at": "2026-10-13T16:05:49Z",
+      "project_id": "qa-nextplan-inbox-20261014",
+      "type": "project_created",
+      "summary": "Verified NextPlan command #3",
+      "source": {
+        "kind": "github_issue",
+        "via": "nextplan-actions-inbox",
+        "issue_number": 3,
+        "repository": "changxinjiresearch/nextplan-command-inbox"
+      }
+    },
     {
       "id": "evt-nextplan-gh-issue-2",
       "at": "2026-10-13T15:40:23Z",

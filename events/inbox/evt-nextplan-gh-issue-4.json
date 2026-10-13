@@ -1,0 +1,18 @@
+{
+  "id": "evt-nextplan-gh-issue-4",
+  "at": "2026-10-13T16:05:51Z",
+  "project_id": "qa-nextplan-inbox-20261014",
+  "summary": "Verified NextPlan command #4",
+  "source": {
+    "kind": "github_issue",
+    "via": "nextplan-actions-inbox",
+    "issue_number": 4,
+    "repository": "changxinjiresearch/nextplan-command-inbox"
+  },
+  "type": "task_created",
+  "task": {
+    "id": "qa-inbox-task-alpha",
+    "name": "E2E task alpha",
+    "status": "active"
+  }
+}

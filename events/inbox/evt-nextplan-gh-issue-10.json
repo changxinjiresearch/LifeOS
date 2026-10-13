@@ -1,0 +1,15 @@
+{
+  "id": "evt-nextplan-gh-issue-10",
+  "at": "2026-10-13T16:06:06Z",
+  "project_id": "qa-nextplan-inbox-20261014",
+  "summary": "Verified NextPlan command #10",
+  "source": {
+    "kind": "github_issue",
+    "via": "nextplan-actions-inbox",
+    "issue_number": 10,
+    "repository": "changxinjiresearch/nextplan-command-inbox"
+  },
+  "type": "task_deleted",
+  "expected_name": "E2E task revised",
+  "task_id": "qa-inbox-task-alpha"
+}

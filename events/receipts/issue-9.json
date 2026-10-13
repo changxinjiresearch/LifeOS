@@ -1,0 +1,12 @@
+{
+  "issue_number": 9,
+  "status": "pending_confirmation",
+  "command_sha256": "719a1e92b1b700fe0224caa3b54f825b60f98240b61713bf4469e08ce0fdbea6",
+  "checked_at": "2026-10-13T16:07:13Z",
+  "deletion": {
+    "project_id": "qa-nextplan-inbox-20261014",
+    "expected_name": "E2E task revised",
+    "delete_kind": "task",
+    "task_id": "qa-inbox-task-alpha"
+  }
+}
