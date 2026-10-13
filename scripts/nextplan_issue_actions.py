@@ -180,6 +180,28 @@ def parse_issue(issue):
     elif action=="remove_deadline":
         permitted={"version","operation_id","action","project_id","deadline_id"}
         event={"type":"deadline_removed","deadline_id":_id(cmd.get("deadline_id"),"deadline_id")}
+    elif action in {"request_delete_project","request_delete_task"}:
+        permitted={"version","operation_id","action","project_id","expected_name"}
+        expected=_name(cmd.get("expected_name"),"expected_name")
+        event={"type":"deletion_requested","expected_name":expected,
+               "delete_kind":"project" if action=="request_delete_project" else "task"}
+        if action=="request_delete_task":
+            permitted.add("task_id")
+            event["task_id"]=_id(cmd.get("task_id"),"task_id")
+    elif action=="confirm_delete":
+        permitted={"version","operation_id","action","project_id","request_issue",
+                   "expected_name","confirmation","task_id"}
+        ri=cmd.get("request_issue")
+        if type(ri) is not int or ri<1 or ri>=number:
+            raise ValueError("invalid_request_issue")
+        expected=_name(cmd.get("expected_name"),"expected_name")
+        phrase=cmd.get("confirmation")
+        if phrase!=("CONFIRM DELETE "+str(ri)):
+            raise ValueError("confirmation_phrase_mismatch")
+        event={"type":"deletion_confirmation","request_issue":ri,"expected_name":expected,
+               "confirmation":phrase}
+        if "task_id" in cmd:
+            event["task_id"]=_id(cmd["task_id"],"task_id")
     elif action=="create_project":
         permitted={"version","operation_id","action","project_id","name","category","next_action","priority"}
         name=_name(cmd.get("name"),"project_name")
@@ -212,6 +234,21 @@ def check_target(state,event):
     if len(projects)!=1:
         raise ValueError("unknown_or_ambiguous_project")
     project=projects[0]
+    if event["type"]=="deletion_requested":
+        if event["delete_kind"]=="project":
+            if project.get("name")!=event["expected_name"]:
+                raise ValueError("project_name_mismatch")
+        else:
+            tasks=[m for m in project.get("milestones",[]) if m.get("id")==event["task_id"]]
+            if len(tasks)!=1 or tasks[0].get("name")!=event["expected_name"]:
+                raise ValueError("task_name_mismatch")
+    if event["type"]=="project_deleted":
+        if project.get("name")!=event["expected_name"]:
+            raise ValueError("project_name_mismatch")
+    if event["type"]=="task_deleted":
+        tasks=[m for m in project.get("milestones",[]) if m.get("id")==event["task_id"]]
+        if len(tasks)!=1 or tasks[0].get("name")!=event["expected_name"]:
+            raise ValueError("task_name_mismatch")
     if event["type"] in {"task_completed","milestone_status_changed","task_updated"}:
         mid=event.get("task_id") or event.get("milestone_id")
         if not any(m.get("id")==mid for m in project.get("milestones",[])):
@@ -237,11 +274,16 @@ def verify(state,event):
     events=set(state.get("system",{}).get("event_layer",{}).get("processed_event_ids",[]))
     if event["id"] not in events:
         return False
+    kind=event["type"]
     project=next((p for p in state.get("projects",[])
                   if p.get("id")==event["project_id"]),None)
+    if kind=="project_deleted":
+        return project is None and not any(d.get("project_id")==event["project_id"]
+                 for d in state.get("deadlines",[]))
     if project is None:
         return False
-    kind=event["type"]
+    if kind=="task_deleted":
+        return not any(m.get("id")==event["task_id"] for m in project.get("milestones",[]))
     if kind=="project_updated":
         return all(project.get(k)==v for k,v in event["changes"].items())
     if kind=="project_created":
@@ -325,7 +367,30 @@ def apply_issues(issues):
             continue
         current=state_engine.load_json(state_engine.STATE_PATH)
         try:
+            if event["type"]=="deletion_confirmation":
+                source_number=event["request_issue"]
+                request_file=receipt_path(source_number)
+                if not request_file.exists():
+                    raise ValueError("delete_request_not_processed")
+                req=state_engine.load_json(request_file)
+                if req.get("status")!="pending_confirmation":
+                    raise ValueError("delete_request_not_pending")
+                requested=req.get("deletion") or {}
+                if requested.get("project_id")!=event["project_id"] or (
+                    requested.get("expected_name")!=event["expected_name"]) or (
+                    requested.get("task_id")!=event.get("task_id")):
+                    raise ValueError("delete_confirmation_target_mismatch")
+                event["type"]="project_deleted" if requested["delete_kind"]=="project" else "task_deleted"
+                event.pop("request_issue",None)
+                event.pop("confirmation",None)
             check_target(current,event)
+            if event["type"]=="deletion_requested":
+                write_receipt(number,"pending_confirmation",bodyhash,
+                              deletion={k:event[k] for k in ("project_id","expected_name","delete_kind")
+                                        if k in event} | ({"task_id":event["task_id"]}
+                                        if "task_id" in event else {}))
+                results.append((number,"pending_confirmation"))
+                continue
         except ValueError as exc:
             write_receipt(number,"rejected",bodyhash,reason=str(exc))
             results.append((number,"rejected"))
