@@ -338,6 +338,50 @@ def catch_up_existing_events():
     return False
 
 
+def reconcile_delete_confirmations(issues):
+    """Close staged delete receipts only after verified confirmation has committed.
+
+    This also repairs older pending receipts on later scheduled runs. Both Issues
+    must still match exactly; no new deletion is attempted by this function.
+    """
+    confirmed={}
+    for item in issues:
+        try:
+            parsed=parse_issue(item)
+        except (ValueError,TypeError):
+            continue
+        if parsed is None:
+            continue
+        event,digest=parsed
+        if event["type"]!="deletion_confirmation":
+            continue
+        number=item["number"]
+        path=receipt_path(number)
+        if not path.exists():
+            continue
+        result=state_engine.load_json(path)
+        if result.get("status")!="verified" or result.get("command_sha256")!=digest:
+            continue
+        request_number=event["request_issue"]
+        pending_path=receipt_path(request_number)
+        if not pending_path.exists():
+            continue
+        pending=state_engine.load_json(pending_path)
+        original=pending.get("deletion",{})
+        if pending.get("status")!="pending_confirmation":
+            continue
+        if (original.get("project_id")!=event.get("project_id")
+            or original.get("expected_name")!=event.get("expected_name")
+            or original.get("task_id")!=event.get("task_id")):
+            continue
+        pending["status"]="confirmed"
+        pending["confirmed_by_issue"]=number
+        pending["confirmed_at"]=iso_now()
+        state_engine.save_json(pending_path,pending)
+        confirmed[request_number]="confirmed"
+    return confirmed
+
+
 def apply_issues(issues):
     """Apply each new command through the actual production event builder."""
     results=[]
@@ -412,7 +456,8 @@ def apply_issues(issues):
         results.append((number,"verified"))
         # Unexpected errors leave workflow failed so GitHub Actions retries on next
         # scheduled run. They are NOT falsely recorded as successful.
-    return results
+    confirmations=reconcile_delete_confirmations(issues)
+    return [(n,confirmations.get(n,status)) for n,status in results]
 
 
 def main():

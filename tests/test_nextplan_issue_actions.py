@@ -154,6 +154,8 @@ class ActionsInboxTests(unittest.TestCase):
         correct=issue(132,cmd("confirm_delete",request_issue=130,task_id="milestone-one",
                              expected_name="First",confirmation="CONFIRM DELETE 130"))
         self.assertEqual(actions.apply_issues([correct]),[(132,"verified")])
+        self.assertEqual(actions.state_engine.load_json(actions.receipt_path(130))["status"],"confirmed")
+        self.assertEqual(actions.state_engine.load_json(actions.receipt_path(130))["confirmed_by_issue"],132)
         self.assertEqual(len(self.snapshot()["projects"][0]["milestones"]),0)
         self.assertEqual(actions.apply_issues([correct]),[(132,"verified")])
 
@@ -167,7 +169,7 @@ class ActionsInboxTests(unittest.TestCase):
                            "expected_name":"Sandbox 133",
                            "confirmation":"CONFIRM DELETE 134"})
         self.assertEqual(actions.apply_issues([create,ask,confirm]),
-                         [(133,"verified"),(134,"pending_confirmation"),(135,"verified")])
+                         [(133,"verified"),(134,"confirmed"),(135,"verified")])
         self.assertEqual(len(self.snapshot()["projects"]),1)
 
     def test_confirmation_request_must_preexist_and_match(self):
@@ -197,6 +199,34 @@ class ActionsInboxTests(unittest.TestCase):
         self.assertFalse(actions.receipt_path(400).exists())
         self.assertEqual(self.snapshot()["projects"][0]["status"],"active")
         self.assertEqual(actions.apply_issues([command]),[(400,"verified")])
+
+
+
+    def test_confirmed_requests_reconcile_on_later_poll(self):
+        create=issue(500,{"version":3,"action":"create_project","project_id":"qa-temp-500",
+                           "name":"Disposable 500"})
+        req=issue(501,{"version":3,"action":"request_delete_project",
+                        "project_id":"qa-temp-500","expected_name":"Disposable 500"})
+        confirm=issue(502,{"version":3,"action":"confirm_delete","project_id":"qa-temp-500",
+                            "expected_name":"Disposable 500","request_issue":501,
+                            "confirmation":"CONFIRM DELETE 501"})
+        self.assertEqual(actions.apply_issues([create,req,confirm]),
+                         [(500,"verified"),(501,"confirmed"),(502,"verified")])
+        r=actions.state_engine.load_json(actions.receipt_path(501))
+        r["status"]="pending_confirmation"  # simulate older deployed protocol
+        actions.state_engine.save_json(actions.receipt_path(501),r)
+        self.assertEqual(actions.apply_issues([create,req,confirm]),
+                         [(500,"verified"),(501,"confirmed"),(502,"verified")])
+        self.assertEqual(actions.state_engine.load_json(actions.receipt_path(501))["status"],"confirmed")
+
+    def test_unverified_delete_confirmation_never_closes_request(self):
+        req=issue(520,cmd("request_delete_task",task_id="milestone-one",expected_name="First"))
+        fake=issue(521,cmd("confirm_delete",task_id="milestone-one",request_issue=520,
+                           expected_name="First",confirmation="CONFIRM DELETE 520"))
+        self.assertEqual(actions.apply_issues([req]),[(520,"pending_confirmation")])
+        self.assertEqual(actions.reconcile_delete_confirmations([fake]),{})
+        self.assertEqual(actions.state_engine.load_json(actions.receipt_path(520))["status"],
+                         "pending_confirmation")
 
 
 if __name__=="__main__":
