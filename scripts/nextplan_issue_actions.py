@@ -4,7 +4,8 @@
 Runs in GitHub Actions inside the LifeOS repository, using the existing state
 builder and one atomic Git commit for event files, receipts and canonical state.
 GitHub's GITHUB_TOKEN writes stay within LifeOS; the inbox is PUBLIC and is
-read-only to this program. Never execute Issue text.
+read-only to this program. Never execute Issue text. A submitted Issue is
+not an applied update until the canonical state and receipt are committed.
 """
 from __future__ import annotations
 
