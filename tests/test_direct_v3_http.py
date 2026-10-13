@@ -34,7 +34,8 @@ class HttpAcceptance(unittest.TestCase):
           "NEXTPLAN_DIRECT_GITHUB_SECRET":"b"*40,
           "NEXTPLAN_DIRECT_GITHUB_REPO_ID":"123456",
           "NEXTPLAN_DIRECT_GITHUB_REPO":"testuser/nextplan-command-inbox",
-          "NEXTPLAN_DIRECT_GITHUB_AUTHOR":"testuser"
+          "NEXTPLAN_DIRECT_GITHUB_AUTHOR":"testuser",
+          "NEXTPLAN_DIRECT_GITHUB_VISIBILITY":"public"
         }
         self.env=patch.dict(os.environ,settings)
         self.env.start()
@@ -71,7 +72,7 @@ class HttpAcceptance(unittest.TestCase):
         self.assertEqual(snapshot["state"]["notes"],self.doc["notes"])
 
     def test_signed_github_event_and_duplicate(self):
-        issue={"action":"opened","repository":{"id":123456,"private":True,
+        issue={"action":"opened","repository":{"id":123456,"private":False,
                 "name":"nextplan-command-inbox","owner":{"login":"testuser"}},
             "sender":{"login":"testuser"},"issue":{"number":10,
             "user":{"login":"testuser"},"body":json.dumps({
