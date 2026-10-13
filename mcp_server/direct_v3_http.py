@@ -73,8 +73,17 @@ async def handle(scope,receive,send):
     method=scope.get("method","GET")
     headers={k.decode("latin-1").lower():v.decode("latin-1") for k,v in scope.get("headers",[])}
     if path==PREFIX+"/status" and method=="GET":
-        return await reply(send,200,{"status":"available" if configured() else "disabled",
-          "canonical":"private_sqlite" if configured() else "legacy_untouched","reconciliation":health})
+        if not configured():
+            return await reply(send,200,{"status":"disabled","canonical":"legacy_untouched",
+                                         "reconciliation":health})
+        try:
+            st=store()
+            st.snapshot()
+            readiness="ready"
+        except (DirectError,OSError,RuntimeError):
+            readiness="not_ready"
+        return await reply(send,200,{"status":readiness,"canonical":"private_sqlite_shadow",
+                                     "reconciliation":health})
     if not configured():
         return await reply(send,503,{"error":"direct_v3_not_configured"})
     webhook=path==PREFIX+"/github/webhook" and method=="POST"
