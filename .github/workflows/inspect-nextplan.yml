@@ -1,0 +1,20 @@
+name: Inspect NextPlan builder entrypoints
+on:
+  push:
+    branches: [feature/nextplan-actions-inbox]
+    paths: ['.github/workflows/inspect-nextplan.yml']
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: List builder candidates
+        run: |
+          echo "WORKFLOWS"
+          find .github/workflows -maxdepth 2 -type f | sort
+          echo "PYTHON TOP LEVEL"
+          find . -maxdepth 3 -name '*.py' -not -path '*/.git/*' | sort | head -100
+          echo "EVENT WORKFLOW REFERENCES"
+          grep -R -nE 'events/inbox|build_state|state_builder|event_builder' .github/workflows | head -75 || true
