@@ -7,7 +7,9 @@ on:
       - 'mcp_server/direct_v3.py'
       - 'mcp_server/direct_v3_http.py'
       - 'mcp_server/server_v14.py'
+      - 'mcp_server/inbox_relay_v1.py'
       - 'tests/test_direct_v3*.py'
+      - 'tests/test_inbox_relay_v1.py'
       - '.github/workflows/nextplan-direct-v3.yml'
   pull_request:
     paths:
@@ -51,5 +53,7 @@ jobs:
           assert asyncio.run(check("/direct/v3/status"))["status"]=="disabled"
           assert asyncio.run(check("/healthz"))["status"]=="ok"
           PY
-      - name: V3 isolated safety regression
+      - name: Direct v3 isolated safety regression
         run: python -W error::ResourceWarning -m unittest discover -s tests -p 'test_direct_v3*.py' -v
+      - name: GitHub Issue transport and deduplication
+        run: python -W error::ResourceWarning -m unittest discover -s tests -p 'test_inbox_relay_v1.py' -v
