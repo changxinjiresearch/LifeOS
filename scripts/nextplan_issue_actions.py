@@ -214,10 +214,27 @@ def write_receipt(number, status, bodyhash, reason="", **extra):
     return result
 
 
+def catch_up_existing_events():
+    """Only run the state builder when some event actually needs applying.
+
+    The legacy builder updates its last_build_at timestamp on every invocation.
+    Running it on a schedule with no work would create a meaningless Git commit
+    every five minutes.
+    """
+    state=state_engine.load_json(state_engine.STATE_PATH)
+    processed=set(state.get("system",{}).get("event_layer",{}).get("processed_event_ids",[]))
+    for path in sorted(state_engine.EVENT_DIR.glob("*.json")):
+        event=state_engine.load_json(path)
+        if event.get("id") not in processed:
+            build_state_v3.main()
+            return True
+    return False
+
+
 def apply_issues(issues):
     """Apply each new command through the actual production event builder."""
     results=[]
-    build_state_v3.main()  # first catch up events from other accepted writers
+    catch_up_existing_events()
     for issue in issues:
         number=issue.get("number")
         if type(number) is not int:
