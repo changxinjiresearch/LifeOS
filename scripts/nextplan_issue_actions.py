@@ -256,7 +256,7 @@ def apply_issues(issues):
             build_state_v3.main()
             newstate=state_engine.load_json(state_engine.STATE_PATH)
             if not verify(newstate,event):
-                raise RuntimeError("postcondition_mismatch")
+                raise RuntimeError("postcondition_mismatch: "+json.dumps({"project":next((x for x in newstate.get("projects",[]) if x.get("id")==event["project_id"]),None),"event_id":event["id"],"processed_ids":newstate.get("system",{}).get("event_layer",{}).get("processed_event_ids",[])},ensure_ascii=False))
             write_receipt(number,"verified",bodyhash,event_id=event["id"])
             results.append((number,"verified"))
         except ValueError as exc:
