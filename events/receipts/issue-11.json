@@ -1,11 +1,13 @@
 {
   "issue_number": 11,
-  "status": "pending_confirmation",
+  "status": "confirmed",
   "command_sha256": "5f57e661fa6fdb76c137eef924cf1d36bd3a9fd496469d34335fd103d245f746",
   "checked_at": "2026-10-13T16:07:13Z",
   "deletion": {
     "project_id": "qa-nextplan-inbox-20261014",
     "expected_name": "NextPlan Inbox QA Sandbox 2026-10-14",
     "delete_kind": "project"
-  }
+  },
+  "confirmed_by_issue": 12,
+  "confirmed_at": "2026-10-13T16:12:55Z"
 }
