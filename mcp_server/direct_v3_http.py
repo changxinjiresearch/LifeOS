@@ -152,7 +152,7 @@ def reconcile(st):
                 try:
                     intake(st,event)
                 except DirectError as e:
-                    if e.code not in {"actor_forbidden","invalid_issue_body","unsupported_action"}:
+                    if e.code not in {"actor_forbidden","invalid_issue_body","public_free_text_forbidden","invalid_protocol","unsupported_action","invalid_project_id","invalid_operation_id","invalid_changes","invalid_status","invalid_priority","invalid_progress"}:
                         raise
                 count+=1
             if len(issues)<100:
