@@ -186,13 +186,13 @@ def verify(state,event):
     if project is None:
         return False
     kind=event["type"]
-    if kind=="update_project":
+    if kind=="project_updated":
         return all(project.get(k)==v for k,v in event["changes"].items())
-    if kind=="create_project":
+    if kind=="project_created":
         return project.get("name")==event["project"]["name"]
-    if kind=="create_task":
+    if kind=="task_created":
         return any(m.get("id")==event["task"]["id"] for m in project.get("milestones",[]))
-    if kind in {"complete_task","update_milestone"}:
+    if kind in {"task_completed","milestone_status_changed"}:
         mid=event.get("task_id") or event.get("milestone_id")
         status="completed" if kind=="task_completed" else event.get("status")
         return any(m.get("id")==mid and m.get("status")==status
