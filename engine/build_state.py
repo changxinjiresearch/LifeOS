@@ -212,8 +212,12 @@ def apply_event(state, event):
         if not isinstance(mid, str):
             raise ValueError("milestone_id/task_id is required")
         m = find_milestone(p, mid)
-        status = "completed" if et == "task_completed" else require(event, "status", str)
-        set_status(m, status)
+        previous_status = m.get("status")
+        has_status_change = et != "task_updated" or "status" in event
+        status = ("completed" if et == "task_completed" else
+                  require(event, "status", str) if "status" in event else previous_status)
+        if has_status_change:
+            set_status(m, status)
         if "name" in event:
             m["name"] = event["name"]
         if "deadline" in event:
@@ -226,10 +230,12 @@ def apply_event(state, event):
             p["next_action"] = event["next_action"]
         if "project_status" in event:
             set_status(p, event["project_status"])
-        elif status == "active":
+        elif has_status_change and status == "active":
             p["status"] = "active"
             p["next_action"] = m.get("name", p.get("next_action", ""))
-        elif status == "completed" and event.get("auto_advance", True):
+        elif (has_status_change and status == "completed"
+              and previous_status not in {"completed", "done"}
+              and event.get("auto_advance", True)):
             auto_advance_project(p, mid)
 
     elif et == "task_deleted":

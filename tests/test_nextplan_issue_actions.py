@@ -98,5 +98,106 @@ class ActionsInboxTests(unittest.TestCase):
         self.assertEqual(actions.apply_issues([first,second]),[(30,"verified"),(31,"rejected")])
         self.assertEqual(len(self.snapshot()["projects"]),2)
 
+
+    def test_progress_and_task_updates(self):
+        commands=[
+            issue(110,cmd(changes={"progress":65,"priority":4})),
+            issue(111,cmd("update_task",task_id="milestone-one",
+                          changes={"status":"waiting","name":"Renamed","deadline":"2026-11-30","prep_days":7}))
+        ]
+        self.assertEqual(actions.apply_issues(commands),[(110,"verified"),(111,"verified")])
+        p=self.snapshot()["projects"][0]
+        self.assertEqual(p["progress"],65)
+        self.assertEqual(p["milestones"][0]["name"],"Renamed")
+        self.assertEqual(p["milestones"][0]["deadline"],"2026-11-30")
+
+
+    def test_task_name_only_does_not_reset_project_status(self):
+        p=self.snapshot()
+        p["projects"][0]["status"]="waiting"
+        self.state.write_text(json.dumps(p),encoding="utf-8")
+        edit=issue(118,cmd("update_task",task_id="milestone-one",
+                           changes={"name":"Renamed but no change to status"}))
+        self.assertEqual(actions.apply_issues([edit]),[(118,"verified")])
+        project=self.snapshot()["projects"][0]
+        self.assertEqual(project["status"],"waiting")
+        self.assertEqual(project["milestones"][0]["status"],"active")
+        self.assertEqual(project["milestones"][0]["name"],"Renamed but no change to status")
+
+    def test_deadline_create_and_removal(self):
+        create=issue(112,cmd("set_deadline",title="Safe testing",date="2026-12-31"))
+        remove=issue(113,cmd("remove_deadline",deadline_id="deadline-inbox-112"))
+        self.assertEqual(actions.apply_issues([create,remove]),[(112,"verified"),(113,"verified")])
+        self.assertFalse(any(d.get("id")=="deadline-inbox-112" for d in self.snapshot()["deadlines"]))
+
+    def test_reject_invalid_date_invalid_task_and_invalid_progress(self):
+        examples=[
+            cmd("set_deadline",title="Wrong",date="2026-02-31"),
+            cmd("remove_deadline",deadline_id="missing"),
+            cmd("update_task",task_id="missing",changes={"status":"completed"}),
+            cmd(changes={"progress":True}),
+            cmd(changes={"progress":101}),
+            cmd("update_task",task_id="milestone-one",changes={"prep_days":True})
+        ]
+        results=actions.apply_issues([issue(120+i,c) for i,c in enumerate(examples)])
+        self.assertEqual([x[1] for x in results],["rejected"]*len(examples))
+        self.assertEqual(self.snapshot()["projects"][0]["status"],"active")
+
+    def test_two_issue_task_deletion_cannot_execute_without_confirmation(self):
+        request=issue(130,cmd("request_delete_task",task_id="milestone-one",expected_name="First"))
+        self.assertEqual(actions.apply_issues([request]),[(130,"pending_confirmation")])
+        self.assertEqual(len(self.snapshot()["projects"][0]["milestones"]),1)
+        wrong=issue(131,cmd("confirm_delete",request_issue=130,task_id="milestone-one",
+                             expected_name="Wrong",confirmation="CONFIRM DELETE 130"))
+        self.assertEqual(actions.apply_issues([wrong]),[(131,"rejected")])
+        self.assertEqual(len(self.snapshot()["projects"][0]["milestones"]),1)
+        correct=issue(132,cmd("confirm_delete",request_issue=130,task_id="milestone-one",
+                             expected_name="First",confirmation="CONFIRM DELETE 130"))
+        self.assertEqual(actions.apply_issues([correct]),[(132,"verified")])
+        self.assertEqual(len(self.snapshot()["projects"][0]["milestones"]),0)
+        self.assertEqual(actions.apply_issues([correct]),[(132,"verified")])
+
+    def test_two_issue_project_delete_only_sandbox(self):
+        create=issue(133,{"version":3,"action":"create_project","project_id":"tmp-demo-133",
+                          "name":"Sandbox 133","category":"Test"})
+        ask=issue(134,{"version":3,"action":"request_delete_project",
+                       "project_id":"tmp-demo-133","expected_name":"Sandbox 133"})
+        confirm=issue(135,{"version":3,"action":"confirm_delete",
+                           "project_id":"tmp-demo-133","request_issue":134,
+                           "expected_name":"Sandbox 133",
+                           "confirmation":"CONFIRM DELETE 134"})
+        self.assertEqual(actions.apply_issues([create,ask,confirm]),
+                         [(133,"verified"),(134,"pending_confirmation"),(135,"verified")])
+        self.assertEqual(len(self.snapshot()["projects"]),1)
+
+    def test_confirmation_request_must_preexist_and_match(self):
+        premature=issue(140,{"version":3,"action":"confirm_delete",
+                             "project_id":"project-test","request_issue":139,
+                             "expected_name":"Sandbox","confirmation":"CONFIRM DELETE 139"})
+        self.assertEqual(actions.apply_issues([premature]),[(140,"rejected")])
+        self.assertEqual(len(self.snapshot()["projects"]),1)
+
+    def test_large_batch_deduplication_and_restart(self):
+        commands=[issue(200+i,cmd(changes={"priority":i%5+1})) for i in range(100)]
+        res=actions.apply_issues(commands)
+        self.assertEqual(len(res),100)
+        self.assertTrue(all(x[1]=="verified" for x in res))
+        before=self.snapshot()
+        self.assertEqual(actions.apply_issues(commands),res)
+        self.assertEqual(self.snapshot(),before)
+        self.assertEqual(len(list(self.events.glob("evt-nextplan-gh-issue-*.json"))),100)
+        self.assertEqual(len(list(self.receipts.glob("issue-*.json"))),100)
+
+    def test_builder_failure_never_gives_verified_receipt(self):
+        from unittest.mock import patch as p
+        command=issue(400,cmd(changes={"status":"completed"}))
+        with p.object(actions.build_state_v3,"main",side_effect=RuntimeError("simulated disk error")):
+            with self.assertRaises(RuntimeError):
+                actions.apply_issues([command])
+        self.assertFalse(actions.receipt_path(400).exists())
+        self.assertEqual(self.snapshot()["projects"][0]["status"],"active")
+        self.assertEqual(actions.apply_issues([command]),[(400,"verified")])
+
+
 if __name__=="__main__":
     unittest.main()

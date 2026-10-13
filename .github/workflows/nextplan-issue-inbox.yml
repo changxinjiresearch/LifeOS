@@ -8,6 +8,7 @@ on:
     branches: [main]
     paths:
       - 'scripts/nextplan_issue_actions.py'
+      - 'engine/build_state.py'
       - 'tests/test_nextplan_issue_actions.py'
       - '.github/workflows/nextplan-issue-inbox.yml'
   pull_request:
@@ -34,7 +35,9 @@ jobs:
         with:
           python-version: '3.12'
       - name: Validate parser and local state transitions without network
-        run: python -m unittest discover -s tests -p 'test_nextplan_issue_actions.py' -v
+        run: |
+          python -m unittest discover -s tests -p 'test_nextplan_issue_actions.py' -v
+          python -m compileall -q engine scripts
 
   process:
     if: github.event_name != 'pull_request'
@@ -59,6 +62,7 @@ jobs:
             echo "Issue inbox attempt $attempt"
             git fetch origin main
             git reset --hard origin/main
+            git clean -fd -- events/inbox events/receipts
             python scripts/nextplan_issue_actions.py
             git add state.json events/inbox
             if [ -d events/receipts ]; then git add events/receipts; fi
