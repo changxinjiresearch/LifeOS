@@ -64,7 +64,8 @@ def intake(st,event):
     if not parsed:
         return {"status":"ignored"}
     cmd,op=parsed
-    a=st.enqueue(cmd,"github_private_issue",op)
+    source="github_public_issue" if options()["visibility"]=="public" else "github_private_issue"
+    a=st.enqueue(cmd,source,op)
     return st.process(op) if a["status"]=="accepted" else a
 
 async def handle(scope,receive,send):
@@ -143,7 +144,7 @@ def reconcile(st):
                 if "pull_request" in issue:
                     continue
                 event={"action":"opened","repository":{
-                     "id":opts["repo_id"],"private":True,"owner":{"login":opts["owner"]},
+                     "id":opts["repo_id"],"private":opts["visibility"]=="private","owner":{"login":opts["owner"]},
                      "name":opts["name"]},"sender":{"login":(issue.get("user") or {}).get("login")},
                      "issue":issue}
                 try:
