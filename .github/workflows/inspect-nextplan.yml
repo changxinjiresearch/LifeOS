@@ -3,6 +3,8 @@ on:
   push:
     branches: [feature/nextplan-actions-inbox]
     paths: ['.github/workflows/inspect-nextplan.yml']
+  pull_request:
+    branches: [main]
 permissions:
   contents: read
 jobs:
