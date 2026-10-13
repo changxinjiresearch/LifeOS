@@ -1,0 +1,16 @@
+{
+  "id": "evt-nextplan-gh-issue-2",
+  "at": "2026-10-13T15:40:23Z",
+  "project_id": "research-neuri",
+  "summary": "Verified NextPlan command #2",
+  "source": {
+    "kind": "github_issue",
+    "via": "nextplan-actions-inbox",
+    "issue_number": 2,
+    "repository": "changxinjiresearch/nextplan-command-inbox"
+  },
+  "type": "project_updated",
+  "changes": {
+    "status": "completed"
+  }
+}

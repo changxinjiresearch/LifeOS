@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-10-13T02:41:30Z",
+    "last_updated": "2026-10-13T15:40:23Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -145,11 +145,14 @@
         "evt-20261010-automation-daily",
         "evt-20261011-automation-daily",
         "evt-20261012-automation-daily",
-        "evt-20261013-automation-daily"
+        "evt-20261013-automation-daily",
+        "evt-nextplan-gh-issue-2"
       ],
-      "processed_count": 113,
-      "last_build_at": "2026-10-13T14:06:21Z",
-      "last_applied": [],
+      "processed_count": 114,
+      "last_build_at": "2026-10-13T15:41:10Z",
+      "last_applied": [
+        "evt-nextplan-gh-issue-2"
+      ],
       "status": "ready"
     }
   },
@@ -644,6 +647,19 @@
     }
   ],
   "events": [
+    {
+      "id": "evt-nextplan-gh-issue-2",
+      "at": "2026-10-13T15:40:23Z",
+      "project_id": "research-neuri",
+      "type": "project_updated",
+      "summary": "Verified NextPlan command #2",
+      "source": {
+        "kind": "github_issue",
+        "via": "nextplan-actions-inbox",
+        "issue_number": 2,
+        "repository": "changxinjiresearch/nextplan-command-inbox"
+      }
+    },
     {
       "id": "evt-20261013-automation-daily",
       "at": "2026-10-13T02:41:30Z",
