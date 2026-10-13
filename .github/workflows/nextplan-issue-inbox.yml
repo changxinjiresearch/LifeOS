@@ -1,0 +1,78 @@
+name: NextPlan Issue Inbox (no Railway)
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/nextplan_issue_actions.py'
+      - 'tests/test_nextplan_issue_actions.py'
+      - '.github/workflows/nextplan-issue-inbox.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/nextplan_issue_actions.py'
+      - 'tests/test_nextplan_issue_actions.py'
+      - '.github/workflows/nextplan-issue-inbox.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nextplan-state-builder
+  cancel-in-progress: false
+
+jobs:
+  checks:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate parser and local state transitions without network
+        run: python -m unittest discover -s tests -p 'test_nextplan_issue_actions.py' -v
+
+  process:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run reliable Issue inbox catch-up and publish canonical state
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git config user.name "nextplan-issue-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for attempt in 1 2 3 4 5; do
+            echo "Issue inbox attempt $attempt"
+            git fetch origin main
+            git reset --hard origin/main
+            python scripts/nextplan_issue_actions.py
+            git add state.json events/inbox
+            if [ -d events/receipts ]; then git add events/receipts; fi
+            if git diff --cached --quiet; then
+              echo "No new commands or state changes."
+              exit 0
+            fi
+            git commit -m "NextPlan: apply verified GitHub Issue commands"
+            if git push origin HEAD:main; then
+              echo "Issue receipts and canonical NextPlan state committed together."
+              exit 0
+            fi
+            echo "Concurrent update: rebuilding against latest main instead."
+            sleep 2
+          done
+          echo "Failed to publish canonical state after retries." >&2
+          exit 1
