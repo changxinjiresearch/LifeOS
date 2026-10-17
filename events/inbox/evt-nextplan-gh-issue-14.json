@@ -1,0 +1,22 @@
+{
+  "id": "evt-nextplan-gh-issue-14",
+  "at": "2026-10-17T18:38:46Z",
+  "project_id": "research-scept",
+  "summary": "Verified NextPlan command #14",
+  "source": {
+    "kind": "github_issue",
+    "via": "nextplan-actions-inbox",
+    "issue_number": 14,
+    "repository": "changxinjiresearch/nextplan-command-inbox"
+  },
+  "type": "project_created",
+  "project": {
+    "id": "research-scept",
+    "name": "SCEPT — 通用 AI 可解释性机制与自动实验平台",
+    "category": "科研",
+    "status": "active",
+    "priority": 3,
+    "next_action": "按 U0–U11 开发路线推进通用核心、内部观测、自动实验引擎和 SCEPT 解释算法；完成科学验证前不宣称算法有效。",
+    "milestones": []
+  }
+}
