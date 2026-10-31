@@ -4,7 +4,7 @@
     "name": "NextPlan",
     "architecture": "conversation-event-layer-central-state",
     "canonical_store": "changxinjiresearch/LifeOS",
-    "last_updated": "2026-10-30T01:17:58Z",
+    "last_updated": "2026-10-31T00:58:53Z",
     "client_sync": {
       "status": "confirmed",
       "confirmed_at": "2026-09-10T21:58:37+09:30"
@@ -31,7 +31,7 @@
       "version": 1,
       "mode": "append-only-event-files",
       "inbox": "events/inbox",
-      "builder": "engine/build_state_v3.py",
+      "builder": "engine/build_state_v2.py",
       "processed_event_ids": [
         "evt-20260910T170426Z-task-created-ad83839a",
         "evt-20260910T172100Z-delete-backend-test-create",
@@ -162,6 +162,7 @@
         "evt-20261028-automation-daily",
         "evt-20261029-automation-daily",
         "evt-20261030-automation-daily",
+        "evt-20261031-automation-daily",
         "evt-nextplan-gh-issue-10",
         "evt-nextplan-gh-issue-12",
         "evt-nextplan-gh-issue-14",
@@ -173,8 +174,8 @@
         "evt-nextplan-gh-issue-7",
         "evt-nextplan-gh-issue-8"
       ],
-      "processed_count": 139,
-      "last_build_at": "2026-10-30T22:14:59Z",
+      "processed_count": 140,
+      "last_build_at": "2026-10-31T00:58:53Z",
       "last_applied": [],
       "status": "ready"
     }
@@ -679,6 +680,17 @@
     }
   ],
   "events": [
+    {
+      "id": "evt-20261031-automation-daily",
+      "at": "2026-10-31T00:58:53Z",
+      "project_id": "project-item-daed6c",
+      "type": "automation_snapshot_refreshed",
+      "summary": "Daily automation evaluation: 6 finding(s).",
+      "source": {
+        "kind": "automation",
+        "via": "github-actions-daily"
+      }
+    },
     {
       "id": "evt-20261030-automation-daily",
       "at": "2026-10-30T01:17:58Z",
@@ -2349,7 +2361,7 @@
       "severity": "medium",
       "title": "PhD 申请",
       "project_id": "phd",
-      "reason": "No recorded movement for 49 day(s).",
+      "reason": "No recorded movement for 50 day(s).",
       "id": "automation-stale-active-1"
     },
     {
@@ -2365,7 +2377,7 @@
       "severity": "medium",
       "title": "学生签证与行政事项",
       "project_id": "visa-admin",
-      "reason": "No recorded movement for 49 day(s).",
+      "reason": "No recorded movement for 50 day(s).",
       "id": "automation-stale-active-3"
     },
     {
@@ -2373,7 +2385,7 @@
       "severity": "medium",
       "title": "RP新实验",
       "project_id": "research-rp-new-experiment",
-      "reason": "No recorded movement for 21 day(s).",
+      "reason": "No recorded movement for 22 day(s).",
       "id": "automation-stale-active-4"
     },
     {
@@ -2381,7 +2393,7 @@
       "severity": "medium",
       "title": "SCEPT — 通用 AI 可解释性机制与自动实验平台",
       "project_id": "research-scept",
-      "reason": "No recorded movement for 12 day(s).",
+      "reason": "No recorded movement for 13 day(s).",
       "id": "automation-stale-active-5"
     },
     {
@@ -2394,7 +2406,7 @@
     }
   ],
   "automation_meta": {
-    "last_run_at": "2026-10-30T01:17:58+00:00",
+    "last_run_at": "2026-10-31T00:58:53+00:00",
     "finding_count": 6,
     "automation_version": "1.0"
   },
