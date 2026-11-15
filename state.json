@@ -31,7 +31,7 @@
       "version": 1,
       "mode": "append-only-event-files",
       "inbox": "events/inbox",
-      "builder": "engine/build_state_v2.py",
+      "builder": "engine/build_state_v3.py",
       "processed_event_ids": [
         "evt-20260910T170426Z-task-created-ad83839a",
         "evt-20260910T172100Z-delete-backend-test-create",
@@ -190,7 +190,7 @@
         "evt-nextplan-gh-issue-8"
       ],
       "processed_count": 155,
-      "last_build_at": "2026-11-15T01:14:44Z",
+      "last_build_at": "2026-11-15T06:21:17Z",
       "last_applied": [],
       "status": "ready"
     }
